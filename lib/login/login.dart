@@ -1,0 +1,191 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:savour_deals_flutter/themes/theme.dart';
+import 'package:savour_deals_flutter/themes/decoration.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
+class LoginPage extends StatefulWidget {
+  LoginPage({Key key}) : super(key: key);
+
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  TextEditingController emailController = new TextEditingController();
+  TextEditingController passwordController = new TextEditingController();
+  bool _passwordObscured = true;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("images/login_background.jpg"),
+            fit: BoxFit.cover,
+            colorFilter: new ColorFilter.mode(
+              Colors.black.withOpacity(0.45), BlendMode.srcATop
+            ),
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(18.0),
+            child: SingleChildScrollView(
+                child: Column(
+                children: <Widget>[
+                  Image(image: AssetImage("images/Savour_Deals_White.png")),
+                  LoginTextInput(
+                    hint: "Email", 
+                    controller: emailController,
+                    keyboard: TextInputType.emailAddress
+                  ),
+                  Container(padding: EdgeInsets.all(5)),
+                  LoginTextInput(
+                    hint: "Password",
+                    controller: passwordController,
+                    keyboard: TextInputType.text,
+                    obscureTxt: _passwordObscured,
+                    suffixIcon: IconButton(
+                      color: Colors.black,
+                      icon: Icon(
+                        _passwordObscured
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _passwordObscured
+                              ? _passwordObscured = false
+                              : _passwordObscured = true;
+                        });
+                      },
+                    ),
+                  ),
+                  Container(padding: EdgeInsets.all(5)),
+                  FlatButton(
+                    highlightColor: Colors.transparent,
+                    splashColor: Colors.transparent,
+                    color: SavourColorsMaterial.savourGreen,
+                    child: Text("Login", style: whiteText),
+                  
+                    onPressed: () {
+                      login();
+                    },
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  Container(padding: EdgeInsets.all(5)),
+                  FlatButton(
+                    color: Colors.blueAccent,
+                    child: Text("Facebook Login", style: whiteText),
+                    onPressed: () {
+                      facebookLogin();
+                    },
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void login() {
+    if (emailController.text.isEmpty || passwordController.text.isEmpty){
+      displayError("Missing email or password","Please provide both an email and password", "OK");
+    }else{
+        _auth.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error){
+          displayError("Login Failed!","Please check that your email and password are correct and try again.", "OK");
+        }).then((user){
+          if (!user.isEmailVerified){
+            promptUnverified(user: user);
+          }
+        });
+    }
+
+  }
+
+  void facebookLogin() async {
+    var facebook = new FacebookLogin();
+    var result =
+        await facebook.logInWithReadPermissions(['email', 'public_profile']);
+    switch (result.status) {
+      case FacebookLoginStatus.loggedIn:
+        _auth.signInWithCredential(FacebookAuthProvider.getCredential(
+            accessToken: result.accessToken.token));
+        break;
+      case FacebookLoginStatus.cancelledByUser:
+        break;
+      case FacebookLoginStatus.error:
+        displayError("Facebook Error", "Please try again.", "OK");
+        break;
+    }
+  }
+
+  void displayError(title, message, buttonText){
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return AlertDialog(
+          title: new Text(title),
+          content: new Text(message),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text(buttonText),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void promptUnverified({user: FirebaseUser}){
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return AlertDialog(
+          title: new Text("Unverified Email"),
+          content: new Text("Check your email for a verification link. Then come back and try again."),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text("Resend Email"),
+              onPressed: () {
+                user.sendEmailVerification();
+              },
+            ),
+            new FlatButton(
+              child: new Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
