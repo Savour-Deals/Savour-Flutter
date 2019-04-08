@@ -1,11 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/login/login.dart';
-import 'package:savour_deals_flutter/tab.dart';
+import 'package:savour_deals_flutter/pages/tab.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 
 void main() async { 
