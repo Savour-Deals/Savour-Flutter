@@ -8,14 +8,14 @@ public class SwiftGeofirePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
 
     var geoFireRef:DatabaseReference?
-    var geoFire:GeoFire?
-    var circleQuery: GFCircleQuery?
+    var geoFire:GeoFire? 
+    var circleQuery: GFCircleQuery!
     var listening = false
     private var eventSink: FlutterEventSink?
     
     public static func register(with registrar: FlutterPluginRegistrar) {//This registers our streams and main messenger
         let channel = FlutterMethodChannel(name: "geofire", binaryMessenger: registrar.messenger())
-        let stream_onEvent = FlutterEventChannel(name: "geofire_onEvent", binaryMessenger: registrar.messenger())
+        let stream_onEvent = FlutterEventChannel(name: "geofirestream", binaryMessenger: registrar.messenger())
         let instance = SwiftGeofirePlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
         stream_onEvent.setStreamHandler(instance)
@@ -27,11 +27,13 @@ public class SwiftGeofirePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         
         // Setup Geofire with path to locations database
         if(call.method.elementsEqual("GeoFire.start")){
+            if geoFireRef == nil{
+                let path = arguements!["path"] as! String
+                
+                geoFireRef = Database.database().reference().child(path)
+                geoFire = GeoFire(firebaseRef: geoFireRef!)
+            }
 
-            let path = arguements!["path"] as! String
-            
-            geoFireRef = Database.database().reference().child(path)
-            geoFire = GeoFire(firebaseRef: geoFireRef!)
             result(true)
         }
         // Put location entry in database
@@ -104,14 +106,14 @@ public class SwiftGeofirePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         }
         //setup Query with passed in location and a radius
         if(call.method.elementsEqual("queryAtLocation")){
-            
-            let lat = arguements!["lat"] as! Double
-            let lng = arguements!["lng"] as! Double
-            let radius = arguements!["radius"] as! Double
-            
-            let location:CLLocation = CLLocation(latitude: CLLocationDegrees(lat), longitude: CLLocationDegrees(lng))
-            
-            circleQuery = geoFire?.query(at: location, withRadius: radius)
+            if circleQuery == nil{
+                let lat = arguements!["lat"] as! Double
+                let lng = arguements!["lng"] as! Double
+                let radius = arguements!["radius"] as! Double
+                
+                let location:CLLocation = CLLocation(latitude: CLLocationDegrees(lat), longitude: CLLocationDegrees(lng))
+                circleQuery = geoFire?.query(at: location, withRadius: radius)
+            }//otherwise it is already setup!
             result(true)
         }
         // If Query exists, update query location and radius
@@ -121,6 +123,7 @@ public class SwiftGeofirePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             let radius = arguements!["radius"] as! Double
             let location:CLLocation = CLLocation(latitude: CLLocationDegrees(lat), longitude: CLLocationDegrees(lng))
             circleQuery!.center = location
+            circleQuery!.radius = radius
             result(true)
         }
     }
@@ -129,20 +132,28 @@ public class SwiftGeofirePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         self.eventSink = eventSink
         if !listening{
             listening = true
-            _ = circleQuery?.observe(.keyEntered, with: { (key: String!, location: CLLocation!) in
+            circleQuery?.observe(.keyEntered, with: { (key,location) in
                 //key entered, send message as JSON to dart
-                let data: [String:AnyObject] = ["key": key, "lat": location.latitude, "long": location.longitude, "event": "ENTERED"]
-                let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
-                print(jsonData)
-                self.eventSink?(jsonData)
+                do{
+                    let data: [String:Any] = ["key": key, "lat": location.coordinate.latitude, "long": location.coordinate.longitude, "event": "ENTERED"]
+                    let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
+                    print(jsonData)
+                    self.eventSink?(jsonData)
+                }catch{
+                    //Catch This
+                }
             })
-            _ = circleQuery?.observe(.keyExited, with: { (key: String!, location: CLLocation!) in
+            circleQuery?.observe(.keyExited) { (key,location) in
                 //key exited, send message as JSON to dart
-                let data: [String:AnyObject] = ["key": key, "lat": String(location.latitude), "long": String(location.longitude), "event": "EXITED"]
-                let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
-                print(jsonData)
-                self.eventSink?(jsonData)
-            })
+                do{
+                    let data: [String:Any] = ["key": key, "lat": location.coordinate.latitude, "long": location.coordinate.longitude, "event": "EXITED"]
+                    let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
+                    print(jsonData)
+                    self.eventSink?(jsonData)
+                }catch{
+                    //Catch This
+                }
+            }
         }
         return nil
     }
