@@ -47,6 +47,4 @@ class Vendor {
         description =  snapshot.value["description"],
         lat = _lat,
         long = _long;
-
-
 }

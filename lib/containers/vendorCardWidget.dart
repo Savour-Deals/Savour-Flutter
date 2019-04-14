@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
+import 'package:savour_deals_flutter/themes/theme.dart';
 
 class VendorCard extends StatefulWidget {
   VendorCard(this.vendor, this.location);
@@ -33,23 +34,26 @@ class _VendorCardState extends State<VendorCard> {
                 ),
               ),
               child: Container(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withOpacity(0.6),
               ),
             ),
-            Column(
-              children: <Widget>[
-                Text(
+            Center(
+              child: ListTile(
+                title: Text(
                   widget.vendor.name,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 25,
                     fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 ),
-                Text(
-                  widget.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude).toStringAsFixed(1)
+                subtitle: Text(
+                  widget.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude).toStringAsFixed(1) + " Miles Away", 
+                  style: whiteText,
+                  textAlign: TextAlign.center,
                 ),
-              ],
+              ),
             )
           ],
         ),

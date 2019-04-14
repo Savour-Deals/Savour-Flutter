@@ -30,6 +30,7 @@ dependencies:
   simple_permissions: ^0.1.9
   firebase_database: ^2.0.2
   latlong: ^0.6.1
+  url_launcher: ^5.0.2
 
 dev_dependencies:
   flutter_test:

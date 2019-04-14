@@ -46,10 +46,12 @@ class _VendorsPageState extends State<VendorsPageWidget> {
       });
       //Stream location and update query
       geolocator.getPositionStream(locationOptions).listen((Position position) async {
-        setState(() {
-          currentLocation = position;
-        });
-        geo.updateLocation(position.latitude, position.longitude, 80.0);
+        if (this.mounted){
+          setState(() {
+            currentLocation = position;
+          });
+          geo.updateLocation(position.latitude, position.longitude, 80.0);
+        }
       });
     }
   }
@@ -64,6 +66,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           Vendor newVendor = Vendor.fromSnapshot(event.snapshot, lat, long);
           if (!vendors.contains(newVendor)) {
             vendors.add(newVendor);
+            vendors.sort((v1,v2) => v1.distanceMilesFrom(lat, long).compareTo(v2.distanceMilesFrom(lat, long)));
           }
         })
       });
