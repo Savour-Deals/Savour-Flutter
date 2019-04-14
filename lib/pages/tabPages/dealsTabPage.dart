@@ -37,9 +37,6 @@ class _DealsPageState extends State<DealsPageWidget> {
     final _ = await SimplePermissions.requestPermission(Permission.AlwaysLocation);
     GeolocationStatus geolocationStatus = await geolocator.checkGeolocationPermissionStatus();
 
-
-
-
     if (geolocationStatus == GeolocationStatus.granted) {
       //get inital location and set up for geoquery
       currentLocation = await geolocator.getCurrentPosition();
@@ -52,9 +49,11 @@ class _DealsPageState extends State<DealsPageWidget> {
       });
       //Stream location and update query
       geolocator.getPositionStream(locationOptions).listen((Position position) async {
-        setState(() {
-          currentLocation = position;
-        });
+        if (this.mounted){
+          setState(() {
+            currentLocation = position;
+          });
+        }
         geo.updateLocation(position.latitude, position.longitude, 80.0);
       });
     }
@@ -70,18 +69,33 @@ class _DealsPageState extends State<DealsPageWidget> {
           Vendor newVendor = Vendor.fromSnapshot(vendorEvent.snapshot, lat, long);
           if (!vendors.contains(newVendor)){
             vendors.add(newVendor);
-            dealRef.orderByChild("vendor_id").equalTo(newVendor.key).onValue.listen((dealEvent) => {
-              setState(() {
-                Map<String, dynamic> dealDataMap = new Map<String, dynamic>.from(dealEvent.snapshot.value);
-                dealDataMap.forEach((key,data){
-                  var thisVendor = vendors.firstWhere((v)=> v.key == data["vendor_id"]);
-                  Deal newDeal = new Deal.fromMap(key, data, thisVendor);
-                  if(!deals.contains(newDeal)){
-                    deals.add(newDeal);
-                    deals.sort((d1,d2) => d1.vendor.distanceMilesFrom(lat, long).compareTo(d2.vendor.distanceMilesFrom(lat, long)));
-                  }
+            dealRef.orderByChild("vendor_id").equalTo(newVendor.key).onValue.listen((dealEvent) {
+              if (this.mounted){
+                setState(() {
+                  Map<String, dynamic> dealDataMap = new Map<String, dynamic>.from(dealEvent.snapshot.value);
+                  dealDataMap.forEach((key,data){
+                    var thisVendor = vendors.firstWhere((v)=> v.key == data["vendor_id"]);
+                    Deal newDeal = new Deal.fromMap(key, data, thisVendor);
+                    var idx = deals.indexWhere((d1) => d1.key == newDeal.key);
+                    if(idx<0){//add newDeal if it doesnt exit
+                      deals.add(newDeal);
+                      deals.sort((d1,d2) {
+                        if(d1.isActive() == d2.isActive()){
+                          return d1.vendor.distanceMilesFrom(lat, long).compareTo(d2.vendor.distanceMilesFrom(lat, long));
+                        }else{
+                          if(d1.isActive()){
+                            return -1;
+                          }
+                          return 1;
+                        }
+                      });
+                    }else{//otherwise, update the deal
+                      deals[idx] = newDeal;
+                      deals.sort((d1,d2) => d1.vendor.distanceMilesFrom(lat, long).compareTo(d2.vendor.distanceMilesFrom(lat, long)));
+                    }
+                  });
                 });
-              })
+              }
             });
           }
         })
@@ -109,10 +123,10 @@ class _DealsPageState extends State<DealsPageWidget> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => DealPageWidget(deals[position])),
+                  builder: (context) => DealPageWidget(deals[position], currentLocation)),
               );
             },
-            child: DealCard(deals[position], currentLocation)
+            child: getCard(deals[position])
           );
         },
         itemCount: deals.length,
@@ -122,5 +136,12 @@ class _DealsPageState extends State<DealsPageWidget> {
         child: CircularProgressIndicator()
       );
     }
+  }
+
+  Widget getCard(Deal deal){
+    if (deal.isLive()){
+      return DealCard(deal, currentLocation);
+    }
+    return Container();
   }
 }

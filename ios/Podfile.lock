@@ -107,6 +107,8 @@ PODS:
     - Flutter
   - simple_permissions (0.0.1):
     - Flutter
+  - url_launcher (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
@@ -119,6 +121,7 @@ DEPENDENCIES:
   - google_api_availability (from `.symlinks/plugins/google_api_availability/ios`)
   - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
   - simple_permissions (from `.symlinks/plugins/simple_permissions/ios`)
+  - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -160,6 +163,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/permission_handler/ios"
   simple_permissions:
     :path: ".symlinks/plugins/simple_permissions/ios"
+  url_launcher:
+    :path: ".symlinks/plugins/url_launcher/ios"
 
 SPEC CHECKSUMS:
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
@@ -188,6 +193,7 @@ SPEC CHECKSUMS:
   nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
   permission_handler: 047f11d44db785922214783da5f7a3cc8874c843
   simple_permissions: a6834dbad830eee541e62be161f96c75121dc4ab
+  url_launcher: 0067ddb8f10d36786672aa0722a21717dba3a298
 
 PODFILE CHECKSUM: a182732193e6790303f39095277fce3e22df1dcd
 
