@@ -12,6 +12,14 @@
 ///       - asset: fonts/SavourIcons.ttf
 ///
 /// 
+/// * Web Symbols, Copyright (c) 2011 by Just Be Nice studio. All rights reserved.
+///         Author:    Just Be Nice studio
+///         License:   SIL (http://scripts.sil.org/OFL)
+///         Homepage:  http://www.justbenicestudio.com/
+/// * Font Awesome, Copyright (C) 2016 by Dave Gandy
+///         Author:    Dave Gandy
+///         License:   SIL ()
+///         Homepage:  http://fortawesome.github.com/Font-Awesome/
 ///
 import 'package:flutter/widgets.dart';
 
@@ -30,4 +38,8 @@ class SavourIcons {
   static const IconData icons8_small_business = const IconData(0xe807, fontFamily: _kFontFam);
   static const IconData icons8_user_male_circle_filled = const IconData(0xe808, fontFamily: _kFontFam);
   static const IconData icons8_user_male_circle = const IconData(0xe809, fontFamily: _kFontFam);
+  static const IconData heart = const IconData(0xe80a, fontFamily: _kFontFam);
+  static const IconData heart_empty = const IconData(0xe80b, fontFamily: _kFontFam);
+  static const IconData circle = const IconData(0xf111, fontFamily: _kFontFam);
+  static const IconData circle_thin = const IconData(0xf1db, fontFamily: _kFontFam);
 }

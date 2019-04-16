@@ -132,34 +132,32 @@ public class SwiftGeofirePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         self.eventSink = eventSink
         if !listening{
             listening = true
-            circleQuery?.observe(.keyEntered, with: { (key,location) in
-                //key entered, send message as JSON to dart
+            circleQuery?.observe(.keyEntered, with: { (key, location) in
                 do{
                     let data: [String:Any] = ["key": key, "lat": location.coordinate.latitude, "long": location.coordinate.longitude, "event": "ENTERED"]
                     let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
                     print(jsonData)
                     self.eventSink?(jsonData)
                 }catch{
-                    let data: [String:Any] = ["error": "DBError", "event": "ERROR"];
-                    let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
-                    print(jsonData)
-                    self.eventSink?(jsonData)
+//                    let data: [String:Any] = ["error": "DBError", "event": "ERROR"];
+//                    let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
+//                    print(jsonData)
+                    self.eventSink?("ERROR")
                 }
             })
-            circleQuery?.observe(.keyExited) { (key,location) in
-                //key exited, send message as JSON to dart
+            circleQuery?.observe(.keyExited, with: { (key, location) in
                 do{
                     let data: [String:Any] = ["key": key, "lat": location.coordinate.latitude, "long": location.coordinate.longitude, "event": "EXITED"]
                     let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
                     print(jsonData)
                     self.eventSink?(jsonData)
                 }catch{
-                    let data: [String:Any] = ["error": "DBError", "event": "ERROR"];
-                    let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
-                    print(jsonData)
-                    self.eventSink?(jsonData)
+//                    let data: [String:Any] = ["error": "DBError", "event": "ERROR"];
+//                    let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
+//                    print(jsonData)
+                    self.eventSink?("ERROR")
                 }
-            }
+            })
         }
         return nil
     }

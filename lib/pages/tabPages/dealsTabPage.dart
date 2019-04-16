@@ -24,6 +24,7 @@ class _DealsPageState extends State<DealsPageWidget> {
 
   List<Vendor> vendors = [];
   List<Deal> deals = [];
+  Map<String,String> favorites = Map();
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _DealsPageState extends State<DealsPageWidget> {
     geo.initialize("Vendors_Location");
     final _ = await SimplePermissions.requestPermission(Permission.AlwaysLocation);
     GeolocationStatus geolocationStatus = await geolocator.checkGeolocationPermissionStatus();
+    final user = await FirebaseAuth.instance.currentUser();
 
     if (geolocationStatus == GeolocationStatus.granted) {
       //get inital location and set up for geoquery
@@ -55,6 +57,26 @@ class _DealsPageState extends State<DealsPageWidget> {
           });
         }
         geo.updateLocation(position.latitude, position.longitude, 80.0);
+      });
+      FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").onValue.listen((datasnapshot) {
+        if (this.mounted){
+          if (datasnapshot.snapshot.value != null) {
+            setState(() {
+              favorites = new Map<String, String>.from(datasnapshot.snapshot.value);
+              for (var deal in deals){
+                if (favorites.containsKey(deal.key)){
+                  deal.favorited = true;
+                }else{
+                  deal.favorited = false;
+                }
+              }
+            });
+          }else{
+            setState(() {
+              loaded = true;
+            });
+          }
+        }
       });
     }
   }
@@ -76,6 +98,7 @@ class _DealsPageState extends State<DealsPageWidget> {
                   dealDataMap.forEach((key,data){
                     var thisVendor = vendors.firstWhere((v)=> v.key == data["vendor_id"]);
                     Deal newDeal = new Deal.fromMap(key, data, thisVendor);
+                    newDeal.favorited = favorites.containsKey(newDeal.key);
                     var idx = deals.indexWhere((d1) => d1.key == newDeal.key);
                     if(idx<0){//add newDeal if it doesnt exit
                       deals.add(newDeal);
@@ -116,6 +139,7 @@ class _DealsPageState extends State<DealsPageWidget> {
   Widget build(BuildContext context) {
     if (deals.length > 0){
       return ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics (),
         itemBuilder: (context, position) {
           return GestureDetector(
             onTap: () {
