@@ -11,7 +11,7 @@ class Deal {
   Vendor vendor;
   int start;
   int end;
-  bool favorited;
+  bool favorited = false;
   bool redeemed;
   int redeemedTime;
   String type;
@@ -101,19 +101,6 @@ class Deal {
     }
   }
 
-  String getActiveBubbles(){
-    var dots = "";
-    var daysIdxs = [6,0,1,2,3,4,5];
-    for (var day in daysIdxs){
-      if (activeDays[day]){
-        dots = dots + "• ";
-      }else{
-        dots = dots + "◦ ";
-      }
-    }  
-    return dots;
-  }
-
   String countdownString(){
     final now = DateTime.now();
     final startOfToday = new DateTime(now.year, now.month, now.day);
@@ -155,13 +142,6 @@ class Deal {
           }
         }
       }
-      FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").child(key).onValue.listen((datasnapshot) {
-        if (datasnapshot.snapshot.value != null) {
-          favorited = true;
-        }else{
-          favorited = false;
-        }
-      });
     });
     key = snapshot.key;
     vendor = _vendor;
