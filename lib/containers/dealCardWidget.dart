@@ -81,10 +81,10 @@ class _DealCardState extends State<DealCard> {
           ),
           Row(
             children: <Widget>[
-              // Padding(
-                // padding: const EdgeInsets.only(left: 10.0),
-                 getActiveBubbles(),
-              // ),
+              Padding(
+                padding: const EdgeInsets.only(left: 7.0),
+                child: getActiveBubbles(),
+              ),
               Expanded(
                 child: Container(
                 ),
@@ -164,7 +164,6 @@ class _DealCardState extends State<DealCard> {
       );
     }
     return new Row(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: list
     );
   }
