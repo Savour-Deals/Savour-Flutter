@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
@@ -24,18 +26,23 @@ class _VendorCardState extends State<VendorCard> {
         child: Stack(
           children: <Widget>[
             Container(
-              decoration: new BoxDecoration(
-                color: Colors.black,
-                image: new DecorationImage(
-                  image: new NetworkImage(
-                    widget.vendor.photo,
-                  ),
-                  fit: BoxFit.cover,
+              width: MediaQuery.of(context).size.width,
+              child: TransitionToImage(
+                image: AdvancedNetworkImage(
+                  widget.vendor.photo,
+                  useDiskCache: true,
+                  cacheRule: CacheRule(maxAge: const Duration(days: 1)),
                 ),
+                fit: BoxFit.cover,
+                loadingWidget: Container(),  
+                placeholder: Container(),                  
               ),
-              child: Container(
+              decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.6),
               ),
+            ),
+            Container(
+              color: Colors.black.withOpacity(0.6),
             ),
             Center(
               child: ListTile(

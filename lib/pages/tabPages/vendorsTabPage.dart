@@ -83,6 +83,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   Widget build(BuildContext context) {
     if (vendors.length > 0) {
       return ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics (),
         itemBuilder: (context, position) {
           return GestureDetector(
             onTap: () {
