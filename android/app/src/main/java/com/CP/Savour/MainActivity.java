@@ -1,4 +1,4 @@
-package com.example.savour_deals_flutter;
+package com.CP.Savour;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

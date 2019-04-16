@@ -122,7 +122,7 @@ class Deal {
     final startOfEndDay = new DateTime(endDateTime.year, endDateTime.month, endDateTime.day);
     var daysLeft = startOfEndDay.difference(startOfToday).inDays; //approximate days left by the start of today to start of the last day live
     if ((startDateTime.hour == endDateTime.hour && startDateTime.minute == endDateTime.minute) || (now.millisecondsSinceEpoch <= end && now.millisecondsSinceEpoch >= start)){
-      if (daysLeft > 700){
+      if (daysLeft > 7){
         return "";//return empty string if more than a week left
       }else if (daysLeft > 1){
         return daysLeft.toString() + " days left";
