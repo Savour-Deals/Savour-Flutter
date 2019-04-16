@@ -20,7 +20,7 @@ class _DealsPageState extends State<DealsPageWidget> {
   var locationOptions = LocationOptions(accuracy: LocationAccuracy.high, distanceFilter: 10); 
   Position currentLocation;
   Permission permission;
-  bool first = true;
+  bool loaded = false;
 
   List<Vendor> vendors = [];
   List<Deal> deals = [];
@@ -132,9 +132,13 @@ class _DealsPageState extends State<DealsPageWidget> {
         itemCount: deals.length,
       );
     }else {
-      return Center (
-        child: CircularProgressIndicator()
-      );
+      if (loaded){
+        return Center(child: Text("No deals nearby!"));
+      }else{
+        return Center (
+          child: CircularProgressIndicator()
+        );
+      }
     }
   }
 

@@ -99,7 +99,7 @@ public class SwiftGeofirePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
                     
                     result(param)
                     
-                    print("GeoFire does not contain a location for \"firebase-hq\"")
+                    print("GeoFire does not contain a location for \(id)")
                 }
             }
             
@@ -140,7 +140,10 @@ public class SwiftGeofirePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
                     print(jsonData)
                     self.eventSink?(jsonData)
                 }catch{
-                    //Catch This
+                    let data: [String:Any] = ["error": "DBError", "event": "ERROR"];
+                    let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
+                    print(jsonData)
+                    self.eventSink?(jsonData)
                 }
             })
             circleQuery?.observe(.keyExited) { (key,location) in
@@ -151,7 +154,10 @@ public class SwiftGeofirePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
                     print(jsonData)
                     self.eventSink?(jsonData)
                 }catch{
-                    //Catch This
+                    let data: [String:Any] = ["error": "DBError", "event": "ERROR"];
+                    let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
+                    print(jsonData)
+                    self.eventSink?(jsonData)
                 }
             }
         }

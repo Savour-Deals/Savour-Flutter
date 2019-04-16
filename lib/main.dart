@@ -58,9 +58,12 @@ class _SavourDealsState extends State<SavourApp> {
     if (user.isEmailVerified){
       //user email is verified
       return true;
-    }else if(user.providerData[0].providerId == "facebook.com"){
-      //user logged in w/ FB
-      return true;
+    }
+    for (var provider in user.providerData){
+      if(provider.providerId == "facebook.com"){
+        //user logged in w/ FB
+        return true;
+      }
     }
     return false;
   }

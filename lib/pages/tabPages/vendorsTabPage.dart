@@ -15,7 +15,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   final geo = Geofire();
   var locationOptions = LocationOptions(accuracy: LocationAccuracy.high, distanceFilter: 10);
   Permission permission;
-  bool first = true;
+  bool loaded = false;
   Position currentLocation;
 
 
@@ -29,10 +29,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   void initPlatform() async {
     //Intializing geoFire
     geo.initialize("Vendors_Location");
-    final _ =
-        await SimplePermissions.requestPermission(Permission.AlwaysLocation);
-    GeolocationStatus geolocationStatus =
-        await geolocator.checkGeolocationPermissionStatus();
+    GeolocationStatus geolocationStatus = await geolocator.checkGeolocationPermissionStatus();
 
     if (geolocationStatus == GeolocationStatus.granted) {
       //get inital location and set up for geoquery
@@ -101,8 +98,15 @@ class _VendorsPageState extends State<VendorsPageWidget> {
         },
         itemCount: vendors.length,
       );
-    } else {
-      return Center(child: CircularProgressIndicator());
+    }else {
+      if (loaded){
+        return Center(child: Text("No vendors nearby!"));
+      }else{
+        return Center (
+          child: CircularProgressIndicator()
+        );
+      }
+
     }
   }
 }
