@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/themes/pulsator.dart';
@@ -89,8 +90,9 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
                     shape: BoxShape.circle,
                     image: new DecorationImage(
                       fit: BoxFit.cover,
-                      image: new NetworkImage(
+                      image: new AdvancedNetworkImage(
                           widget.deal.photo,
+                          useDiskCache: true,
                       ),
                     )
                   )
