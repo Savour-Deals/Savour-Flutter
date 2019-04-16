@@ -52,20 +52,22 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
         }
       });
       FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").onValue.listen((datasnapshot) {
-        if (datasnapshot.snapshot.value != null) {
-          var favorites = new Map<String, String>.from(datasnapshot.snapshot.value);
-          setState(() {
-            deals.retainWhere((d) => favorites.containsKey(d.key));
-          });
-          for (var favorite in favorites.keys){
-            if(deals.indexWhere((d)=> d.key == favorite) < 0){
-              createFavorite(favorite);
+        if (this.mounted){
+          if (datasnapshot.snapshot.value != null) {
+            var favorites = new Map<String, String>.from(datasnapshot.snapshot.value);
+            setState(() {
+              deals.retainWhere((d) => favorites.containsKey(d.key));
+            });
+            for (var favorite in favorites.keys){
+              if(deals.indexWhere((d)=> d.key == favorite) < 0){
+                createFavorite(favorite);
+              }
             }
+          }else{
+            setState(() {
+              loaded = true;
+            });
           }
-        }else{
-          setState(() {
-            loaded = true;
-          });
         }
       });
     }
