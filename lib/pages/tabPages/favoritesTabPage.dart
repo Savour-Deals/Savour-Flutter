@@ -20,6 +20,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
   Position currentLocation;
   Permission permission;
   bool first = true;
+  bool loaded = false;
 
   List<Deal> deals = [];
   Map<String,Vendor> vendors = Map();
@@ -37,7 +38,6 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
     final user = await FirebaseAuth.instance.currentUser();
     favoritesRef = FirebaseDatabase().reference()..child("Users").child(user.uid).child("favorites");
 
-    final _ = await SimplePermissions.requestPermission(Permission.AlwaysLocation);
     GeolocationStatus geolocationStatus = await geolocator.checkGeolocationPermissionStatus();
 
     if (geolocationStatus == GeolocationStatus.granted) {
@@ -60,6 +60,10 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
               createFavorite(favorite);
             }
           }
+        }else{
+          setState(() {
+            loaded = true;
+          });
         }
       });
     }
@@ -128,9 +132,14 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
         itemCount: deals.length,
       );
     }else {
-      return Center (
-        child: CircularProgressIndicator()
-      );
+      if (loaded){
+        return Center(child: Text("No favorites to show!"));
+      }else{
+        return Center (
+          child: CircularProgressIndicator()
+        );
+      }
+
     }
   }
 
