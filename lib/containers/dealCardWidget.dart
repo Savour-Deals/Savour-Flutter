@@ -1,7 +1,14 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:savour_deals_flutter/containers/likeButtonWidget.dart';
+import 'package:savour_deals_flutter/icons/savour_icons_icons.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
+
+
 
 class DealCard extends StatefulWidget {
   DealCard(this.deal, this.location);
@@ -29,19 +36,27 @@ class _DealCardState extends State<DealCard> {
             borderRadius: BorderRadius.only(topLeft: Radius.circular(15.0), topRight: Radius.circular(15.0)),
             child: Stack(
               children: <Widget>[
-                SizedBox(
-                  height: 200.0,
-                  child: Container(
-                    child: Container(),
-                    decoration: new BoxDecoration(
-                      image: new DecorationImage(
-                        image: new NetworkImage(
-                          widget.deal.photo,
-                        ),
-                        fit: BoxFit.cover,
-                      ),
+                Container(
+                  height: 200,
+                  width: MediaQuery.of(context).size.width,
+                  child: TransitionToImage(
+                    image: AdvancedNetworkImage(
+                      widget.deal.photo,
+                      useDiskCache: true,
+                      cacheRule: CacheRule(maxAge: const Duration(days: 1)),
                     ),
-                  )
+                    fit: BoxFit.cover,
+                    loadingWidget: Container(
+                      color: Colors.transparent,
+                      child: const Icon(Icons.local_dining, 
+                        color: Colors.black54,
+                        size: 150.0,
+                      ),
+                    ),                    
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey,
+                  ),
                 ),
                 inactiveWidget(),
                 countdownWidget(),
@@ -50,7 +65,7 @@ class _DealCardState extends State<DealCard> {
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10.0, top: 5.0),
-            child: Text(widget.deal.description, style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(widget.deal.description, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10.0, top: 5.0),
@@ -62,12 +77,25 @@ class _DealCardState extends State<DealCard> {
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10.0, top: 5.0),
-            child: Text("Su. Mo. Tu. We. Th. Fr. Sa.", style: TextStyle(color: SavourColorsMaterial.savourGreen)),
+            child: daysWidget(),
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10.0, bottom: 5.0),
-            child: Text(widget.deal.getActiveBubbles(), style: TextStyle(color: SavourColorsMaterial.savourGreen, fontSize: 35.0),),
+          Row(
+            children: <Widget>[
+              // Padding(
+                // padding: const EdgeInsets.only(left: 10.0),
+                 getActiveBubbles(),
+              // ),
+              Expanded(
+                child: Container(
+                ),
+              ),
+              Align(
+                alignment: FractionalOffset.bottomCenter,
+                child: LikeButton(widget.deal)
+              )
+            ],
           ),
+          
         ],
       ),
     );
@@ -91,6 +119,53 @@ class _DealCardState extends State<DealCard> {
         decoration: BoxDecoration(color: Colors.black38),
       ),
       widthFactor: 1.0,
+    );
+  }
+
+  Widget daysWidget(){
+    List<String> days= ["Su. ", "Mo. ", "Tu. ", "We. ", "Th. ", "Fr. ", "Sa. "];
+    List<Widget> list = new List<Widget>();
+    for(var day in days){
+        list.add(Container(
+          width: 25.0,
+          height: 15.0,
+          child: new AutoSizeText(
+                    day, 
+                    style: TextStyle(color: SavourColorsMaterial.savourGreen, fontSize: 150.0),
+                    minFontSize: 10,
+                    maxFontSize: 150.0,
+                    maxLines: 1,
+                  ),
+        ),
+      );
+    }
+    return new Row(children: list);
+  }
+
+  Widget getActiveBubbles(){
+    var daysIdxs = [6,0,1,2,3,4,5];
+    List<Widget> list = new List<Widget>();
+    for(var day in daysIdxs){
+      list.add(
+        Container(
+          width: 25.0,
+          alignment: Alignment.topCenter,
+          transform: Matrix4.translationValues(-0.0, -10.0, 0.0),
+          child: widget.deal.activeDays[day] ? 
+            Icon(SavourIcons.circle,
+              color: SavourColorsMaterial.savourGreen,
+              size: 10.0,
+            ):
+            Icon(SavourIcons.circle_thin,
+              color:  SavourColorsMaterial.savourGreen,
+              size: 10.0,
+            ),
+        ),
+      );
+    }
+    return new Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: list
     );
   }
 

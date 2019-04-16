@@ -51,10 +51,12 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
           });
         }
       });
-      FirebaseDatabase().reference()..child("Users").child(user.uid).child("favorites").onValue.listen((datasnapshot) {
+      FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").onValue.listen((datasnapshot) {
         if (datasnapshot.snapshot.value != null) {
           var favorites = new Map<String, String>.from(datasnapshot.snapshot.value);
-          deals.retainWhere((d) => favorites.containsKey(d.key));
+          setState(() {
+            deals.retainWhere((d) => favorites.containsKey(d.key));
+          });
           for (var favorite in favorites.keys){
             if(deals.indexWhere((d)=> d.key == favorite) < 0){
               createFavorite(favorite);
@@ -79,6 +81,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
           if (vendors.containsKey(vendorId)){
             setState(() {
               Deal newDeal = new Deal.fromSnapshot(dealEvent.snapshot, vendors[vendorId]);
+              newDeal.favorited = true;
               deals.add(newDeal);
               deals.sort((d1,d2) => d1.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(d2.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude)));
             });
@@ -91,6 +94,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
                   vendors[vendorId] = Vendor.fromSnapshot(vendorSnap, lat, long);
                   setState(() {
                     Deal newDeal = new Deal.fromSnapshot(dealEvent.snapshot, vendors[vendorId]);
+                    newDeal.favorited = true;
                     deals.add(newDeal);
                     deals.sort((d1,d2) => d1.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(d2.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude)));
                   });
@@ -116,6 +120,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
   Widget build(BuildContext context) {
     if (deals.length > 0){
       return ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics (),
         itemBuilder: (context, position) {
           return GestureDetector(
             onTap: () {
