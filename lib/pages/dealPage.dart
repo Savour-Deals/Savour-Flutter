@@ -5,6 +5,8 @@ import 'package:savour_deals_flutter/themes/pulsator.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/vendorPage.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+
 
 
 class DealPageWidget extends StatefulWidget {
@@ -76,13 +78,13 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
                     (!widget.deal.isActive() || widget.deal.redeemed) ? Colors.red : SavourColorsMaterial.savourGreen,
                   ),
                   child: new SizedBox(
-                    width: MediaQuery.of(context).size.width*0.9,
-                    height: MediaQuery.of(context).size.width*0.9,
+                    width: MediaQuery.of(context).size.height*0.45,
+                    height: MediaQuery.of(context).size.height*0.45,
                   ),
                 ),
                 Container(
-                  width: MediaQuery.of(context).size.width*0.6,
-                  height: MediaQuery.of(context).size.width*0.6,
+                  width: MediaQuery.of(context).size.height*0.3,
+                  height: MediaQuery.of(context).size.height*0.3,
                   decoration: new BoxDecoration(
                     shape: BoxShape.circle,
                     image: new DecorationImage(
