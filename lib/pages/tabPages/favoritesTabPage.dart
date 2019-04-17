@@ -75,7 +75,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
 
 
   void createFavorite(String favoriteKey) async {
-    print("deal favorited favoritesPage: " + favoriteKey);
+    // print("deal added favoritesPage: " + favoriteKey);
     if (this.mounted){
       dealRef.child(favoriteKey).onValue.listen((dealEvent) async {
         if(dealEvent.snapshot.value != null){
@@ -85,7 +85,16 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
               Deal newDeal = new Deal.fromSnapshot(dealEvent.snapshot, vendors[vendorId]);
               newDeal.favorited = true;
               deals.add(newDeal);
-              deals.sort((d1,d2) => d1.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(d2.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude)));
+              deals.sort((d1,d2) {
+                if(d1.isActive() && d2.isActive()){
+                  return d1.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(d2.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude));
+                }else{
+                  if(d1.isActive()){
+                    return -1;
+                  }
+                  return 1;
+                }
+              });
             });
           }else{
             geo.getLocation(vendorId).then((result) {
@@ -98,7 +107,16 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
                     Deal newDeal = new Deal.fromSnapshot(dealEvent.snapshot, vendors[vendorId]);
                     newDeal.favorited = true;
                     deals.add(newDeal);
-                    deals.sort((d1,d2) => d1.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(d2.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude)));
+                    deals.sort((d1,d2) {
+                      if(d1.isActive() && d2.isActive()){
+                        return d1.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(d2.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude));
+                      }else{
+                        if(d1.isActive()){
+                          return -1;
+                        }
+                        return 1;
+                      }
+                    });
                   });
                 });
               }
@@ -122,8 +140,11 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Savour Deals"),
+        title: Text("Savour Deals",
+          style: whiteTitle,
+        ),
         brightness: Brightness.dark,
+        backgroundColor: SavourColorsMaterial.savourGreen,
       ),
       body: bodyWidget(),
     );
@@ -132,6 +153,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
   Widget bodyWidget(){
     if (deals.length > 0){
       return ListView.builder(
+        padding: EdgeInsets.all(0.0),
         physics: const AlwaysScrollableScrollPhysics (),
         itemBuilder: (context, position) {
           return GestureDetector(
@@ -139,7 +161,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
               print(deals[position].key + " clicked");
               Navigator.push(
                 context,
-                MaterialPageRoute(
+                platformPageRoute(
                   builder: (context) => DealPageWidget(deals[position], currentLocation)),
               );
             },
@@ -153,7 +175,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
         return Center(child: Text("No favorites to show!"));
       }else{
         return Center (
-          child: CircularProgressIndicator()
+          child: PlatformCircularProgressIndicator()
         );
       }
     }

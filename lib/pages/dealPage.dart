@@ -1,5 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/themes/pulsator.dart';
@@ -53,6 +56,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         title: Text("Deal Page",
           style: whiteTitle,
         ),
+        backgroundColor: SavourColorsMaterial.savourGreen,
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -118,7 +122,8 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => VendorPageWidget(widget.deal.vendor)),
+                      builder: (context) => VendorPageWidget(widget.deal.vendor)
+                    ),
                   );
                 },
               ),
@@ -195,7 +200,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
       context: context,
       builder: (BuildContext context) {
         // return object of type Dialog
-        return AlertDialog(
+        return PlatformAlertDialog(
           title: new Text("Vendor Approval"),
           content: new Text("This deal is intended for one person only.\n\nShow this message to the vendor to redeem your coupon.\n\nThe deal is not guaranteed if the vendor does not see this message."),
           actions: <Widget>[

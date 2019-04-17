@@ -61,9 +61,13 @@ class _VendorsPageState extends State<VendorsPageWidget> {
       vendorRef.child(data["key"]).onValue.listen((event) => {
         setState(() {
           Vendor newVendor = Vendor.fromSnapshot(event.snapshot, lat, long);
-          if (!vendors.contains(newVendor)) {
+          var idx = vendors.indexWhere((d) => d.key == newVendor.key);
+          if (idx < 0) {//Dont have vendor yet
             vendors.add(newVendor);
-            vendors.sort((v1,v2) => v1.distanceMilesFrom(lat, long).compareTo(v2.distanceMilesFrom(lat, long)));
+            vendors.sort((v1,v2) => v1.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(v2.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude)));
+          }else{//vendor present. Update vendor
+            vendors[idx] = newVendor;
+            vendors.sort((v1,v2) => v1.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(v2.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude)));
           }
         })
       });
@@ -83,8 +87,11 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Savour Deals"),
+        title: Text("Savour Deals",
+          style: whiteTitle,
+        ),
         brightness: Brightness.dark,
+        backgroundColor: SavourColorsMaterial.savourGreen,
       ),
       body: bodyWidget(),
     );
@@ -93,6 +100,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   Widget bodyWidget(){
     if (vendors.length > 0) {
       return ListView.builder(
+        padding: EdgeInsets.all(0.0),
         physics: const AlwaysScrollableScrollPhysics (),
         itemBuilder: (context, position) {
           return GestureDetector(
@@ -100,7 +108,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
               print(vendors[position].name + " clicked");
               Navigator.push(
                 context,
-                MaterialPageRoute(
+                platformPageRoute(
                   builder: (context) => VendorPageWidget(vendors[position])),
               );
             },
@@ -114,7 +122,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
         return Center(child: Text("No vendors nearby!"));
       }else{
         return Center (
-          child: CircularProgressIndicator()
+          child: PlatformCircularProgressIndicator()
         );
       }
     }

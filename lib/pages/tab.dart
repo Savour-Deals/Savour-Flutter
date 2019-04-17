@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/icons/savour_icons_icons.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
@@ -35,7 +34,6 @@ class _SavourTabPageState extends State<SavourTabPage> {
       bottomNavigationBar: BottomNavigationBar(
         onTap: onTabTapped, 
         currentIndex: _currentIndex, // this will be set when a new tab is tapped
-        // type: BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(
             icon: Icon(SavourIcons.icons8_price_tag_2,
