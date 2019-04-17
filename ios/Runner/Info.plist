@@ -84,6 +84,8 @@
 	<string>Savour needs your location to find all the restaurants near you!</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Savour needs your location to find all the restaurants near you!</string>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Savour needs your location to find all the restaurants near you!</string>
 </dict>

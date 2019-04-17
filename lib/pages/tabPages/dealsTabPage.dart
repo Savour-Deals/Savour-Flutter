@@ -103,8 +103,8 @@ class _DealsPageState extends State<DealsPageWidget> {
                     if(idx<0){//add newDeal if it doesnt exit
                       deals.add(newDeal);
                       deals.sort((d1,d2) {
-                        if(d1.isActive() == d2.isActive()){
-                          return d1.vendor.distanceMilesFrom(lat, long).compareTo(d2.vendor.distanceMilesFrom(lat, long));
+                        if(d1.isActive() && d2.isActive()){
+                          return d1.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(d2.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude));
                         }else{
                           if(d1.isActive()){
                             return -1;
@@ -114,7 +114,16 @@ class _DealsPageState extends State<DealsPageWidget> {
                       });
                     }else{//otherwise, update the deal
                       deals[idx] = newDeal;
-                      deals.sort((d1,d2) => d1.vendor.distanceMilesFrom(lat, long).compareTo(d2.vendor.distanceMilesFrom(lat, long)));
+                      deals.sort((d1,d2) {
+                        if(d1.isActive() && d2.isActive()){
+                          return d1.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(d2.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude));
+                        }else{
+                          if(d1.isActive()){
+                            return -1;
+                          }
+                          return 1;
+                        }
+                      });
                     }
                   });
                 });
@@ -139,17 +148,21 @@ class _DealsPageState extends State<DealsPageWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Savour Deals"),
+        title: Text("Savour Deals",
+          style: whiteTitle,
+        ),
         brightness: Brightness.dark,
+        backgroundColor: SavourColorsMaterial.savourGreen,
       ),
       body: bodyWidget(),
     );
   }
-
+  
   Widget bodyWidget(){
     if (deals.length > 0){
       return ListView.builder(
         physics: const AlwaysScrollableScrollPhysics (),
+        padding: EdgeInsets.all(0.0),
         itemBuilder: (context, position) {
           return GestureDetector(
             onTap: () {
@@ -157,7 +170,8 @@ class _DealsPageState extends State<DealsPageWidget> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => DealPageWidget(deals[position], currentLocation)),
+                  builder: (context) => DealPageWidget(deals[position], currentLocation),
+                ),
               );
             },
             child: getCard(deals[position])
