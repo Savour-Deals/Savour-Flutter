@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
+final CupertinoThemeData savourCupertinoThemeData = new CupertinoThemeData(
+  brightness: Brightness.dark,
+  primaryColor: SavourColorsMaterial.savourGreen,
+  // barBackgroundColor: SavourColorsMaterial.savourGreen,
+);
+
 final ThemeData savourMaterialThemeData = new ThemeData(
   brightness: Brightness.light,
   primarySwatch: SavourColorsMaterial.savourGreen,
@@ -30,12 +36,6 @@ class SavourColorsMaterial {
     },
   );
 }
-
-// final CupertinoThemeData savourCupertinoThemeData = new CupertinoThemeData(
-//   barBackgroundColor: Color.fromRGBO(73, 171, 170, 1.0),
-//   primaryColor: Color.fromRGBO(73, 171, 170, 1.0),
-//   brightness: Brightness.light,
-// );
 
 final TextStyle whiteTitle = new TextStyle(
   color: Colors.white,

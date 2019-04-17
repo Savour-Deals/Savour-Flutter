@@ -81,6 +81,16 @@ class _VendorsPageState extends State<VendorsPageWidget> {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Savour Deals"),
+        brightness: Brightness.dark,
+      ),
+      body: bodyWidget(),
+    );
+  }
+
+  Widget bodyWidget(){
     if (vendors.length > 0) {
       return ListView.builder(
         physics: const AlwaysScrollableScrollPhysics (),
@@ -107,7 +117,6 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           child: CircularProgressIndicator()
         );
       }
-
     }
   }
 }
