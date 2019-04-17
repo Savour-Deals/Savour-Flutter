@@ -137,6 +137,16 @@ class _DealsPageState extends State<DealsPageWidget> {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Savour Deals"),
+        brightness: Brightness.dark,
+      ),
+      body: bodyWidget(),
+    );
+  }
+
+  Widget bodyWidget(){
     if (deals.length > 0){
       return ListView.builder(
         physics: const AlwaysScrollableScrollPhysics (),

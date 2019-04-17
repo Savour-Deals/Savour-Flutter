@@ -120,6 +120,16 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Savour Deals"),
+        brightness: Brightness.dark,
+      ),
+      body: bodyWidget(),
+    );
+  }
+
+  Widget bodyWidget(){
     if (deals.length > 0){
       return ListView.builder(
         physics: const AlwaysScrollableScrollPhysics (),
@@ -146,7 +156,6 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
           child: CircularProgressIndicator()
         );
       }
-
     }
   }
 

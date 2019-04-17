@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/icons/savour_icons_icons.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
@@ -27,22 +28,6 @@ class _SavourTabPageState extends State<SavourTabPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title,
-          style: whiteTitle,
-        ),
-        actions: <Widget>[
-          FlatButton(
-            color: SavourColorsMaterial.savourGreen,
-            child: Text("Logout",
-            style: whiteTitle,
-            ),
-            onPressed: (){
-              _auth.signOut();
-            },
-          )
-        ],
-      ),
       body:  IndexedStack(
         index: _currentIndex,
         children: _children,
@@ -50,7 +35,7 @@ class _SavourTabPageState extends State<SavourTabPage> {
       bottomNavigationBar: BottomNavigationBar(
         onTap: onTabTapped, 
         currentIndex: _currentIndex, // this will be set when a new tab is tapped
-        type: BottomNavigationBarType.fixed,
+        // type: BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(
             icon: Icon(SavourIcons.icons8_price_tag_2,
