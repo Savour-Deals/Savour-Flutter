@@ -66,6 +66,8 @@ PODS:
     - Firebase/Database
     - Flutter
     - GeoFire
+  - flutter_statusbarcolor (0.0.1):
+    - Flutter
   - GeoFire (3.0.0):
     - Firebase/Database (~> 5.0)
   - geolocator (3.0.1):
@@ -116,9 +118,10 @@ DEPENDENCIES:
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_database (from `.symlinks/plugins/firebase_database/ios`)
-  - Flutter (from `.symlinks/flutter/ios-release`)
+  - Flutter (from `.symlinks/flutter/ios`)
   - flutter_facebook_login (from `.symlinks/plugins/flutter_facebook_login/ios`)
   - flutter_geofire (from `.symlinks/plugins/flutter_geofire/ios`)
+  - flutter_statusbarcolor (from `.symlinks/plugins/flutter_statusbarcolor/ios`)
   - geolocator (from `.symlinks/plugins/geolocator/ios`)
   - google_api_availability (from `.symlinks/plugins/google_api_availability/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
@@ -153,11 +156,13 @@ EXTERNAL SOURCES:
   firebase_database:
     :path: ".symlinks/plugins/firebase_database/ios"
   Flutter:
-    :path: ".symlinks/flutter/ios-release"
+    :path: ".symlinks/flutter/ios"
   flutter_facebook_login:
     :path: ".symlinks/plugins/flutter_facebook_login/ios"
   flutter_geofire:
     :path: ".symlinks/plugins/flutter_geofire/ios"
+  flutter_statusbarcolor:
+    :path: ".symlinks/plugins/flutter_statusbarcolor/ios"
   geolocator:
     :path: ".symlinks/plugins/geolocator/ios"
   google_api_availability:
@@ -188,6 +193,7 @@ SPEC CHECKSUMS:
   Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
   flutter_facebook_login: f1f88c32d5888d6b5f3301fd87cc7de26f02877e
   flutter_geofire: afdb697674098a0de9971583aaadd196337ca7bc
+  flutter_statusbarcolor: 8afb1071ed8c58be929f1e32b36c629771fd2259
   GeoFire: e3ae6f4be3f2466c3467ef6c1c203db3af935c59
   geolocator: 0b6c573899b9cf2ef523d98b5e300f2b8ebc9c1d
   google_api_availability: f07cd62cdd46ec432b95a702e35e558b817e05aa
