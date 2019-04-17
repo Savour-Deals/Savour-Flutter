@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 final CupertinoThemeData savourCupertinoThemeData = new CupertinoThemeData(
-  brightness: Brightness.dark,
+  brightness: Brightness.light,
   primaryColor: SavourColorsMaterial.savourGreen,
-  // barBackgroundColor: SavourColorsMaterial.savourGreen,
+  primaryContrastingColor: Colors.white,
+  barBackgroundColor: CupertinoColors.lightBackgroundGray.withOpacity(1),
 );
 
 final ThemeData savourMaterialThemeData = new ThemeData(

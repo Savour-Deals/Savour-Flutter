@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
@@ -10,11 +11,12 @@ class VendorPageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PlatformScaffold(
-      appBar: PlatformAppBar(
-        title: Text("Vendor Page",
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Deal Page",
           style: whiteTitle,
         ),
+        backgroundColor: SavourColorsMaterial.savourGreen,
       ),
       body: Column(
       ),

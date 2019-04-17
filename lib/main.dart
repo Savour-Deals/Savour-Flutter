@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
-import 'package:savour_deals_flutter/login/login.dart';
+import 'package:savour_deals_flutter/pages/login/login.dart';
 import 'package:savour_deals_flutter/pages/tab.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 
 void main() async { 
-  runApp(SavourApp()); }
+    // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+
+
+  runApp(SavourApp()); 
+}
 
 class SavourApp extends StatefulWidget {
   @override
@@ -27,7 +33,7 @@ class _SavourDealsState extends State<SavourApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Savour Deals',
-      theme: savourMaterialThemeData,
+      // theme: savourMaterialThemeData,
       debugShowCheckedModeBanner: false,
       home: _handleCurrentScreen(),
     );
