@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "864438367973",
+    "firebase_url": "https://savour-59557.firebaseio.com",
+    "project_id": "savour-59557",
+    "storage_bucket": "savour-59557.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:864438367973:android:101b73ffbcdd779f",
+        "android_client_info": {
+          "package_name": "com.CP.Savour"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "864438367973-p9vbpmvsg3qm8lkmn07s4o9lfdt9qrci.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.CP.Savour",
+            "certificate_hash": "cae4dbbf0a3d6f178c82737bed60959c70109c9c"
+          }
+        },
+        {
+          "client_id": "864438367973-rdu7mi99entunrsompqmif3a764b533v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.CP.Savour",
+            "certificate_hash": "609f1eddacf82670ab666b33fe6266d98ebd6475"
+          }
+        },
+        {
+          "client_id": "864438367973-5d2v5mq0erpg4n0nedhuaeo7659dgrqd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIPSIWVILBojj3-0vwbJrGYjUmrcyP8f0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "864438367973-5d2v5mq0erpg4n0nedhuaeo7659dgrqd.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "864438367973-81u3jtl4j3v2hnf7ti374chefanas3p9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.CP.Savour"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
