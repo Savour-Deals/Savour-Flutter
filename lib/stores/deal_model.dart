@@ -121,28 +121,26 @@ class Deal {
   }
 
   
-  Deal.fromSnapshot(DataSnapshot snapshot, Vendor _vendor) {
-    FirebaseAuth.instance.currentUser().then((FirebaseUser user) {
-      final uid = user.uid;
-      redeemed = false;
-      redeemedTime = 0;
-      if (snapshot.value["redeemed"] != null){
-        if (snapshot.value["redeemed"][uid] != null){//if there is a redemption time
-          var now = DateTime.now().millisecondsSinceEpoch;
-          var redeemedTime = snapshot.value["redeemed"][uid].toInt()*1000;//database may contain doubles from old code so round 
-          if (now-redeemedTime > 60*60*24*7*2) {
-              //If redeemed 2 weeks ago, allow user to use deal again - Should be changed in the future
-              final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
-              final ref = FirebaseDatabase().reference().child("Deals").child(key).child("redeemed");
-              ref.child(uid).remove();
-              ref.child(uid+randStr).set(redeemedTime/1000);
-          }else{
-              redeemed = true;
-              redeemedTime = redeemedTime;
-          }
+  Deal.fromSnapshot(DataSnapshot snapshot, Vendor _vendor, String uid) {
+    redeemed = false;
+    redeemedTime = 0;
+    if (snapshot.value["redeemed"] != null){
+      var val = snapshot.value["redeemed"];
+      if (val[uid] != null){//if there is a redemption time
+        var now = DateTime.now().millisecondsSinceEpoch;
+        var rTime = snapshot.value["redeemed"][uid].toInt()*1000;//database may contain doubles from old code so round 
+        if (now-rTime > 60*60*24*7*2*1000) {
+            //If redeemed 2 weeks ago, allow user to use deal again - Should be changed in the future
+            final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
+            final ref = FirebaseDatabase().reference().child("Deals").child(key).child("redeemed");
+            ref.child(uid).remove();
+            ref.child(uid+randStr).set(rTime/1000);
+        }else{
+            redeemed = true;
+            redeemedTime = rTime;
         }
       }
-    });
+    }
     key = snapshot.key;
     vendor = _vendor;
     photo  = snapshot.value["photo"];
@@ -162,28 +160,25 @@ class Deal {
     activeDays.add(days["sun"]);
   }
 
-  Deal.fromMap(String _key, dynamic data, Vendor _vendor){
-    FirebaseAuth.instance.currentUser().then((FirebaseUser user) {
-      final uid = user.uid;
-      redeemed = false;
-      redeemedTime = 0;
-      if (data["redeemed"] != null){
-        if (data["redeemed"][uid] != null){//if there is a redemption time
-          var now = DateTime.now().millisecondsSinceEpoch;
-          var redeemedTime = data["redeemed"][uid].toInt()*1000;//database may contain doubles from old code so round 
-          if (now-redeemedTime > 60*60*24*7*2) {
-              //If redeemed 2 weeks ago, allow user to use deal again - Should be changed in the future
-              final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
-              final ref = FirebaseDatabase().reference().child("Deals").child(key).child("redeemed");
-              ref.child(uid).remove();
-              ref.child(uid+randStr).set(redeemedTime/1000);
-          }else{
-              redeemed = true;
-              redeemedTime = redeemedTime;
-          }
+  Deal.fromMap(String _key, dynamic data, Vendor _vendor, String uid){
+    redeemed = false;
+    redeemedTime = 0;
+    if (data["redeemed"] != null){
+      if (data["redeemed"][uid] != null){//if there is a redemption time
+        var now = DateTime.now().millisecondsSinceEpoch;
+        var rTime = data["redeemed"][uid].toInt()*1000;//database may contain doubles from old code so round 
+        if (now-rTime > 60*60*24*7*2*1000) {
+            //If redeemed 2 weeks ago, allow user to use deal again - Should be changed in the future
+            final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
+            final ref = FirebaseDatabase().reference().child("Deals").child(key).child("redeemed");
+            ref.child(uid).remove();
+            ref.child(uid+randStr).set(rTime/1000);
+        }else{
+            redeemed = true;
+            redeemedTime = rTime;
         }
       }
-    });
+    }
     key = _key;
     vendor = _vendor;
     photo  = data["photo"];
