@@ -10,14 +10,16 @@ class VendorsPageWidget extends StatefulWidget {
 }
 
 class _VendorsPageState extends State<VendorsPageWidget> {
-  DatabaseReference vendorRef = FirebaseDatabase().reference().child("Vendors");
-  final geolocator = Geolocator();
-  final geo = Geofire();
-  var locationOptions = LocationOptions(accuracy: LocationAccuracy.high, distanceFilter: 10);
-  Permission permission;
-  bool loaded = false;
-  Position currentLocation;
+  //Location variables
+  final _locationService = Location();
+  StreamSubscription<LocationData> _locationSubscription;
+  LocationData currentLocation;
+  bool _permission = false;
 
+  //database variables 
+  DatabaseReference vendorRef = FirebaseDatabase().reference().child("Vendors");
+  final geo = Geofire();
+  bool loaded = false;
 
   List<Vendor> vendors = [];
   @override
@@ -29,27 +31,46 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   void initPlatform() async {
     //Intializing geoFire
     geo.initialize("Vendors_Location");
-    GeolocationStatus geolocationStatus = await geolocator.checkGeolocationPermissionStatus();
-
-    if (geolocationStatus == GeolocationStatus.granted) {
-      //get inital location and set up for geoquery
-      currentLocation = await geolocator.getCurrentPosition();
-      geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-      geo.onKeyEntered.listen((data){
-        keyEntered(data);
-      });
-      geo.onKeyExited.listen((data){
-        keyExited(data);
-      });
-      //Stream location and update query
-      geolocator.getPositionStream(locationOptions).listen((Position position) async {
-        if (this.mounted){
-          setState(() {
-            currentLocation = position;
+    await _locationService.changeSettings(accuracy: LocationAccuracy.HIGH, interval: 1000);
+    try {
+      bool serviceStatus = await _locationService.serviceEnabled();
+      print("Service status: $serviceStatus");
+      if (serviceStatus) {
+        _permission = await _locationService.requestPermission();
+        print("Permission: $_permission");
+        if (_permission) {
+          currentLocation = await _locationService.getLocation();
+          geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+          geo.onKeyEntered.listen((data){
+            keyEntered(data);
           });
-          geo.updateLocation(position.latitude, position.longitude, 80.0);
+          geo.onKeyExited.listen((data){
+            keyExited(data);
+          });
+          _locationSubscription = _locationService.onLocationChanged().listen((LocationData result) async {
+            if (this.mounted){
+              setState(() {
+                currentLocation = result;
+              });
+              geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+            }
+          });
         }
-      });
+      } else {
+        bool serviceStatusResult = await _locationService.requestService();
+        print("Service status activated after request: $serviceStatusResult");
+        if(serviceStatusResult){
+          initPlatform();
+        }
+      }
+    } on PlatformException catch (e) {
+      print(e);
+      if (e.code == 'PERMISSION_DENIED') {
+        print(e.message);
+      } else if (e.code == 'SERVICE_STATUS_ERROR') {
+        print(e.message);
+      }
+      currentLocation = null;
     }
   }
 
@@ -64,14 +85,18 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           var idx = vendors.indexWhere((d) => d.key == newVendor.key);
           if (idx < 0) {//Dont have vendor yet
             vendors.add(newVendor);
-            vendors.sort((v1,v2) => v1.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(v2.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude)));
+            vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
           }else{//vendor present. Update vendor
             vendors[idx] = newVendor;
-            vendors.sort((v1,v2) => v1.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(v2.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude)));
+            vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
           }
         })
       });
     }
+  }
+
+  int vendorSort(Vendor v1, Vendor v2){
+    return v1.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(v2.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude));
   }
 
   void keyExited(dynamic data) {

@@ -1,0 +1,6 @@
+framework module flutter_geofire {
+  umbrella header "flutter_geofire-umbrella.h"
+
+  export *
+  module * { export * }
+}
