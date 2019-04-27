@@ -1,10 +1,15 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/themes/decoration.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:http/http.dart' as http;
+
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -19,6 +24,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController emailController = new TextEditingController();
   TextEditingController passwordController = new TextEditingController();
   bool _passwordObscured = true;
+  DatabaseReference userRef;
 
   @override
   void initState() {
@@ -130,7 +136,30 @@ class _LoginPageState extends State<LoginPage> {
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
         _auth.signInWithCredential(FacebookAuthProvider.getCredential(
-            accessToken: result.accessToken.token));
+            accessToken: result.accessToken.token)
+        ).then((fbauth) async {
+          UserUpdateInfo userUpdateInfo = new UserUpdateInfo();
+          userRef = FirebaseDatabase.instance.reference().child("Users").child(fbauth.uid);
+
+          var graphResponse = await http.get('https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email,picture&access_token=${result.accessToken.token}');
+
+          var profile = json.decode(graphResponse.body);
+          // print(profile.toString());
+          if (profile['name'] != null){
+            userUpdateInfo.displayName = profile['name'];
+            userRef.child("full_name").set(profile['name']);
+          }
+          if (profile['id'] != null){
+            userUpdateInfo.photoUrl = "https://graph.facebook.com/" + profile['id'] + "/picture?height=500";
+            userRef.child("photo").set("https://graph.facebook.com/" + profile['id'] + "/picture?height=500");
+            userRef.child("facebook_id").set(profile['id']);
+          }
+          if (profile['email'] != null){
+            userRef.child("email").set(profile['email']);
+          }
+          fbauth.updateProfile(userUpdateInfo);
+        });
+        
         break;
       case FacebookLoginStatus.cancelledByUser:
         break;
@@ -145,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
       context: context,
       builder: (BuildContext context) {
         // return object of type Dialog
-        return AlertDialog(
+        return PlatformAlertDialog(
           title: new Text(title),
           content: new Text(message),
           actions: <Widget>[
@@ -167,7 +196,7 @@ class _LoginPageState extends State<LoginPage> {
       context: context,
       builder: (BuildContext context) {
         // return object of type Dialog
-        return AlertDialog(
+        return PlatformAlertDialog(
           title: new Text("Unverified Email"),
           content: new Text("Check your email for a verification link. Then come back and try again."),
           actions: <Widget>[

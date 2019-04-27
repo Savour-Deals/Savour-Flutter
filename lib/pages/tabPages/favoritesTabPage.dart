@@ -10,20 +10,23 @@ class FavoritesPageWidget extends StatefulWidget {
 }
 
 class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
+  //Location variables
+  final _locationService = Location();
+  StreamSubscription<LocationData> _locationSubscription;
+  LocationData currentLocation;
+  bool _permission = false;
+
+  //database variables 
   DatabaseReference vendorRef = FirebaseDatabase().reference().child("Vendors");
   DatabaseReference dealRef = FirebaseDatabase().reference().child("Deals");
   DatabaseReference favoritesRef;
   final geo = Geofire();
-
-  final geolocator = Geolocator();
-  var locationOptions = LocationOptions(accuracy: LocationAccuracy.high, distanceFilter: 10); 
-  Position currentLocation;
-  Permission permission;
   bool first = true;
   bool loaded = false;
 
   List<Deal> deals = [];
   Map<String,Vendor> vendors = Map();
+  FirebaseUser user;
 
   @override
   void initState() {
@@ -35,41 +38,62 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
     //Intializing geoFire
     geo.initialize("Vendors_Location");
 
-    final user = await FirebaseAuth.instance.currentUser();
+    user = await FirebaseAuth.instance.currentUser();
     favoritesRef = FirebaseDatabase().reference()..child("Users").child(user.uid).child("favorites");
-
-    GeolocationStatus geolocationStatus = await geolocator.checkGeolocationPermissionStatus();
-
-    if (geolocationStatus == GeolocationStatus.granted) {
-      //get inital location and set up for geoquery
-      currentLocation = await geolocator.getCurrentPosition();
-      //Stream location and update query
-      geolocator.getPositionStream(locationOptions).listen((Position position) async {
-        if (this.mounted){
-          setState(() {
-            currentLocation = position;
+    
+    await _locationService.changeSettings(accuracy: LocationAccuracy.HIGH, interval: 1000);
+    try {
+      bool serviceStatus = await _locationService.serviceEnabled();
+      print("Service status: $serviceStatus");
+      if (serviceStatus) {
+        _permission = await _locationService.requestPermission();
+        print("Permission: $_permission");
+        if (_permission) {
+          //Subscribe to location updates
+          currentLocation = await _locationService.getLocation();
+          _locationSubscription = _locationService.onLocationChanged().listen((LocationData result) async {
+            if (this.mounted){
+              setState(() {
+                currentLocation = result;
+              });
+            }
           });
-        }
-      });
-      FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").onValue.listen((datasnapshot) {
-        if (this.mounted){
-          if (datasnapshot.snapshot.value != null) {
-            var favorites = new Map<String, String>.from(datasnapshot.snapshot.value);
-            setState(() {
-              deals.retainWhere((d) => favorites.containsKey(d.key));
-            });
-            for (var favorite in favorites.keys){
-              if(deals.indexWhere((d)=> d.key == favorite) < 0){
-                createFavorite(favorite);
+          //Subscribe to this user's favorites, update page when changed
+          FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").onValue.listen((datasnapshot) {
+            if (this.mounted){
+              if (datasnapshot.snapshot.value != null) {
+                var favorites = new Map<String, String>.from(datasnapshot.snapshot.value);
+                setState(() {
+                  deals.retainWhere((d) => favorites.containsKey(d.key));
+                });
+                for (var favorite in favorites.keys){
+                  if(deals.indexWhere((d)=> d.key == favorite) < 0){
+                    createFavorite(favorite);
+                  }
+                }
+              }else{
+                setState(() {
+                  loaded = true;
+                });
               }
             }
-          }else{
-            setState(() {
-              loaded = true;
-            });
-          }
+          });
         }
-      });
+      } else {
+        bool serviceStatusResult = await _locationService.requestService();
+        print("Service status activated after request: $serviceStatusResult");
+        if(serviceStatusResult){
+          initPlatform();
+        }
+      }
+    } on PlatformException catch (e) {
+      print(e);
+      if (e.code == 'PERMISSION_DENIED') {
+        print(e.message);
+      } else if (e.code == 'SERVICE_STATUS_ERROR') {
+        print(e.message);
+      }
+      currentLocation = null;
     }
   }
 
@@ -82,19 +106,15 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
           var vendorId = dealEvent.snapshot.value["vendor_id"];
           if (vendors.containsKey(vendorId)){
             setState(() {
-              Deal newDeal = new Deal.fromSnapshot(dealEvent.snapshot, vendors[vendorId]);
+              Deal newDeal = new Deal.fromSnapshot(dealEvent.snapshot, vendors[vendorId], user.uid);
               newDeal.favorited = true;
-              deals.add(newDeal);
-              deals.sort((d1,d2) {
-                if(d1.isActive() && d2.isActive()){
-                  return d1.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(d2.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude));
-                }else{
-                  if(d1.isActive()){
-                    return -1;
-                  }
-                  return 1;
-                }
-              });
+              var idx = deals.indexWhere((d)=> d.key == newDeal.key);
+              if(idx < 0){
+                deals.add(newDeal);
+              }else{
+                deals[idx] = newDeal;
+              }
+              deals.sort((d1,d2) { return dealSort(d1,d2); });
             });
           }else{
             geo.getLocation(vendorId).then((result) {
@@ -104,19 +124,15 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
                 vendorRef.child(vendorId).once().then((vendorSnap) {
                   vendors[vendorId] = Vendor.fromSnapshot(vendorSnap, lat, long);
                   setState(() {
-                    Deal newDeal = new Deal.fromSnapshot(dealEvent.snapshot, vendors[vendorId]);
+                    Deal newDeal = new Deal.fromSnapshot(dealEvent.snapshot, vendors[vendorId], user.uid);
                     newDeal.favorited = true;
-                    deals.add(newDeal);
-                    deals.sort((d1,d2) {
-                      if(d1.isActive() && d2.isActive()){
-                        return d1.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(d2.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude));
-                      }else{
-                        if(d1.isActive()){
-                          return -1;
-                        }
-                        return 1;
-                      }
-                    });
+                    var idx = deals.indexWhere((d)=> d.key == newDeal.key);
+                    if(idx < 0){
+                      deals.add(newDeal);
+                    }else{
+                      deals[idx] = newDeal;
+                    }
+                    deals.sort((d1,d2) { return dealSort(d1,d2); });
                   });
                 });
               }
@@ -124,6 +140,17 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
           }
         }
       });
+    }
+  }
+
+  int dealSort(Deal d1, Deal d2){
+    if(d1.isActive() && d2.isActive()){
+      return d1.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(d2.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude));
+    }else{
+      if(d1.isActive()){
+        return -1;
+      }
+      return 1;
     }
   }
 
