@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
-import 'package:location/location.dart';
+import 'package:geolocator/geolocator.dart';
+// import 'package:location/location.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 
 class VendorCard extends StatefulWidget {
   VendorCard(this.vendor, this.location);
   final Vendor vendor;
-  final LocationData location;
+  final Position location;
 
   @override
   _VendorCardState createState() => _VendorCardState();

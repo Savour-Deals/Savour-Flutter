@@ -69,6 +69,10 @@ PODS:
     - GeoFire
   - GeoFire (3.0.0):
     - Firebase/Database (~> 5.0)
+  - geolocator (5.0.1):
+    - Flutter
+  - google_api_availability (2.0.1):
+    - Flutter
   - GoogleAppMeasurement (5.8.1):
     - GoogleUtilities/AppDelegateSwizzler (~> 5.2)
     - GoogleUtilities/MethodSwizzler (~> 5.2)
@@ -95,7 +99,7 @@ PODS:
     - GoogleUtilities/Logger
   - GTMSessionFetcher/Core (1.2.1)
   - leveldb-library (1.20)
-  - location (0.0.1):
+  - location_permissions (2.0.2):
     - Flutter
   - nanopb (0.3.901):
     - nanopb/decode (= 0.3.901)
@@ -103,6 +107,8 @@ PODS:
   - nanopb/decode (0.3.901)
   - nanopb/encode (0.3.901)
   - path_provider (0.0.1):
+    - Flutter
+  - permission_handler (3.1.0):
     - Flutter
   - share (0.5.2):
     - Flutter
@@ -113,16 +119,19 @@ DEPENDENCIES:
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_database (from `.symlinks/plugins/firebase_database/ios`)
-  - Flutter (from `.symlinks/flutter/ios-release`)
+  - Flutter (from `.symlinks/flutter/ios`)
   - flutter_facebook_login (from `.symlinks/plugins/flutter_facebook_login/ios`)
   - flutter_geofire (from `.symlinks/plugins/flutter_geofire/ios`)
-  - location (from `.symlinks/plugins/location/ios`)
+  - geolocator (from `.symlinks/plugins/geolocator/ios`)
+  - google_api_availability (from `.symlinks/plugins/google_api_availability/ios`)
+  - location_permissions (from `.symlinks/plugins/location_permissions/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
+  - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
   - share (from `.symlinks/plugins/share/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  https://github.com/cocoapods/specs.git:
     - Bolts
     - FBSDKCoreKit
     - FBSDKLoginKit
@@ -148,15 +157,21 @@ EXTERNAL SOURCES:
   firebase_database:
     :path: ".symlinks/plugins/firebase_database/ios"
   Flutter:
-    :path: ".symlinks/flutter/ios-release"
+    :path: ".symlinks/flutter/ios"
   flutter_facebook_login:
     :path: ".symlinks/plugins/flutter_facebook_login/ios"
   flutter_geofire:
     :path: ".symlinks/plugins/flutter_geofire/ios"
-  location:
-    :path: ".symlinks/plugins/location/ios"
+  geolocator:
+    :path: ".symlinks/plugins/geolocator/ios"
+  google_api_availability:
+    :path: ".symlinks/plugins/google_api_availability/ios"
+  location_permissions:
+    :path: ".symlinks/plugins/location_permissions/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
+  permission_handler:
+    :path: ".symlinks/plugins/permission_handler/ios"
   share:
     :path: ".symlinks/plugins/share/ios"
   url_launcher:
@@ -167,29 +182,32 @@ SPEC CHECKSUMS:
   FBSDKCoreKit: a823ae35bdb60ebb8d7a7e51abe7c5d87d2bfced
   FBSDKLoginKit: bea6daf533375bfb6e2bb1eefda5ccbdb3ce45ae
   Firebase: 0c8cf33f266410c61ab3e2265cfa412200351d9c
-  firebase_auth: 47c17cb3efbdfa541c9ecfec1a3c092f66c6c568
-  firebase_core: c96aa8b2fcf7f5167d32f22034f502f9304952b8
-  firebase_database: 431f77dc97eaba31168762025bc31c8a9a68e68b
+  firebase_auth: e32ab45c234bdf847b7777f5b097ce4f7d26879f
+  firebase_core: ce5006bb48508ee4e71e0f429a3f519bb8ee2961
+  firebase_database: 99b15d6a0536ee969200b6eaf69bcd0b15b7b114
   FirebaseAnalytics: ece1aa57a4f43c64d53a648b5a5e05151aae947b
   FirebaseAuth: dd7bbf03a5aee0eafb3a1aee4d2812bd74bac890
   FirebaseAuthInterop: 0ffa57668be100582bb7643d4fcb7615496c41fc
   FirebaseCore: f1a9a8be1aee4bf71a2fc0f4096df6788bdfda61
   FirebaseDatabase: 2c15b0ea6f2c6eb5e57413f9d6340f1e50b81ae3
   FirebaseInstanceID: a122b0c258720cf250551bb2bedf48c699f80d90
-  Flutter: 9d0fac939486c9aba2809b7982dfdbb47a7b0296
-  flutter_facebook_login: c2115a777aee33ee3e7eae93ba7d4426b47e7cc1
-  flutter_geofire: c570b720d9ad38f12da75d64a0648f324229efa8
+  Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
+  flutter_facebook_login: c454bc260c831dd4e83b135fc40383bb7d06d2c5
+  flutter_geofire: afdb697674098a0de9971583aaadd196337ca7bc
   GeoFire: e3ae6f4be3f2466c3467ef6c1c203db3af935c59
+  geolocator: f3dd3b5b1761a15a4da00665774c5a8319e657d6
+  google_api_availability: 163b30f802e6148c67f092aa4501c90ddd8eec8d
   GoogleAppMeasurement: ffe513e90551844a739e7bcbb1d2aca1c28a4338
   GoogleUtilities: 04fce34bcd5620c1ee76fb79172105c74a4df335
   GTMSessionFetcher: 32aeca0aa144acea523e1c8e053089dec2cb98ca
   leveldb-library: 08cba283675b7ed2d99629a4bc5fd052cd2bb6a5
-  location: 26c90953ad5916331d0d1d913898779910416487
+  location_permissions: 67cfaff583afbb027a9f9248196f4b79c40f3cdc
   nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
-  path_provider: 09407919825bfe3c2deae39453b7a5b44f467873
-  share: 222b5dcc8031238af9d7de91149df65bad1aef75
-  url_launcher: 92b89c1029a0373879933c21642958c874539095
+  path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
+  permission_handler: fa6b0d784b1a43cb96b468a5b8365cb130b1956a
+  share: 7d22fe8baedfe93aefd864bf0b73f29711fbb0a3
+  url_launcher: 0067ddb8f10d36786672aa0722a21717dba3a298
 
 PODFILE CHECKSUM: a182732193e6790303f39095277fce3e22df1dcd
 
-COCOAPODS: 1.5.0
+COCOAPODS: 1.7.1

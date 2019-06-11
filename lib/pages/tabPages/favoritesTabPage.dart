@@ -11,10 +11,8 @@ class FavoritesPageWidget extends StatefulWidget {
 
 class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
   //Location variables
-  final _locationService = Location();
-  StreamSubscription<LocationData> _locationSubscription;
-  LocationData currentLocation;
-  bool _permission = false;
+  final _locationService = Geolocator();
+  Position currentLocation;
 
   //database variables 
   DatabaseReference vendorRef = FirebaseDatabase().reference().child("Vendors");
@@ -40,51 +38,44 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
 
     user = await FirebaseAuth.instance.currentUser();
     favoritesRef = FirebaseDatabase().reference()..child("Users").child(user.uid).child("favorites");
-    
-    await _locationService.changeSettings(accuracy: LocationAccuracy.HIGH, interval: 1000);
     try {
-      bool serviceStatus = await _locationService.serviceEnabled();
+      var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
-      if (serviceStatus) {
-        _permission = await _locationService.requestPermission();
-        print("Permission: $_permission");
-        if (_permission) {
-          //Subscribe to location updates
-          currentLocation = await _locationService.getLocation();
-          _locationSubscription = _locationService.onLocationChanged().listen((LocationData result) async {
-            if (this.mounted){
+      if (serviceStatus == GeolocationStatus.granted) {
+        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
+          if (this.mounted){
+            setState(() {
+              currentLocation = result;
+            });
+          }
+        });
+        //Subscribe to this user's favorites, update page when changed
+        FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").onValue.listen((datasnapshot) {
+          if (this.mounted){
+            if (datasnapshot.snapshot.value != null) {
+              var favorites = new Map<String, String>.from(datasnapshot.snapshot.value);
               setState(() {
-                currentLocation = result;
+                deals.retainWhere((d) => favorites.containsKey(d.key));
+              });
+              for (var favorite in favorites.keys){
+                if(deals.indexWhere((d)=> d.key == favorite) < 0){
+                  createFavorite(favorite);
+                }
+              }
+            }else{
+              setState(() {
+                loaded = true;
               });
             }
-          });
-          //Subscribe to this user's favorites, update page when changed
-          FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").onValue.listen((datasnapshot) {
-            if (this.mounted){
-              if (datasnapshot.snapshot.value != null) {
-                var favorites = new Map<String, String>.from(datasnapshot.snapshot.value);
-                setState(() {
-                  deals.retainWhere((d) => favorites.containsKey(d.key));
-                });
-                for (var favorite in favorites.keys){
-                  if(deals.indexWhere((d)=> d.key == favorite) < 0){
-                    createFavorite(favorite);
-                  }
-                }
-              }else{
-                setState(() {
-                  loaded = true;
-                });
-              }
-            }
-          });
-        }
+          }
+        });
       } else {
-        bool serviceStatusResult = await _locationService.requestService();
-        print("Service status activated after request: $serviceStatusResult");
-        if(serviceStatusResult){
-          initPlatform();
-        }
+        // bool serviceStatusResult = await _locationService.requestService();
+        // print("Service status activated after request: $serviceStatusResult");
+        // if(serviceStatusResult){
+        //   initPlatform();
+        // }
       }
     } on PlatformException catch (e) {
       print(e);

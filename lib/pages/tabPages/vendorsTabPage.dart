@@ -11,10 +11,8 @@ class VendorsPageWidget extends StatefulWidget {
 
 class _VendorsPageState extends State<VendorsPageWidget> {
   //Location variables
-  final _locationService = Location();
-  StreamSubscription<LocationData> _locationSubscription;
-  LocationData currentLocation;
-  bool _permission = false;
+  final _locationService = Geolocator();
+  Position currentLocation;
 
   //database variables 
   DatabaseReference vendorRef = FirebaseDatabase().reference().child("Vendors");
@@ -31,15 +29,11 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   void initPlatform() async {
     //Intializing geoFire
     geo.initialize("Vendors_Location");
-    await _locationService.changeSettings(accuracy: LocationAccuracy.HIGH, interval: 1000);
     try {
-      bool serviceStatus = await _locationService.serviceEnabled();
+      var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
-      if (serviceStatus) {
-        _permission = await _locationService.requestPermission();
-        print("Permission: $_permission");
-        if (_permission) {
-          currentLocation = await _locationService.getLocation();
+      if (serviceStatus == GeolocationStatus.granted) {
+        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
           geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
           geo.onKeyEntered.listen((data){
             keyEntered(data);
@@ -47,7 +41,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           geo.onKeyExited.listen((data){
             keyExited(data);
           });
-          _locationSubscription = _locationService.onLocationChanged().listen((LocationData result) async {
+          _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
             if (this.mounted){
               setState(() {
                 currentLocation = result;
@@ -55,13 +49,12 @@ class _VendorsPageState extends State<VendorsPageWidget> {
               geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
             }
           });
-        }
       } else {
-        bool serviceStatusResult = await _locationService.requestService();
-        print("Service status activated after request: $serviceStatusResult");
-        if(serviceStatusResult){
-          initPlatform();
-        }
+        // bool serviceStatusResult = await _locationService.requestService();
+        // print("Service status activated after request: $serviceStatusResult");
+        // if(serviceStatusResult){
+        //   initPlatform();
+        // }
       }
     } on PlatformException catch (e) {
       print(e);
