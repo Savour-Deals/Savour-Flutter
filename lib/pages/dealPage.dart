@@ -4,8 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
-// import 'package:geolocator/geolocator.dart';
-import 'package:location/location.dart';
+import 'package:geolocator/geolocator.dart';
+// import 'package:location/location.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/themes/pulsator.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
@@ -19,7 +19,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class DealPageWidget extends StatefulWidget {
   final Deal deal;
-  final LocationData location;
+  final Position location;
 
   DealPageWidget(this.deal, this.location);
 
