@@ -1,7 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-// import 'package:geolocator/geolocator.dart';
-import 'package:location/location.dart';
+import 'package:geolocator/geolocator.dart';
+// import 'package:location/location.dart';
 import 'package:savour_deals_flutter/containers/likeButtonWidget.dart';
 import 'package:savour_deals_flutter/icons/savour_icons_icons.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
@@ -14,7 +14,7 @@ import 'package:flutter_advanced_networkimage/transition.dart';
 class DealCard extends StatefulWidget {
   DealCard(this.deal, this.location);
   final Deal deal;
-  LocationData location;
+  Position location;
 
   @override
   _DealCardState createState() => _DealCardState();
