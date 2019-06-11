@@ -11,10 +11,8 @@ class DealsPageWidget extends StatefulWidget {
 
 class _DealsPageState extends State<DealsPageWidget> {
   //Location variables
-  final _locationService = Location();
-  StreamSubscription<LocationData> _locationSubscription;
-  LocationData currentLocation;
-  bool _permission = false;
+  final _locationService = Geolocator();
+  Position currentLocation;
 
   //database variables 
   DatabaseReference vendorRef = FirebaseDatabase().reference().child("Vendors");
@@ -37,57 +35,52 @@ class _DealsPageState extends State<DealsPageWidget> {
     //Intializing geoFire
     geo.initialize("Vendors_Location");
     user = await FirebaseAuth.instance.currentUser();
-    await _locationService.changeSettings(accuracy: LocationAccuracy.HIGH, interval: 1000);
     try {
-      bool serviceStatus = await _locationService.serviceEnabled();
+      var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
-      if (serviceStatus) {
-        _permission = await _locationService.requestPermission();
-        print("Permission: $_permission");
-        if (_permission) {
-          currentLocation = await _locationService.getLocation();
-          geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-          geo.onKeyEntered.listen((data){
-            keyEntered(data);
-          });
-          geo.onKeyExited.listen((data){
-            keyExited(data);
-          });
-          _locationSubscription = _locationService.onLocationChanged().listen((LocationData result) async {
-            if (this.mounted){
+      if (serviceStatus == GeolocationStatus.granted) {
+        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+        geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+        geo.onKeyEntered.listen((data){
+          keyEntered(data);
+        });
+        geo.onKeyExited.listen((data){
+          keyExited(data);
+        });
+        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
+          if (this.mounted){
+            setState(() {
+              currentLocation = result;
+            });
+            geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+          }
+        });
+        FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").onValue.listen((datasnapshot) {
+          if (this.mounted){
+            if (datasnapshot.snapshot.value != null) {
               setState(() {
-                currentLocation = result;
-              });
-              geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-            }
-          });
-          FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").onValue.listen((datasnapshot) {
-            if (this.mounted){
-              if (datasnapshot.snapshot.value != null) {
-                setState(() {
-                  favorites = new Map<String, String>.from(datasnapshot.snapshot.value);
-                  for (var deal in deals){
-                    if (favorites.containsKey(deal.key)){
-                      deal.favorited = true;
-                    }else{
-                      deal.favorited = false;
-                    }
+                favorites = new Map<String, String>.from(datasnapshot.snapshot.value);
+                for (var deal in deals){
+                  if (favorites.containsKey(deal.key)){
+                    deal.favorited = true;
+                  }else{
+                    deal.favorited = false;
                   }
-                });
-              }else{
-                setState(() {
-                  loaded = true;
-                });
-              }
+                }
+              });
+            }else{
+              setState(() {
+                loaded = true;
+              });
             }
-          });
-        }
+          }
+        });
       } else {
-        bool serviceStatusResult = await _locationService.requestService();
-        print("Service status activated after request: $serviceStatusResult");
-        if(serviceStatusResult){
-          initPlatform();
-        }
+        // bool serviceStatusResult = await _locationService.requestService();
+        // print("Service status activated after request: $serviceStatusResult");
+        // if(serviceStatusResult){
+        //   initPlatform();
+        // }
       }
     } on PlatformException catch (e) {
       print(e);
