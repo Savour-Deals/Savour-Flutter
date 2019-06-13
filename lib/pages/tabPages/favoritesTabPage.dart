@@ -156,13 +156,21 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return PlatformScaffold(
+      appBar: PlatformAppBar(
         title: Text("Savour Deals",
           style: whiteTitle,
         ),
-        brightness: Brightness.dark,
-        backgroundColor: SavourColorsMaterial.savourGreen,
+        ios: (_) => CupertinoNavigationBarData(
+          backgroundColor: SavourColorsMaterial.savourGreen,
+          brightness: Brightness.dark,
+          heroTag: "favTab",
+          transitionBetweenRoutes: false,
+        ),
+        android: (_) => MaterialAppBarData(
+          backgroundColor: SavourColorsMaterial.savourGreen,
+          brightness: Brightness.dark,
+        ),
       ),
       body: bodyWidget(),
     );

@@ -68,11 +68,22 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return PlatformScaffold(
+      appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
-        backgroundColor: SavourColorsMaterial.savourGreen,
-        centerTitle: true,
+        ios: (_) => CupertinoNavigationBarData(
+          leading: CupertinoNavigationBarBackButton(color: Colors.white,),
+          backgroundColor: SavourColorsMaterial.savourGreen,
+          brightness: Brightness.dark,
+          heroTag: "dealPage",
+          transitionBetweenRoutes: false,
+        ),
+        android: (_) => MaterialAppBarData(
+          backgroundColor: SavourColorsMaterial.savourGreen,
+          leading: BackButton(color: Colors.white,),
+          brightness: Brightness.dark,
+          centerTitle: true,
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
