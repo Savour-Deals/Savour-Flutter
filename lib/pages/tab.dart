@@ -12,8 +12,6 @@ class SavourTabPage extends StatefulWidget {
   SavourTabPage({Key key, this.uid}) : super(key: key);
   final String title = 'Savour Deals';
   final String uid;
-  final bool _requireConsent = true;
-
 
   @override
   _SavourTabPageState createState() => _SavourTabPageState();
@@ -193,29 +191,6 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         ),
       ); 
     }
-  }
-
-  void _showDialog(sf, ho) {
-    // flutter defined function
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        // return object of type Dialog
-        return AlertDialog(
-          title: new Text(sf.toString()),
-          content: new Text(ho.toString()),
-          actions: <Widget>[
-            // usually buttons at the bottom of the dialog
-            new FlatButton(
-              child: new Text("Close"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   void onTabTapped(int index) {
