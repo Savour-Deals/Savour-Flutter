@@ -39,11 +39,22 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return PlatformScaffold(
+      appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
-        backgroundColor: SavourColorsMaterial.savourGreen,
-        centerTitle: true,
+        ios: (_) => CupertinoNavigationBarData(
+          backgroundColor: SavourColorsMaterial.savourGreen,
+          leading: CupertinoNavigationBarBackButton(color: Colors.white,),
+          brightness: Brightness.dark,
+          heroTag: "vendorPage",
+          transitionBetweenRoutes: false,
+        ),
+        android: (_) => MaterialAppBarData(
+          backgroundColor: SavourColorsMaterial.savourGreen,
+          leading: BackButton(color: Colors.white,),
+          brightness: Brightness.dark,
+          centerTitle: true,
+        ),
       ),
       body: ListView(
         children: <Widget>[
@@ -136,7 +147,11 @@ class _AboutWidgetState extends State<AboutWidget> {
                   ),
                   Container(
                     width:  MediaQuery.of(context).size.width*0.4,
-                    child: Text(widget.vendor.todaysHours(), textAlign: TextAlign.center,style: TextStyle(fontSize: 15)),
+                    child: Text(
+                      (widget.vendor.todaysHours() == null) ? "Hours not available":widget.vendor.todaysHours(), 
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 15)
+                    ),
                   ),
                 ],
               ),

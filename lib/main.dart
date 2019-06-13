@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/login/login.dart';
 import 'package:savour_deals_flutter/pages/tab.dart';
@@ -26,9 +27,14 @@ class _SavourDealsState extends State<SavourApp> {
   }
     @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return PlatformApp(
       title: 'Savour Deals',
-      theme: savourMaterialThemeData,
+      android: (_) => MaterialAppData(
+        theme: savourMaterialThemeData,
+      ),
+      ios: (_) => CupertinoAppData(
+        theme: savourCupertinoThemeData,
+      ),
       debugShowCheckedModeBanner: false,
       home: _handleCurrentScreen(),
     );
