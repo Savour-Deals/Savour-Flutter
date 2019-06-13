@@ -84,7 +84,6 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
               padding: const EdgeInsets.all(16.0),
               child: Text("Welcome " + user.displayName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),),
             ),
-            // TODO: Change icons
             Container(
               child: ListTile(
                 leading: Padding(
