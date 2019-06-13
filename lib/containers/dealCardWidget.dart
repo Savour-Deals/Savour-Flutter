@@ -14,7 +14,7 @@ import 'package:flutter_advanced_networkimage/transition.dart';
 class DealCard extends StatefulWidget {
   DealCard(this.deal, this.location);
   final Deal deal;
-  Position location;
+  final Position location;
 
   @override
   _DealCardState createState() => _DealCardState();
