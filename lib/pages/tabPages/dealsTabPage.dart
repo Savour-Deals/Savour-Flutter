@@ -150,13 +150,21 @@ class _DealsPageState extends State<DealsPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return PlatformScaffold(
+      appBar: PlatformAppBar(
         title: Text("Savour Deals",
           style: whiteTitle,
         ),
-        brightness: Brightness.dark,
-        backgroundColor: SavourColorsMaterial.savourGreen,
+        ios: (_) => CupertinoNavigationBarData(
+          backgroundColor: SavourColorsMaterial.savourGreen,
+          brightness: Brightness.dark,
+          heroTag: "dealTab",
+          transitionBetweenRoutes: false,
+        ),
+        android: (_) => MaterialAppBarData(
+          backgroundColor: SavourColorsMaterial.savourGreen,
+          brightness: Brightness.dark,
+        ),
       ),
       body: bodyWidget(),
     );
@@ -173,12 +181,12 @@ class _DealsPageState extends State<DealsPageWidget> {
               print(deals[position].key + " clicked");
               Navigator.push(
                 context,
-                MaterialPageRoute(
+                platformPageRoute(
                   builder: (context) => DealPageWidget(deals[position], currentLocation),
                 ),
               );
             },
-            child: getCard(deals[position])
+            child: getCard(deals[position]),
           );
         },
         itemCount: deals.length,

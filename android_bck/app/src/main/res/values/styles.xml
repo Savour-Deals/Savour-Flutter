@@ -1,8 +1,0 @@
-<resources>
-
-    <!--Style for Splash Screen-->
-    <style name="SplashScreenTheme" parent="@android:style/Theme.Black.NoTitleBar" >
-        <item name ="android:windowBackground"> @drawable/splash_screen_background</item>
-    </style>
-
-</resources>

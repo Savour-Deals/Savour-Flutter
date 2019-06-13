@@ -80,28 +80,34 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   Widget buildTabWidget(){
     if (locationStatus == PermissionStatus.unknown){
-      return Scaffold(
-        appBar: AppBar(
+      return PlatformScaffold(
+        appBar: PlatformAppBar(
           title: Text("Savour Deals",
             style: whiteTitle,
           ),
-          brightness: Brightness.dark,
-          backgroundColor: SavourColorsMaterial.savourGreen,
+          ios: (_) => CupertinoNavigationBarData(
+            backgroundColor: SavourColorsMaterial.savourGreen,
+            brightness: Brightness.dark,
+          ),
+          android: (_) => MaterialAppBarData(
+            backgroundColor: SavourColorsMaterial.savourGreen,
+            brightness: Brightness.dark,
+          ),
         ),
         body: Center(
           child: PlatformCircularProgressIndicator(),
         ),
       ); 
     }else if (locationStatus == PermissionStatus.granted){
-      return Scaffold(
+      return PlatformScaffold(
         body: IndexedStack(
             index: _currentIndex,
             children: _children,
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          onTap: onTabTapped, 
-          currentIndex: _currentIndex, // this will be set when a new tab is tapped
-          type: BottomNavigationBarType.fixed,
+        bottomNavBar: PlatformNavBar(
+          currentIndex: _currentIndex,
+          itemChanged: onTabTapped,
+          // type: BottomNavigationBarType.fixed,
           items: [
             BottomNavigationBarItem(
               icon: Icon(SavourIcons.icons8_price_tag_2,
@@ -160,13 +166,19 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         ),
       );
     }else{
-      return Scaffold(
-        appBar: AppBar(
+      return PlatformScaffold(
+        appBar: PlatformAppBar(
           title: Text("Savour Deals",
             style: whiteTitle,
           ),
-          brightness: Brightness.dark,
-          backgroundColor: SavourColorsMaterial.savourGreen,
+          ios: (_) => CupertinoNavigationBarData(
+            backgroundColor: SavourColorsMaterial.savourGreen,
+            brightness: Brightness.dark,
+          ),
+          android: (_) => MaterialAppBarData(
+            backgroundColor: SavourColorsMaterial.savourGreen,
+            brightness: Brightness.dark,
+          ),
         ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -180,7 +192,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
                 style: TextStyle(fontSize: 20,),
               ),
             ),
-            FlatButton(
+            PlatformButton(
               child: Text("Go to Settings", style: whiteText,),
               onPressed: (){
                 PermissionHandler().openAppSettings(); 
