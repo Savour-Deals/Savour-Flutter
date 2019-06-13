@@ -30,43 +30,34 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (user == null){
-      return Scaffold(
-        appBar: AppBar(
+    return PlatformScaffold(
+      appBar: PlatformAppBar(
+        ios: (_) => CupertinoNavigationBarData(
+          backgroundColor: Colors.white.withAlpha(0),
           brightness: Brightness.light,
+        ),
+        android: (_) => MaterialAppBarData(
           backgroundColor: Colors.white.withAlpha(0),
           elevation: 0.0,
-          actions: <Widget>[
-            FlatButton(
-              child: Text("Logout", style: TextStyle(color: Colors.red) ),
-              color: Colors.white.withAlpha(0),
-              
-              onPressed: (){
-                _auth.signOut();
-              },
-            )
-          ],
+          brightness: Brightness.light,
         ),
-      );
-    }
-    return Scaffold(
-      appBar: AppBar(
-        brightness: Brightness.light,
-        backgroundColor: Colors.white.withAlpha(0),
-        elevation: 0.0,
-        actions: <Widget>[
+        trailingActions: <Widget>[
           FlatButton(
             child: Text("Logout", style: TextStyle(color: Colors.red) ),
-            color: Colors.white.withAlpha(0),
-            
+            color: Colors.transparent,
             onPressed: (){
               _auth.signOut();
             },
           )
         ],
       ),
-      body: Center(
+      body: (user == null) ? Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[PlatformCircularProgressIndicator()],
+      ):Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
               width: MediaQuery.of(context).size.height*0.2,
@@ -141,9 +132,31 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 onTap: ()=> _launchURL('https://www.savourdeals.com/vendorsinfo'),
               ),
               decoration: BoxDecoration(
-                border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1))
+                border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1)),
               ),
             ),
+            // Container(
+            //   child: ListTile(
+            //     leading: Padding(
+            //       padding: const EdgeInsets.all(8.0),
+            //       child: Icon(
+            //         Icons.power_settings_new,
+            //         color: Colors.red,
+            //       ),
+            //     ),
+            //     title: Text(
+            //       "Logout",
+            //       style: TextStyle(color: Colors.red),
+            //     ),
+            //     contentPadding: EdgeInsets.all(8.0),
+            //     onTap: (){
+            //       _auth.signOut();
+            //     },
+            //   ),
+            //   decoration: BoxDecoration(
+            //     border: Border( bottom: BorderSide(width: 0.1))
+            //   ),
+            // ),
           ],
         ),
       )
