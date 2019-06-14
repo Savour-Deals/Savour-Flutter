@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
@@ -81,29 +82,36 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   Container(padding: EdgeInsets.all(5)),
-                  FlatButton(
-                    highlightColor: Colors.transparent,
-                    splashColor: Colors.transparent,
+                  PlatformButton(
+                    ios: (_) => CupertinoButtonData(
+                      pressedOpacity: 0.7,
+                    ),
+                    android: (_) => MaterialRaisedButtonData(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
                     color: SavourColorsMaterial.savourGreen,
                     child: Text("Login", style: whiteText),
-                  
                     onPressed: () {
                       login();
                     },
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
                   ),
                   Container(padding: EdgeInsets.all(5)),
-                  FlatButton(
+                  PlatformButton(
+                    ios: (_) => CupertinoButtonData(
+                      pressedOpacity: 0.7,
+                    ),
+                    android: (_) => MaterialRaisedButtonData(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
                     color: Colors.blueAccent,
                     child: Text("Facebook Login", style: whiteText),
                     onPressed: () {
                       facebookLogin();
                     },
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
                   ),
                 ],
               ),
@@ -126,7 +134,6 @@ class _LoginPageState extends State<LoginPage> {
           }
         });
     }
-
   }
 
   void facebookLogin() async {
@@ -170,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void displayError(title, message, buttonText){
-    showDialog(
+    showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
         // return object of type Dialog
@@ -192,7 +199,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void promptUnverified({user: FirebaseUser}){
-    showDialog(
+    showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
         // return object of type Dialog
