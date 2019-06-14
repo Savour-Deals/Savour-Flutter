@@ -80,6 +80,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   Widget buildTabWidget(){
     if (locationStatus == PermissionStatus.unknown){
+      PermissionHandler().requestPermissions([PermissionGroup.location]);
       return PlatformScaffold(
         appBar: PlatformAppBar(
           title: Text("Savour Deals",

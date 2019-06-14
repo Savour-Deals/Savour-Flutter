@@ -28,15 +28,16 @@ class _VendorCardState extends State<VendorCard> {
           children: <Widget>[
             Container(
               width: MediaQuery.of(context).size.width,
-              child: TransitionToImage(
+              child: Image(
                 image: AdvancedNetworkImage(
                   widget.vendor.photo,
                   useDiskCache: true,
                   cacheRule: CacheRule(maxAge: const Duration(days: 1)),
                 ),
                 fit: BoxFit.cover,
-                loadingWidget: Container(),  
-                placeholder: Container(),                  
+                // loadingWidget: Container(),  
+                // placeholder: Container(),  
+                // forceRebuildWidget: true,                
               ),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.6),
