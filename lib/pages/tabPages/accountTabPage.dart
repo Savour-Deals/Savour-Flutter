@@ -35,6 +35,8 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
         ios: (_) => CupertinoNavigationBarData(
           backgroundColor: Colors.white.withAlpha(0),
           brightness: Brightness.light,
+          heroTag: "dealTab",
+          transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
           backgroundColor: Colors.white.withAlpha(0),
