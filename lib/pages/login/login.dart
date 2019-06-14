@@ -138,6 +138,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void facebookLogin() async {
     var facebook = new FacebookLogin();
+    facebook.loginBehavior = FacebookLoginBehavior.webViewOnly;
     var result =
         await facebook.logInWithReadPermissions(['email', 'public_profile']);
     switch (result.status) {

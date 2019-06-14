@@ -324,7 +324,7 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
         throw 'Could not launch $url';
       }
     }else{
-      showDialog(
+      showPlatformDialog(
         builder: (BuildContext context) {
           // return object of type Dialog
           return PlatformAlertDialog(

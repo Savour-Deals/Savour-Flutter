@@ -233,7 +233,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   void promptRedemption(){
-    showDialog(
+    showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
         // return object of type Dialog
