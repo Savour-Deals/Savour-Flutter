@@ -46,20 +46,21 @@ class _DealCardState extends State<DealCard> {
                 Container(
                   height: 200,
                   width: MediaQuery.of(context).size.width,
-                  child: TransitionToImage(
+                  child: Image(
                     image: AdvancedNetworkImage(
                       widget.deal.photo,
                       useDiskCache: true,
                       cacheRule: CacheRule(maxAge: const Duration(days: 1)),
                     ),
                     fit: BoxFit.cover,
-                    loadingWidget: Container(
-                      color: Colors.transparent,
-                      child: const Icon(Icons.local_dining, 
-                        color: Colors.white,
-                        size: 150.0,
-                      ),
-                    ),                    
+                    // loadingWidget: Container(
+                      // color: Colors.transparent,
+                      // child: const Icon(Icons.local_dining, 
+                      //   color: Colors.white,
+                      //   size: 150.0,
+                      // ),
+                    // ),   
+                    // forceRebuildWidget: true,                 
                   ),
                   decoration: BoxDecoration(
                     color: Colors.grey,
