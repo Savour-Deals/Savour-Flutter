@@ -102,12 +102,10 @@ packages:
   flutter_facebook_login:
     dependency: "direct main"
     description:
-      path: "."
-      ref: fbloginkit-fix
-      resolved-ref: "45eb9e261b0cc9e05c5c3f243f4f736a3c9ff6ef"
-      url: "https://github.com/AnyKindaApp/flutter_facebook_login.git"
-    source: git
-    version: "2.0.0"
+      name: flutter_facebook_login
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.1"
   flutter_geofire:
     dependency: "direct main"
     description:

@@ -23,7 +23,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
   firebase_auth: ^0.8.3
-  flutter_facebook_login: ^2.0.0
+  flutter_facebook_login: ^2.0.1
   geolocator: '^5.0.0'
   # location: ^2.3.5
   permission_handler: '^3.1.0'
@@ -49,12 +49,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-dependency_overrides:
-  flutter_facebook_login:
-    git: 
-      url: https://github.com/AnyKindaApp/flutter_facebook_login.git
-      ref: fbloginkit-fix
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
