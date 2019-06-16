@@ -26,6 +26,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     DealsPageWidget("Deals Page"),
     FavoritesPageWidget("Favorites Page"),
     VendorsPageWidget("Vendors Page"),
+    MapPageWidget("Map Page"),
     AccountPageWidget("Accounts Page"),
   ];
 
@@ -143,15 +144,15 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
                 style: TextStyle(color: savourMaterialThemeData.primaryColor),
               )
             ),
-            // BottomNavigationBarItem(
-            //   icon: Icon(SavourIcons.),
-            //   activeIcon: Icon(SavourIcons.,
-              //   color: savourMaterialThemeData.primaryColor,
-              // ),
-            //   title: Text('Referral',
-              //   style: TextStyle(color: Colors.black),
-              // )
-            // ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.map),
+              activeIcon: Icon(Icons.map,
+                color: savourMaterialThemeData.primaryColor,
+              ),
+              title: Text('Referral',
+                style: TextStyle(color: Colors.black),
+              )
+            ),
             BottomNavigationBarItem(
               icon: Icon(SavourIcons.icons8_user_male_circle,
                 color: savourMaterialThemeData.primaryColor,
