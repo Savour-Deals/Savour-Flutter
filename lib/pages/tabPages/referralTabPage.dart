@@ -1,14 +1,18 @@
 part of tab_lib;
 
-class ReferralPageWidget extends StatelessWidget {
-  final String text;
+class MapPageWidget extends StatefulWidget {
+  final text;
+  MapPageWidget(this.text);
 
-  ReferralPageWidget(this.text);
+  @override
+  _MapPageWidgetState createState() => _MapPageWidgetState();
+}
 
+class _MapPageWidgetState extends State<MapPageWidget> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text(this.text),
+      child: Text(widget.text),
     );
   }
 }
