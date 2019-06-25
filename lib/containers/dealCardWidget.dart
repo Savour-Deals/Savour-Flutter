@@ -33,6 +33,7 @@ class _DealCardState extends State<DealCard> {
     return Card(
       margin: EdgeInsets.all(10.0),
       elevation: 5,
+      color: (Theme.of(context).brightness == Brightness.dark) ? Color(0xff4C4C4C): Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15.0),
       ),
@@ -73,7 +74,11 @@ class _DealCardState extends State<DealCard> {
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10.0, top: 5.0),
-            child: Text(widget.deal.description, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),),
+            child: Text(widget.deal.description, 
+              style: TextStyle(fontWeight: FontWeight.bold, 
+                fontSize: 20.0
+              ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10.0, top: 5.0),

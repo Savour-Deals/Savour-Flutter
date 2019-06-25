@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/login/login.dart';
@@ -15,9 +16,17 @@ class SavourApp extends StatefulWidget {
 }
 
 class _SavourDealsState extends State<SavourApp> {
+
+  bool isDark = true;
+
   @override
   initState() {
     super.initState();
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: isDark ? savourMaterialDarkThemeData.primaryColor : savourMaterialLightThemeData.primaryColor,
+      statusBarIconBrightness: isDark? Brightness.light: Brightness.dark,
+    ));
     initPlatformState();
   }
 
@@ -27,14 +36,9 @@ class _SavourDealsState extends State<SavourApp> {
   }
     @override
   Widget build(BuildContext context) {
-    return PlatformApp(
+    return MaterialApp(
       title: 'Savour Deals',
-      android: (_) => MaterialAppData(
-        theme: savourMaterialThemeData,
-      ),
-      ios: (_) => CupertinoAppData(
-        theme: savourCupertinoThemeData,
-      ),
+      theme: isDark ? savourMaterialDarkThemeData: savourMaterialLightThemeData,
       debugShowCheckedModeBanner: false,
       home: _handleCurrentScreen(),
     );

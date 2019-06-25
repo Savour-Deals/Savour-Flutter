@@ -1,25 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
-final CupertinoThemeData savourCupertinoThemeData = new CupertinoThemeData(
+// final CupertinoThemeData savourCupertinoLightThemeData = new CupertinoThemeData(
+//   brightness: Brightness.light,
+//   primaryColor: SavourColorsMaterial.savourGreen,
+//   primaryContrastingColor: Colors.white,
+//   barBackgroundColor: CupertinoColors.lightBackgroundGray.withOpacity(1),
+// );
+
+
+// final CupertinoThemeData savourCupertinoDarkThemeData = new CupertinoThemeData(
+//   brightness: Brightness.dark,
+//   primaryColor: CupertinoColors.darkBackgroundGray,
+//   primaryContrastingColor: CupertinoColors.darkBackgroundGray,
+//   textTheme: CupertinoTextThemeData(
+//     brightness: Brightness.dark,
+//     primaryColor: Colors.white,
+//   ),
+//   scaffoldBackgroundColor: CupertinoColors.darkBackgroundGray,
+//   barBackgroundColor: CupertinoColors.darkBackgroundGray,
+// );
+
+
+
+final ThemeData savourMaterialLightThemeData = new ThemeData(
   brightness: Brightness.light,
   primaryColor: SavourColorsMaterial.savourGreen,
-  primaryContrastingColor: Colors.white,
-  barBackgroundColor: CupertinoColors.lightBackgroundGray.withOpacity(1),
-);
-
-final ThemeData savourMaterialThemeData = new ThemeData(
-  brightness: Brightness.light,
-  primarySwatch: SavourColorsMaterial.savourGreen,
-  primaryColor: SavourColorsMaterial.savourGreen,
-  primaryColorBrightness: Brightness.dark,
-  accentColor: SavourColorsMaterial.savourGreen,
-  accentColorBrightness: Brightness.dark,
+  primaryColorBrightness: Brightness.light,
+  accentColor: Colors.white,
+  accentColorBrightness: Brightness.light,
   highlightColor: Colors.transparent,
   splashColor: Colors.transparent,
   splashFactory: NoSplashFactory(),
 );
-  
+
+final ThemeData savourMaterialDarkThemeData = new ThemeData(
+  brightness: Brightness.dark,
+  primaryColor: Colors.black,
+  primaryColorBrightness: Brightness.dark,
+  accentColor: Colors.white,
+  accentColorBrightness: Brightness.dark,
+  highlightColor: Colors.transparent,
+  splashColor: Colors.transparent,
+  backgroundColor: Colors.black,
+  splashFactory: NoSplashFactory(),
+);
 
 class SavourColorsMaterial {
   SavourColorsMaterial._(); // this basically makes it so you can instantiate this class
