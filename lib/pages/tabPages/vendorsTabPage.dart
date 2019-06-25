@@ -109,13 +109,13 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           style: whiteTitle,
         ),
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: SavourColorsMaterial.savourGreen,
+          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
           heroTag: "vendorTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: SavourColorsMaterial.savourGreen,
+          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
         ),
       ),

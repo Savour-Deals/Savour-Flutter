@@ -34,14 +34,14 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
       appBar: PlatformAppBar(
         ios: (_) => CupertinoNavigationBarData(
           backgroundColor: Colors.white.withAlpha(0),
-          brightness: Brightness.light,
+          brightness: Theme.of(context).brightness,
           heroTag: "dealTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
           backgroundColor: Colors.white.withAlpha(0),
           elevation: 0.0,
-          brightness: Brightness.light,
+          brightness: Theme.of(context).brightness,
         ),
         trailingActions: <Widget>[
           FlatButton(
@@ -75,15 +75,27 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text("Welcome " + user.displayName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),),
+              child: Text(
+                "Welcome " + user.displayName, 
+                style: TextStyle(fontWeight: 
+                  FontWeight.bold, 
+                  fontSize: 20.0,
+                  color: Theme.of(context).accentColor,
+                ),
+              ),
             ),
             Container(
               child: ListTile(
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.people),
+                  child: Icon(Icons.people,
+                    color: Theme.of(context).accentColor,
+                  ),
                 ),
-                title: Text("Click to invite more friends!"),
+                title: Text(
+                  "Click to invite more friends!",
+                  style: TextStyle(color: Theme.of(context).accentColor),
+                ),
                 contentPadding: EdgeInsets.all(8.0),
                 onTap: () =>{
                   Share.share("Check out Savour to get deals from local restaurants! https://www.savourdeals.com/getsavour")
@@ -97,9 +109,14 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
               child: ListTile(
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.mail),
+                  child: Icon(Icons.mail,
+                    color: Theme.of(context).accentColor,
+                  ),
                 ),
-                title: Text("Contact Us"),
+                title: Text(
+                  "Contact Us",
+                  style: TextStyle(color: Theme.of(context).accentColor),
+                ),
                 contentPadding: EdgeInsets.all(8.0),
                 onTap: ()=> _launchURL('https://www.savourdeals.com/contact/'),
               ),
@@ -111,9 +128,14 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
               child: ListTile(
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.notifications_active),
+                  child: Icon(Icons.notifications_active,
+                    color: Theme.of(context).accentColor,
+                  ),
                 ),
-                title: Text("Notifications"),
+                title: Text(
+                  "Notifications",
+                  style: TextStyle(color: Theme.of(context).accentColor),
+                ),
                 contentPadding: EdgeInsets.all(8.0),
                 // trailing: Slider(
                 //   activeColor: SavourColorsMaterial.savourGreen,
@@ -127,9 +149,14 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
               child: ListTile(
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.people),
+                  child: Icon(Icons.people,
+                    color: Theme.of(context).accentColor,
+                  ),
                 ),
-                title: Text("Learn more about becoming a vendor!"),
+                title: Text(
+                  "Learn more about becoming a vendor!",
+                  style: TextStyle(color: Theme.of(context).accentColor),
+                ),
                 contentPadding: EdgeInsets.all(8.0),
                 onTap: ()=> _launchURL('https://www.savourdeals.com/vendorsinfo'),
               ),

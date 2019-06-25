@@ -156,13 +156,13 @@ class _DealsPageState extends State<DealsPageWidget> {
           style: whiteTitle,
         ),
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: SavourColorsMaterial.savourGreen,
+          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
           heroTag: "dealTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: SavourColorsMaterial.savourGreen,
+          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
         ),
       ),
