@@ -43,14 +43,14 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
       appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: SavourColorsMaterial.savourGreen,
+          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
           leading: CupertinoNavigationBarBackButton(color: Colors.white,),
           brightness: Brightness.dark,
           heroTag: "vendorPage",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: SavourColorsMaterial.savourGreen,
+          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
           leading: BackButton(color: Colors.white,),
           brightness: Brightness.dark,
           centerTitle: true,
@@ -200,7 +200,7 @@ class _AboutWidgetState extends State<AboutWidget> {
               "About",
               style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 25.0),
             ),
-            color: ThemeData().canvasColor,
+            color: Theme.of(context).scaffoldBackgroundColor,
           ),
         ),
       ],

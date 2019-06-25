@@ -73,13 +73,13 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
           leading: CupertinoNavigationBarBackButton(color: Colors.white,),
-          backgroundColor: SavourColorsMaterial.savourGreen,
+          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
           heroTag: "dealPage",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: SavourColorsMaterial.savourGreen,
+          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
           leading: BackButton(color: Colors.white,),
           brightness: Brightness.dark,
           centerTitle: true,
