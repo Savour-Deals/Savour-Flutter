@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/icons/savour_icons_icons.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
@@ -113,57 +114,57 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
           items: [
             BottomNavigationBarItem(
               icon: Icon(SavourIcons.icons8_price_tag_2,
-                color: Theme.of(context).accentColor,
+                color: this.getTabOutlineColor(),
               ),
               activeIcon: Icon(SavourIcons.icons8_price_tag_filled,
-                color: Theme.of(context).accentColor,
+                color: this.getTabOutlineColor(),
               ),
               title: Text('Deals',
-                style: TextStyle(color: Theme.of(context).accentColor),
+                style: TextStyle(color: this.getTabOutlineColor()),
               )
             ),
             BottomNavigationBarItem(
               icon: Icon(SavourIcons.icons8_like_2,
-                color: Theme.of(context).accentColor,
+                color: this.getTabOutlineColor(),
               ),
               activeIcon: Icon(SavourIcons.filled_heart,
-                color: Theme.of(context).accentColor,
+                color: this.getTabOutlineColor(),
               ),
               title: Text('Favorites',
-                style: TextStyle(color: Theme.of(context).accentColor),
+                style: TextStyle(color: this.getTabOutlineColor()),
               )
             ),
             BottomNavigationBarItem(
               icon: Icon(SavourIcons.icons8_small_business,
-                color: Theme.of(context).accentColor,
+                color: this.getTabOutlineColor(),
               ),
               activeIcon: Icon(SavourIcons.icons8_small_business_filled,
-                color: Theme.of(context).accentColor,
+                color: this.getTabOutlineColor(),
               ),
               title: Text('Vendors',
-                style: TextStyle(color: Theme.of(context).accentColor),
+                style: TextStyle(color: this.getTabOutlineColor()),
               )
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.map,
-                color: Theme.of(context).accentColor,
+                color: this.getTabOutlineColor(),
               ),
               activeIcon: Icon(Icons.map,
-                color: Theme.of(context).accentColor,
+                color: this.getTabOutlineColor(),
               ),
               title: Text('Referral',
-                style: TextStyle(color: Theme.of(context).accentColor),
+                style: TextStyle(color: this.getTabOutlineColor()),
               )
             ),
             BottomNavigationBarItem(
               icon: Icon(SavourIcons.icons8_user_male_circle,
-                color: Theme.of(context).accentColor,
+                color: this.getTabOutlineColor(),
               ),
               activeIcon: Icon(SavourIcons.icons8_user_male_circle_filled,
-                color: Theme.of(context).accentColor,
+                color: this.getTabOutlineColor(),
               ),
               title: Text('Account',
-                style: TextStyle(color: Theme.of(context).accentColor),
+                style: TextStyle(color: this.getTabOutlineColor()),
               )
             )
           ],
@@ -207,6 +208,11 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         ),
       ); 
     }
+  }
+
+  Color getTabOutlineColor(){
+    return MyInheritedWidget.of(context).data.isDark? Theme.of(context).accentColor:SavourColorsMaterial.savourGreen;
+
   }
 
   void onTabTapped(int index) {

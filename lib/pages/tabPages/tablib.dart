@@ -11,6 +11,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
 import 'package:savour_deals_flutter/containers/vendorCardWidget.dart';
 import 'package:savour_deals_flutter/pages/dealPage.dart';
+import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
@@ -21,6 +22,9 @@ import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:share/share.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../stores/settings.dart' as settings;
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 
 
