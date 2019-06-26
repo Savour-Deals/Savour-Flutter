@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:share/share.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/login/login.dart';
 import 'package:savour_deals_flutter/pages/tab.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'stores/settings.dart';
+
 
 void main() async { 
-  runApp(SavourApp()); 
+  runApp(InheritedStateWidget()); 
 }
 
 class SavourApp extends StatefulWidget {
@@ -17,28 +20,25 @@ class SavourApp extends StatefulWidget {
 
 class _SavourDealsState extends State<SavourApp> {
 
-  bool isDark = true;
+  SharedPreferences prefs;
 
   @override
   initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: isDark ? savourMaterialDarkThemeData.primaryColor : savourMaterialLightThemeData.primaryColor,
-      statusBarIconBrightness: isDark? Brightness.light: Brightness.dark,
-    ));
     initPlatformState();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
   initPlatformState() async {
-
+    prefs = await SharedPreferences.getInstance();
+    print("Dark : " + prefs.getBool('isDark').toString());
+    MyInheritedWidget.of(context).data.setDarkMode(prefs.getBool('isDark') ?? false);
   }
     @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Savour Deals',
-      theme: isDark ? savourMaterialDarkThemeData: savourMaterialLightThemeData,
+      theme: MyInheritedWidget.of(context).data.isDark? savourMaterialDarkThemeData: savourMaterialLightThemeData,
       debugShowCheckedModeBanner: false,
       home: _handleCurrentScreen(),
     );

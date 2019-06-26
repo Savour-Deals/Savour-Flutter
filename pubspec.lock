@@ -118,9 +118,11 @@ packages:
   flutter_platform_widgets:
     dependency: "direct main"
     description:
-      path: "../flutter_platform_widgets"
-      relative: true
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: "592671f8a7a06927f5eeded8d9a00d72f318b2fe"
+      url: "https://github.com/Savour-Deals/flutter_platform_widgets.git"
+    source: git
     version: "0.11.5"
   flutter_svg:
     dependency: transitive
@@ -267,6 +269,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.6.1+1"
+  shared_preferences:
+    dependency: "direct main"
+    description:
+      name: shared_preferences
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.3+1"
   sky_engine:
     dependency: transitive
     description: flutter
