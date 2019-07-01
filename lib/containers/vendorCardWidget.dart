@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:savour_deals_flutter/stores/settings.dart';
+// import 'package:location/location.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 
@@ -27,22 +28,23 @@ class _VendorCardState extends State<VendorCard> {
           children: <Widget>[
             Container(
               width: MediaQuery.of(context).size.width,
-              child: TransitionToImage(
+              child: Image(
                 image: AdvancedNetworkImage(
                   widget.vendor.photo,
                   useDiskCache: true,
                   cacheRule: CacheRule(maxAge: const Duration(days: 1)),
                 ),
                 fit: BoxFit.cover,
-                loadingWidget: Container(),  
-                placeholder: Container(),                  
+                // loadingWidget: Container(),  
+                // placeholder: Container(),  
+                // forceRebuildWidget: true,                
               ),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.6),
               ),
             ),
             Container(
-              color: Colors.black.withOpacity(0.6),
+              color:(MyInheritedWidget.of(context).data.isDark)? Colors.black.withOpacity(0.4):Colors.black.withOpacity(0.6),
             ),
             Center(
               child: ListTile(
@@ -61,6 +63,10 @@ class _VendorCardState extends State<VendorCard> {
                   textAlign: TextAlign.center,
                 ),
               ),
+            ),
+            Align(
+              alignment: Alignment(0.9, 0.8),
+              child: widget.vendor.isPreferred? Icon(Icons.star, color: Colors.white,): null,
             )
           ],
         ),

@@ -14,7 +14,7 @@ description: A new Flutter project.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=1.0.0 <3.0.0"
+  sdk: ">=2.2.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -23,17 +23,31 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
   firebase_auth: ^0.8.3
-  flutter_facebook_login: ^2.0.0
-  geolocator: ^3.0.1
+  flutter_facebook_login: ^2.0.1
+  geolocator: '^5.0.0'
+  # location: ^2.3.5
+  permission_handler: '^3.1.0'
   flutter_geofire: #^0.0.4
-    path: ./flutter_geofire/
-  simple_permissions: ^0.1.9
+    git:
+      url: https://github.com/Savour-Deals/flutter_geofire.git
   firebase_database: ^2.0.2
   latlong: ^0.6.1
   url_launcher: ^5.0.2
   auto_size_text: ^1.1.2
-  flutter_advanced_networkimage: any
-  flutter_platform_widgets: ^0.9.5
+  flutter_advanced_networkimage:
+    git:
+      url: https://github.com/mchome/flutter_advanced_networkimage.git
+  flutter_platform_widgets: #^0.9.5
+    git:
+      url: https://github.com/Savour-Deals/flutter_platform_widgets.git
+    # path: "../flutter_platform_widgets"
+  http: ^0.12.0+2
+  share: ^0.6.1
+  shared_preferences: ^0.5.3+1
+  google_maps_flutter: ^0.5.19
+  # onesignal: ^1.1.0
+  # onesignalflutter:
+  #     git: git://github.com/jmrobles/OneSignal-Flutter-SDK.git
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +72,8 @@ flutter:
   assets:
     - images/login_background.jpg
     - images/Savour_Deals_White.png
+    - images/Savour_Deals_FullColor-white-back.png
+    - images/Savour_White.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.io/assets-and-images/#resolution-aware.

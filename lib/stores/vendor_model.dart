@@ -2,13 +2,15 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:latlong/latlong.dart';
 
 class Vendor {
-  final String key;
-  final String name;
-  final String address;
-  final double lat;
-  final double long;
-  final String photo;
-  final String description;
+  String key;
+  String name;
+  String address;
+  double lat;
+  double long;
+  String photo;
+  String description;
+  String menu;
+  bool isPreferred;
   //  loyalty {
   //       code: string;
   //       count: number;
@@ -23,28 +25,39 @@ class Vendor {
   //           sun : number;
   //       }
   //   }
-  //   daily_hours: {
-  //       mon: string;
-  //       tues: string;
-  //       wed: string;
-  //       thurs: string;
-  //       fri: string;
-  //       sat: string;
-  //       sun : string;
-  //   }
+  List<String> dailyHours = []; // mon - sun => 0 - 6
   
-  Vendor(this.key, this.name, this.address, this.description, this.photo, this.lat, this.long);
+  Vendor(this.key, this.name, this.address, this.description, this.photo, this.lat, this.long, this.isPreferred);
+
+  String todaysHours(){
+    final now = DateTime.now();
+    return dailyHours[now.weekday-1];
+  }
 
   double distanceMilesFrom(double fromLat, double fromLong){
     return Distance(roundResult: false).as(LengthUnit.Mile, new LatLng(lat,long),new LatLng(fromLat,fromLong)).toDouble();
   }
 
-  Vendor.fromSnapshot(DataSnapshot snapshot, double _lat, double _long)
-      : key = snapshot.key,
-        name = snapshot.value["name"],
-        address = snapshot.value["address"],
-        photo  = snapshot.value["photo"],
-        description =  snapshot.value["description"],
-        lat = _lat,
-        long = _long;
+  Vendor.fromSnapshot(DataSnapshot snapshot, double _lat, double _long){
+    key = snapshot.key;
+    name = snapshot.value["name"];
+    address = snapshot.value["address"];
+    photo  = snapshot.value["photo"];
+    description =  snapshot.value["description"];
+    menu = snapshot.value["menu"];
+    isPreferred = snapshot.value["preferred"] ?? false;
+    var days = snapshot.value["daily_hours"];
+    if (days != null){
+      dailyHours.add(days["mon"]);
+      dailyHours.add(days["tues"]);
+      dailyHours.add(days["wed"]);
+      dailyHours.add(days["thur"]);
+      dailyHours.add(days["fri"]);
+      dailyHours.add(days["sat"]);
+      dailyHours.add(days["sun"]);
+    }
+    lat = _lat;
+    long = _long;
+  }
+      
 }

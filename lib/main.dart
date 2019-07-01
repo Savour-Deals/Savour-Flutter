@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
-import 'package:savour_deals_flutter/login/login.dart';
+import 'package:savour_deals_flutter/pages/login/login.dart';
 import 'package:savour_deals_flutter/pages/tab.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'stores/settings.dart';
 
 
 void main() async { 
-  runApp(SavourApp()); }
+  runApp(InheritedStateWidget()); 
+}
 
 class SavourApp extends StatefulWidget {
   @override
@@ -14,6 +17,9 @@ class SavourApp extends StatefulWidget {
 }
 
 class _SavourDealsState extends State<SavourApp> {
+
+  SharedPreferences prefs;
+
   @override
   initState() {
     super.initState();
@@ -22,12 +28,15 @@ class _SavourDealsState extends State<SavourApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   initPlatformState() async {
+    prefs = await SharedPreferences.getInstance();
+    print("Dark : " + prefs.getBool('isDark').toString());
+    MyInheritedWidget.of(context).data.setDarkMode(prefs.getBool('isDark') ?? false);
   }
     @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Savour Deals',
-      theme: savourMaterialThemeData,
+      theme: MyInheritedWidget.of(context).data.isDark? savourMaterialDarkThemeData: savourMaterialLightThemeData,
       debugShowCheckedModeBanner: false,
       home: _handleCurrentScreen(),
     );
@@ -38,7 +47,7 @@ class _SavourDealsState extends State<SavourApp> {
       stream: FirebaseAuth.instance.onAuthStateChanged,
       builder: (BuildContext context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return new LoginPage();
+          return new Scaffold();
         } else {
           //check if user data present
           if (snapshot.hasData) {
