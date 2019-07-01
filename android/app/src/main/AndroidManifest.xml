@@ -24,6 +24,9 @@
         android:roundIcon="@drawable/ic_launcher_circle"
         >
 
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDR4rpR7RYBVCu0ggnfUapqJjGRX4ngh90"/>
+
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
