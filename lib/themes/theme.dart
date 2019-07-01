@@ -1,28 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
-
-// final CupertinoThemeData savourCupertinoLightThemeData = new CupertinoThemeData(
-//   brightness: Brightness.light,
-//   primaryColor: SavourColorsMaterial.savourGreen,
-//   primaryContrastingColor: Colors.white,
-//   barBackgroundColor: CupertinoColors.lightBackgroundGray.withOpacity(1),
-// );
-
-
-// final CupertinoThemeData savourCupertinoDarkThemeData = new CupertinoThemeData(
-//   brightness: Brightness.dark,
-//   primaryColor: CupertinoColors.darkBackgroundGray,
-//   primaryContrastingColor: CupertinoColors.darkBackgroundGray,
-//   textTheme: CupertinoTextThemeData(
-//     brightness: Brightness.dark,
-//     primaryColor: Colors.white,
-//   ),
-//   scaffoldBackgroundColor: CupertinoColors.darkBackgroundGray,
-//   barBackgroundColor: CupertinoColors.darkBackgroundGray,
-// );
-
-
 
 final ThemeData savourMaterialLightThemeData = new ThemeData(
   brightness: Brightness.light,
@@ -33,6 +10,8 @@ final ThemeData savourMaterialLightThemeData = new ThemeData(
   highlightColor: Colors.transparent,
   splashColor: Colors.transparent,
   splashFactory: NoSplashFactory(),
+  cardTheme: CardTheme(color: Colors.white),
+  dialogTheme: DialogTheme(backgroundColor: Colors.white),
 );
 
 final ThemeData savourMaterialDarkThemeData = new ThemeData(
@@ -45,6 +24,8 @@ final ThemeData savourMaterialDarkThemeData = new ThemeData(
   splashColor: Colors.transparent,
   backgroundColor: Colors.black,
   splashFactory: NoSplashFactory(),
+  dialogBackgroundColor: Color(0xff4C4C4C),
+  cardTheme: CardTheme(color: Color(0xff4C4C4C)),
 );
 
 class SavourColorsMaterial {

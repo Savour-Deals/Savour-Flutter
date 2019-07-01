@@ -1,4 +1,20 @@
-part of tab_lib;
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
+import 'package:savour_deals_flutter/stores/deal_model.dart';
+import 'package:savour_deals_flutter/stores/settings.dart';
+import 'package:savour_deals_flutter/stores/vendor_model.dart';
+import 'package:savour_deals_flutter/themes/theme.dart';
+import 'package:flutter/services.dart';
+
+import 'dealPage.dart';
 
 class FavoritesPageWidget extends StatefulWidget {
   final String text;
@@ -162,12 +178,14 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
           style: whiteTitle,
         ),
         ios: (_) => CupertinoNavigationBarData(
+          actionsForegroundColor: Colors.white,
           backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
           heroTag: "favTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
+          iconTheme: IconThemeData(color: Colors.white),
           backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
         ),

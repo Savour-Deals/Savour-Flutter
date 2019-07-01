@@ -155,6 +155,23 @@ class _DealsPageState extends State<DealsPageWidget> {
         title: Text("Savour Deals",
           style: whiteTitle,
         ),
+        trailingActions: <Widget>[
+          FlatButton(
+            child: Icon(Icons.account_balance_wallet, color: Colors.white,),
+            color: Colors.transparent,
+            // splashColor: Colors.transparent,
+            onPressed: (){
+              Navigator.push(context,
+                platformPageRoute(
+                  builder: (BuildContext context) {
+                    return FavoritesPageWidget("Favorites Page");
+                  },
+                  fullscreenDialog: true
+                )
+              );
+            },
+          )
+        ],
         ios: (_) => CupertinoNavigationBarData(
           backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
@@ -172,24 +189,46 @@ class _DealsPageState extends State<DealsPageWidget> {
   
   Widget bodyWidget(){
     if (deals.length > 0){
-      return ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics (),
-        padding: EdgeInsets.all(0.0),
-        itemBuilder: (context, position) {
-          return GestureDetector(
-            onTap: () {
-              print(deals[position].key + " clicked");
-              Navigator.push(
-                context,
-                platformPageRoute(
-                  builder: (context) => DealPageWidget(deals[position], currentLocation),
-                ),
+      return Stack(
+        children: <Widget>[
+          ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics (),
+            padding: EdgeInsets.all(0.0),
+            itemBuilder: (context, position) {
+              return GestureDetector(
+                onTap: () {
+                  print(deals[position].key + " clicked");
+                  Navigator.push(
+                    context,
+                    platformPageRoute(
+                      builder: (context) => DealPageWidget(deals[position], currentLocation),
+                    ),
+                  );
+                },
+                child: getCard(deals[position]),
               );
             },
-            child: getCard(deals[position]),
-          );
-        },
-        itemCount: deals.length,
+            itemCount: deals.length,
+          ),
+          Align(
+            alignment: Alignment(0.95,0.95),
+            child: FloatingActionButton(
+              heroTag: null,
+              backgroundColor: SavourColorsMaterial.savourGreen,
+              child: Icon(Icons.pin_drop, color: Colors.white,),
+              onPressed: (){
+                Navigator.push(context,
+                  platformPageRoute(
+                    builder: (BuildContext context) {
+                      return new MapPageWidget("Map Page", this.vendors);
+                    },
+                    fullscreenDialog: true
+                  )
+                );
+              },
+            ),
+          )
+        ],
       );
     }else {
       if (loaded){
