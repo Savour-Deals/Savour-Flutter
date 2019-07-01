@@ -25,9 +25,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   List<Widget> _children = [
     DealsPageWidget("Deals Page"),
-    FavoritesPageWidget("Favorites Page"),
     VendorsPageWidget("Vendors Page"),
-    MapPageWidget("Map Page"),
     AccountPageWidget("Accounts Page"),
   ];
 
@@ -123,17 +121,17 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
                 style: TextStyle(color: this.getTabOutlineColor()),
               )
             ),
-            BottomNavigationBarItem(
-              icon: Icon(SavourIcons.icons8_like_2,
-                color: this.getTabOutlineColor(),
-              ),
-              activeIcon: Icon(SavourIcons.filled_heart,
-                color: this.getTabOutlineColor(),
-              ),
-              title: Text('Favorites',
-                style: TextStyle(color: this.getTabOutlineColor()),
-              )
-            ),
+            // BottomNavigationBarItem(
+            //   icon: Icon(SavourIcons.icons8_like_2,
+            //     color: this.getTabOutlineColor(),
+            //   ),
+            //   activeIcon: Icon(SavourIcons.filled_heart,
+            //     color: this.getTabOutlineColor(),
+            //   ),
+            //   title: Text('Favorites',
+            //     style: TextStyle(color: this.getTabOutlineColor()),
+            //   )
+            // ),
             BottomNavigationBarItem(
               icon: Icon(SavourIcons.icons8_small_business,
                 color: this.getTabOutlineColor(),
@@ -145,17 +143,17 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
                 style: TextStyle(color: this.getTabOutlineColor()),
               )
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.map,
-                color: this.getTabOutlineColor(),
-              ),
-              activeIcon: Icon(Icons.map,
-                color: this.getTabOutlineColor(),
-              ),
-              title: Text('Referral',
-                style: TextStyle(color: this.getTabOutlineColor()),
-              )
-            ),
+            // BottomNavigationBarItem(
+            //   icon: Icon(Icons.map,
+            //     color: this.getTabOutlineColor(),
+            //   ),
+            //   activeIcon: Icon(Icons.map,
+            //     color: this.getTabOutlineColor(),
+            //   ),
+            //   title: Text('Referral',
+            //     style: TextStyle(color: this.getTabOutlineColor()),
+            //   )
+            // ),
             BottomNavigationBarItem(
               icon: Icon(SavourIcons.icons8_user_male_circle,
                 color: this.getTabOutlineColor(),
