@@ -64,6 +64,7 @@
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 **/ios/**/GoogleService-Info.plist
+**/ios/Runner/Firebase
 
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3
