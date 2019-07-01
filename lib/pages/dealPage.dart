@@ -1,12 +1,20 @@
+import 'dart:async';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
+// import 'package:location/location.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
+import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/pulsator.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/vendorPage.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:auto_size_text/auto_size_text.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 
 
@@ -22,20 +30,33 @@ class DealPageWidget extends StatefulWidget {
 
 class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProviderStateMixin {
   AnimationController _controller;
+  Timer _timer;
+  int _start = 0;
+  String timerString= "";
+  DatabaseReference redemptionRef;
 
   @override
   void initState() {
     super.initState();
+    initialization();
     _controller = new AnimationController(
       vsync: this,
     );
     _startAnimation();
   }
 
+  void initialization() async{
+    var user = await FirebaseAuth.instance.currentUser();
+    redemptionRef = FirebaseDatabase().reference().child("Deals").child(widget.deal.key).child("redeemed").child(user.uid);
+  }
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+    if (_timer != null){
+      _timer.cancel();
+    }
   }
 
   void _startAnimation() {
@@ -48,10 +69,21 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Deal Page",
-          style: whiteTitle,
+    return PlatformScaffold(
+      appBar: PlatformAppBar(
+        title: Image.asset("images/Savour_White.png"),
+        ios: (_) => CupertinoNavigationBarData(
+          leading: CupertinoNavigationBarBackButton(color: Colors.white,),
+          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          brightness: Brightness.dark,
+          heroTag: "dealPage",
+          transitionBetweenRoutes: false,
+        ),
+        android: (_) => MaterialAppBarData(
+          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          leading: BackButton(color: Colors.white,),
+          brightness: Brightness.dark,
+          centerTitle: true,
         ),
       ),
       body: Padding(
@@ -76,7 +108,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
               children: <Widget>[ 
                 new CustomPaint(
                   painter: new SpritePainter(_controller, 
-                    (!widget.deal.isActive() || widget.deal.redeemed) ? Colors.red : SavourColorsMaterial.savourGreen,
+                    (!widget.deal.isActive()) ? Colors.red : (widget.deal.redeemed && ((DateTime.now().millisecondsSinceEpoch~/1000) - widget.deal.redeemedTime~/1000 >= 1800)) ? Colors.red : SavourColorsMaterial.savourGreen,
                   ),
                   child: new SizedBox(
                     width: MediaQuery.of(context).size.height*0.45,
@@ -99,33 +131,42 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
                 ),
               ],
             ),
-            Padding(
+            Container(
               padding: const EdgeInsets.all(8.0),
               child: Container(
                 alignment: Alignment.center,
-                child: getDetailsText(),
+                child: (widget.deal.redeemed) ? getTimer() : getDetailsText(),
               ),
             ),
-            SizedBox(
-              width: double.infinity, // match_parent
-              child: FlatButton(
-                shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-                color: SavourColorsMaterial.savourGreen,
-                child: Text("See More from " + widget.deal.vendor.name,
-                  style: whiteText,
-                ), 
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => VendorPageWidget(widget.deal.vendor)),
-                  );
-                },
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                width: double.infinity, // match_parent
+                height: MediaQuery.of(context).size.height*0.05,
+                child: FlatButton(
+                  shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
+                  color: SavourColorsMaterial.savourGreen,
+                  child: Text("See More from " + widget.deal.vendor.name,
+                    style: whiteText,
+                  ), 
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => VendorPageWidget(widget.deal.vendor)
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
-            SizedBox(
-              width: double.infinity, // match_parent
-              child: redemptionButton()
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                width: double.infinity, // match_parent
+                height: MediaQuery.of(context).size.height*0.05,
+                child: redemptionButton()
+              ),
             ),
           ]
         ),
@@ -156,23 +197,25 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   bool inRange(){
-    return (widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude) < 0.1);
+    return (widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude) < 100.1);
   }
 
   Widget redemptionButton(){
     if (widget.deal.isActive()){
       return FlatButton(
         shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-        color: (inRange()) ? SavourColorsMaterial.savourGreen: Colors.red,
+        color: (!inRange() || !widget.deal.isActive()) ? Colors.red : (widget.deal.redeemed && ((DateTime.now().millisecondsSinceEpoch~/1000) - widget.deal.redeemedTime~/1000 >= 1800)) ? Colors.red : SavourColorsMaterial.savourGreen,
         child: Text(
-          (inRange()) ? "Redeem":"Go to Location to Redeem",
+          (inRange()) ? ((widget.deal.redeemed) ? "Deal already Redeemed":"Redeem"):"Go to Location to Redeem",
           style: whiteText,
         ),
         onPressed: () {
-          if(inRange()){
-            promptRedemption();
-          }else{
-            openMap();
+          if (!widget.deal.redeemed){
+            if(inRange()){
+              promptRedemption();
+            }else{
+              openMap();
+            }
           }
         },
       );
@@ -191,24 +234,30 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   void promptRedemption(){
-    showDialog(
+    showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
         // return object of type Dialog
-        return AlertDialog(
+        return PlatformAlertDialog(
           title: new Text("Vendor Approval"),
           content: new Text("This deal is intended for one person only.\n\nShow this message to the vendor to redeem your coupon.\n\nThe deal is not guaranteed if the vendor does not see this message."),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
             new FlatButton(
-              child: new Text("Approve"),
+              child: new Text("Approve", style: TextStyle(color: Colors.green),),
               onPressed: () {
-                //TODO:Redeem Deal!
+                Navigator.of(context).pop();
                 print("Deal " + widget.deal.key + " redeemed!");
+                var redemptionTime = widget.deal.redeemedTime = DateTime.now().millisecondsSinceEpoch~/1000;
+                redemptionRef.set(redemptionTime);
+                setState(() {
+                  widget.deal.redeemed = true;
+                  widget.deal.redeemedTime = redemptionTime*1000;
+                });
               },
             ),
             new FlatButton(
-              child: new Text("Not Now"),
+              child: new Text("Not Now", style: TextStyle(color: Colors.red),),
               onPressed: () {
                 print("Deal " + widget.deal.key + " redemption canceled.");
                 Navigator.of(context).pop();
@@ -218,6 +267,34 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         );
       },
     );
+  }
+
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    _start = (DateTime.now().millisecondsSinceEpoch~/1000) - widget.deal.redeemedTime~/1000;
+    _timer = new Timer.periodic(
+      oneSec,
+      (Timer timer) => setState(() {
+        if (_start > 1800) {
+          timerString = "Reedeemed over half an hour ago";
+          timer.cancel();
+        } else {
+          _start = _start + 1;
+          // print(_start);
+          var minutes = (_start) ~/ 60 % 60;
+          var seconds = (_start) % 60;
+          timerString = "Redeemed "+minutes.toString() +" minutes "+ seconds.toString() + " seconds ago";
+        }
+      })
+    );
+  }
+  var first = true;
+  Widget getTimer(){
+    if (first){
+      first = false;
+      startTimer();
+    }
+    return Text(timerString, style: TextStyle(color: (_timer.isActive) ? Colors.green: Colors.red),);
   }
 
   Widget getDetailsText(){
