@@ -35,13 +35,13 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
     return PlatformScaffold(
       appBar: PlatformAppBar(
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: Colors.transparent,
+          backgroundColor: Theme.of(context).bottomAppBarColor,
           brightness: Theme.of(context).brightness,
           heroTag: "dealTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: Colors.white.withAlpha(0),
+          backgroundColor: Theme.of(context).bottomAppBarColor,
           elevation: 0.0,
           brightness: Theme.of(context).brightness,
         ),
@@ -60,20 +60,21 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[PlatformCircularProgressIndicator()],
       ):Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: ListView(
           children: <Widget>[
             Container(
-              width: MediaQuery.of(context).size.height*0.2,
-              height: MediaQuery.of(context).size.height*0.2,
-              decoration: new BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                image: new DecorationImage(
+              padding: EdgeInsets.all(8.0),
+            ),
+            Align(
+              alignment: Alignment.center,
+              child: ClipOval(
+                child: Image(
                   fit: BoxFit.contain,
                   image: getPhoto(),
-                )
-              )
+                  width: MediaQuery.of(context).size.height*0.2,
+                  height: MediaQuery.of(context).size.height*0.2,
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -84,6 +85,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                   fontSize: 20.0,
                   color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black,
                 ),
+                textAlign: TextAlign.center,
               ),
             ),
             Container(
@@ -98,7 +100,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                   "Click to invite more friends!",
                   style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
                 ),
-                contentPadding: EdgeInsets.all(8.0),
+                contentPadding: EdgeInsets.all(4.0),
                 onTap: () =>{
                   Share.share("Check out Savour to get deals from local restaurants! https://www.savourdeals.com/getsavour")
                 }
@@ -119,7 +121,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                   "Contact Us",
                   style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
                 ),
-                contentPadding: EdgeInsets.all(8.0),
+                contentPadding: EdgeInsets.all(4.0),
                 onTap: ()=> _launchURL('https://www.savourdeals.com/contact/'),
               ),
               decoration: BoxDecoration(
@@ -138,7 +140,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                   "Notifications",
                   style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
                 ),
-                contentPadding: EdgeInsets.all(8.0),
+                contentPadding: EdgeInsets.all(4.0),
                 // trailing: Slider(
                 //   activeColor: SavourColorsMaterial.savourGreen,
                 // ),
@@ -159,7 +161,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                   "Learn more about becoming a vendor!",
                   style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
                 ),
-                contentPadding: EdgeInsets.all(8.0),
+                contentPadding: EdgeInsets.all(4.0),
                 onTap: ()=> _launchURL('https://www.savourdeals.com/vendorsinfo'),
               ),
               decoration: BoxDecoration(
@@ -178,7 +180,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                   "Switch to " + (MyInheritedWidget.of(context).data.isDark? "light":"dark") + " mode",
                   style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
                 ),
-                contentPadding: EdgeInsets.all(8.0),
+                contentPadding: EdgeInsets.all(4.0),
                 onTap: () {
                   setState(() {
                     MyInheritedWidget.of(context).data.setDarkMode(!MyInheritedWidget.of(context).data.isDark);
@@ -194,28 +196,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1)),
               ),
             ),
-            // Container(
-            //   child: ListTile(
-            //     leading: Padding(
-            //       padding: const EdgeInsets.all(8.0),
-            //       child: Icon(
-            //         Icons.power_settings_new,
-            //         color: Colors.red,
-            //       ),
-            //     ),
-            //     title: Text(
-            //       "Logout",
-            //       style: TextStyle(color: Colors.red),
-            //     ),
-            //     contentPadding: EdgeInsets.all(8.0),
-            //     onTap: (){
-            //       _auth.signOut();
-            //     },
-            //   ),
-            //   decoration: BoxDecoration(
-            //     border: Border( bottom: BorderSide(width: 0.1))
-            //   ),
-            // ),
+
           ],
         ),
       )

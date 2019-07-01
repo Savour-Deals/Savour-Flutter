@@ -7,7 +7,6 @@ import 'package:savour_deals_flutter/icons/savour_icons_icons.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 
 
 
@@ -33,7 +32,6 @@ class _DealCardState extends State<DealCard> {
     return Card(
       margin: EdgeInsets.all(10.0),
       elevation: 5,
-      color: (Theme.of(context).brightness == Brightness.dark) ? Color(0xff4C4C4C): Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15.0),
       ),
@@ -67,8 +65,14 @@ class _DealCardState extends State<DealCard> {
                     color: Colors.grey,
                   ),
                 ),
-                inactiveWidget(),
                 countdownWidget(),
+                Container(
+                  height: 200,
+                  child: Align(
+                    alignment: Alignment(-.95,.9),
+                    child: widget.deal.isPreferred()? Icon(Icons.star, color: Colors.white): null,
+                  ),
+                ),
               ]
             ),
           ),
@@ -108,30 +112,8 @@ class _DealCardState extends State<DealCard> {
               )
             ],
           ),
-          
         ],
       ),
-    );
-  }
-
-  Widget inactiveWidget(){
-    if (widget.deal.isActive()){
-      return Container();
-    }
-    return FractionallySizedBox(
-      child: Container(
-        padding: EdgeInsets.all(10.0),
-        child: Text("Deal is currently inactive. It is "+ widget.deal.infoString()+".", 
-          style: TextStyle(
-            fontSize: 20.0, 
-            color: Colors.white, 
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        decoration: BoxDecoration(color: Colors.black45),
-      ),
-      widthFactor: 1.0,
     );
   }
 
@@ -144,7 +126,11 @@ class _DealCardState extends State<DealCard> {
           height: 15.0,
           child: new AutoSizeText(
             day, 
-            style: TextStyle(color: SavourColorsMaterial.savourGreen, fontSize: 150.0),
+            style: TextStyle(
+              //Color it red when deal is not active
+              color: widget.deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red,
+              fontSize: 150.0
+            ),
             minFontSize: 10,
             maxFontSize: 150.0,
             maxLines: 1,
@@ -166,11 +152,12 @@ class _DealCardState extends State<DealCard> {
           transform: Matrix4.translationValues(-0.0, -10.0, 0.0),
           child: widget.deal.activeDays[day] ? 
             Icon(SavourIcons.circle,
-              color: SavourColorsMaterial.savourGreen,
+            //Color it red when deal is not active
+              color: widget.deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red, 
               size: 10.0,
             ):
             Icon(SavourIcons.circle_thin,
-              color:  SavourColorsMaterial.savourGreen,
+              color: widget.deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red,
               size: 10.0,
             ),
         ),

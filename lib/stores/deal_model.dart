@@ -17,8 +17,10 @@ class Deal {
   String type;
   String code;
   List<bool> activeDays = []; // mon - sun => 0 - 6
+  int value;
+  List<String> filters = [];
   
-  Deal(this.key, this.description, this.photo, this.vendor, this.start, this.end, this.favorited, this.activeDays, this.code, this.redeemed, this.redeemedTime, this.type);
+  Deal(this.key, this.description, this.photo, this.vendor, this.start, this.end, this.favorited, this.activeDays, this.code, this.redeemed, this.redeemedTime, this.type, this.value, this.filters);
 
   // Live is whether or not the deal is between the start and end date
   bool isLive(){
@@ -58,6 +60,10 @@ class Deal {
     }else{//Not Active today
       return false;
     }
+  }
+
+  bool isPreferred(){
+    return this.filters.contains("preferred");
   }
 
   String infoString(){
@@ -149,6 +155,11 @@ class Deal {
     end = snapshot.value["end_time"]*1000;
     code = snapshot.value["code"] ?? "";
     type = snapshot.value["filter"] ?? "";
+    value = snapshot.value["value"] ?? 0;
+    
+    for (var filter in snapshot.value["filters"]){
+      filters.add(filter);
+    }
 
     var days = snapshot.value["active_days"];
     activeDays.add(days["mon"]);
@@ -187,6 +198,11 @@ class Deal {
     end = data["end_time"]*1000;
     code = data["code"]; 
     type = data["filter"];
+    value = data["value"] ?? 0;
+
+    for (var filter in data["filters"]){
+      filters.add(filter);
+    }
 
     var days = data["active_days"];
     activeDays.add(days["mon"]);

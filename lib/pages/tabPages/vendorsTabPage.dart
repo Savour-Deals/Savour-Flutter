@@ -125,23 +125,45 @@ class _VendorsPageState extends State<VendorsPageWidget> {
 
   Widget bodyWidget(){
     if (vendors.length > 0) {
-      return ListView.builder(
-        padding: EdgeInsets.all(0.0),
-        physics: const AlwaysScrollableScrollPhysics (),
-        itemBuilder: (context, position) {
-          return GestureDetector(
-            onTap: () {
-              print(vendors[position].name + " clicked");
-              Navigator.push(
-                context,
-                platformPageRoute(
-                  builder: (context) => VendorPageWidget(vendors[position])),
+      return Stack(
+        children: <Widget>[
+          ListView.builder(
+            padding: EdgeInsets.all(0.0),
+            physics: const AlwaysScrollableScrollPhysics (),
+            itemBuilder: (context, position) {
+              return GestureDetector(
+                onTap: () {
+                  print(vendors[position].name + " clicked");
+                  Navigator.push(
+                    context,
+                    platformPageRoute(
+                      builder: (context) => VendorPageWidget(vendors[position])),
+                  );
+                },
+                child: VendorCard(vendors[position], currentLocation)
               );
             },
-            child: VendorCard(vendors[position], currentLocation)
-          );
-        },
-        itemCount: vendors.length,
+            itemCount: vendors.length,
+          ),
+          Align(
+            alignment: Alignment(0.95,0.95),
+            child: FloatingActionButton(
+              heroTag: null,
+              backgroundColor: SavourColorsMaterial.savourGreen,
+              child: Icon(Icons.pin_drop, color: Colors.white,),
+              onPressed: (){
+                Navigator.push(context,
+                  platformPageRoute(
+                    builder: (BuildContext context) {
+                      return new MapPageWidget("Map Page", this.vendors);
+                    },
+                    fullscreenDialog: true
+                  )
+                );
+              },
+            ),
+          )
+        ],
       );
     }else {
       if (loaded){
