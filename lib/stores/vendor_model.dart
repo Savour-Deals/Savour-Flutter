@@ -10,6 +10,7 @@ class Vendor {
   String photo;
   String description;
   String menu;
+  bool isPreferred;
   //  loyalty {
   //       code: string;
   //       count: number;
@@ -26,7 +27,7 @@ class Vendor {
   //   }
   List<String> dailyHours = []; // mon - sun => 0 - 6
   
-  Vendor(this.key, this.name, this.address, this.description, this.photo, this.lat, this.long);
+  Vendor(this.key, this.name, this.address, this.description, this.photo, this.lat, this.long, this.isPreferred);
 
   String todaysHours(){
     final now = DateTime.now();
@@ -44,6 +45,7 @@ class Vendor {
     photo  = snapshot.value["photo"];
     description =  snapshot.value["description"];
     menu = snapshot.value["menu"];
+    isPreferred = snapshot.value["preferred"] ?? false;
     var days = snapshot.value["daily_hours"];
     if (days != null){
       dailyHours.add(days["mon"]);
