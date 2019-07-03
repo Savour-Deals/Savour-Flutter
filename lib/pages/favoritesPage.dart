@@ -227,7 +227,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
 
   Widget getCard(Deal deal){
     if (deal.isLive()){
-      return DealCard(deal, currentLocation);
+      return DealCard(deal, currentLocation, true);
     }
     return Container();
   }

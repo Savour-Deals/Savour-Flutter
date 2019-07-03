@@ -87,11 +87,11 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
             style: whiteTitle,
           ),
           ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
+            backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
             brightness: Brightness.dark,
           ),
           android: (_) => MaterialAppBarData(
-          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
+            backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
             brightness: Brightness.dark,
           ),
         ),
@@ -109,6 +109,9 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
           currentIndex: _currentIndex,
           itemChanged: onTabTapped,
           // type: BottomNavigationBarType.fixed,
+          ios: (_) => CupertinoTabBarData(
+            backgroundColor: Theme.of(context).bottomAppBarColor.withOpacity(1),//SavourColorsMaterial.savourGreen,
+          ),
           items: [
             BottomNavigationBarItem(
               icon: Icon(SavourIcons.icons8_price_tag_2,

@@ -2,6 +2,8 @@ library tab_lib;
 
 // import 'dart:async';
 
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,7 @@ import 'package:savour_deals_flutter/containers/vendorCardWidget.dart';
 import 'package:savour_deals_flutter/pages/dealPage.dart';
 import 'package:savour_deals_flutter/pages/favoritesPage.dart';
 import 'package:savour_deals_flutter/pages/mapModalPage.dart';
+import 'package:savour_deals_flutter/stores/deals_model.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';

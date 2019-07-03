@@ -11,39 +11,41 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 
 
 class DealCard extends StatefulWidget {
-  DealCard(this.deal, this.location);
+  DealCard(this.deal, this.location, this.largeDisplay);
   final Deal deal;
   final Position location;
+  final bool largeDisplay;
 
   @override
   _DealCardState createState() => _DealCardState();
 }
 
 class _DealCardState extends State<DealCard> {
+  double scalar;
+
+  @override
+  void initState() {
+    scalar = (widget.largeDisplay)? 1.0 : 0.8;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.deal.redeemed){
-      var since = (DateTime.now().millisecondsSinceEpoch~/1000) - widget.deal.redeemedTime~/1000;
-      if(since > 1800*3){
-        return Container();//dont draw deal if it was redeemed 30min ago
-      }
-    }
     return Card(
-      margin: EdgeInsets.all(10.0),
+      margin: EdgeInsets.all(10.0*scalar),
       elevation: 5,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0),
+        borderRadius: BorderRadius.circular(15.0*scalar),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           ClipRRect(
-            borderRadius: BorderRadius.only(topLeft: Radius.circular(15.0), topRight: Radius.circular(15.0)),
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(15.0*scalar), topRight: Radius.circular(15.0)*scalar),
             child: Stack(
               children: <Widget>[
                 Container(
-                  height: 200,
+                  height: 200*scalar,
                   width: MediaQuery.of(context).size.width,
                   child: Image(
                     image: AdvancedNetworkImage(
@@ -67,7 +69,7 @@ class _DealCardState extends State<DealCard> {
                 ),
                 countdownWidget(),
                 Container(
-                  height: 200,
+                  height: 200*scalar,
                   child: Align(
                     alignment: Alignment(-.95,.9),
                     child: widget.deal.isPreferred()? Icon(Icons.star, color: Colors.white): null,
@@ -80,17 +82,13 @@ class _DealCardState extends State<DealCard> {
             padding: const EdgeInsets.only(left: 10.0, top: 5.0),
             child: Text(widget.deal.description, 
               style: TextStyle(fontWeight: FontWeight.bold, 
-                fontSize: 20.0
+                fontSize: 20.0*scalar
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10.0, top: 5.0),
             child: Text(widget.deal.vendor.name + " - " + widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude).toStringAsFixed(1)),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10.0, top: 5.0),
-            child: getInfo(),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10.0, top: 5.0),
@@ -121,7 +119,8 @@ class _DealCardState extends State<DealCard> {
     List<String> days= ["Su. ", "Mo. ", "Tu. ", "We. ", "Th. ", "Fr. ", "Sa. "];
     List<Widget> list = new List<Widget>();
     for(var day in days){
-        list.add(Container(
+      list.add(
+        Container(
           width: 25.0,
           height: 15.0,
           child: new AutoSizeText(
@@ -129,7 +128,8 @@ class _DealCardState extends State<DealCard> {
             style: TextStyle(
               //Color it red when deal is not active
               color: widget.deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red,
-              fontSize: 150.0
+              fontSize: 150.0,
+              fontWeight: FontWeight.bold,
             ),
             minFontSize: 10,
             maxFontSize: 150.0,
@@ -169,9 +169,10 @@ class _DealCardState extends State<DealCard> {
   }
 
   Widget countdownWidget(){
+    var info = widget.deal.infoString();
     if(widget.deal.redeemed){
       return Container(
-        height: 200,
+        height: 200*scalar,
         child: Align(
           alignment: Alignment.bottomRight,
           child: Container(
@@ -183,7 +184,7 @@ class _DealCardState extends State<DealCard> {
       );
     }else if(widget.deal.countdownString() != ""){
       return Container(
-        height: 200,
+        height: 200*scalar,
         child: Align(
           alignment: Alignment.bottomRight,
           child: Container(
@@ -193,15 +194,29 @@ class _DealCardState extends State<DealCard> {
           ),
         ),
       );
+    }else if (info != "" || info.contains("available")){
+      return Container(
+        // height: 200*scalar,
+        width: MediaQuery.of(context).size.width,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            padding: EdgeInsets.all(10.0),
+            child: Text(info, style: TextStyle(color: Colors.white),textAlign: TextAlign.center,),//Text(widget.deal.countdownString(), style: TextStyle(color: Colors.white),),
+            color: Colors.black54,
+          ),
+        ),
+      );
     }
     return Container();
   }
 
-  Widget getInfo(){
-    var info = widget.deal.infoString();
-    if (info == "" || info.contains("available")){
-      return Container();
-    }
-    return Text(info, style: TextStyle(color: Colors.orange),textAlign: TextAlign.left,);
-  }
+  // Widget getInfo(){
+  //   var info = widget.deal.infoString();
+  //   // if (info == "" || info.contains("available")){
+  //   //   return Container();
+  //   // }
+  //   return Text(info, style: TextStyle(color: Colors.orange),textAlign: TextAlign.left,);
+  // }
 }

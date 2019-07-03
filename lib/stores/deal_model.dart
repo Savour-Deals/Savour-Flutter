@@ -90,21 +90,21 @@ class Deal {
       }else if (startTime.compareTo(endTime) == 0){
           return  "";//"active all day!"
       }else{
-          return "available from " + formatter.format(startTime) + " to " + formatter.format(endTime);
+          return "Available from " + formatter.format(startTime) + " to " + formatter.format(endTime);
       }
-    }else{//Not Active today
-        var inactiveString = "";
-        for (var i = 0; i < 7; i++) {
-          if (activeDays[i]){
-              if (inactiveString != ""){
-                  inactiveString = inactiveString + " ";
-              }
-              inactiveString = inactiveString + ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday",][i];
-          }
-        }
-        inactiveString = "available " + inactiveString.replaceAll(" ", ", ");
-        return inactiveString;
-    }
+    }//else{//Not Active today
+        // var inactiveString = "";
+        // for (var i = 0; i < 7; i++) {
+        //   if (activeDays[i]){
+        //       if (inactiveString != ""){
+        //           inactiveString = inactiveString + " ";
+        //       }
+        //       inactiveString = inactiveString + ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday",][i];
+        //   }
+        // }
+        // inactiveString = "Available " + inactiveString.replaceAll(" ", ", ");
+        return "";//inactiveString;
+    // }
   }
 
   String countdownString(){
