@@ -5,7 +5,7 @@ final ThemeData savourMaterialLightThemeData = new ThemeData(
   brightness: Brightness.light,
   primaryColor: SavourColorsMaterial.savourGreen,
   primaryColorBrightness: Brightness.light,
-  accentColor: Colors.black,
+  accentColor: SavourColorsMaterial.savourGreen,//Colors.black,
   accentColorBrightness: Brightness.light,
   highlightColor: Colors.transparent,
   splashColor: Colors.transparent,

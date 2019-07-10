@@ -2,7 +2,7 @@ library tab_lib;
 
 // import 'dart:async';
 
-import 'dart:io';
+// import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,15 +12,15 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
 import 'package:savour_deals_flutter/containers/vendorCardWidget.dart';
-import 'package:savour_deals_flutter/pages/dealPage.dart';
-import 'package:savour_deals_flutter/pages/favoritesPage.dart';
-import 'package:savour_deals_flutter/pages/mapModalPage.dart';
+import 'package:savour_deals_flutter/pages/infoPages/dealPage.dart';
+import 'package:savour_deals_flutter/pages/modalPages/walletModalPage.dart';
+import 'package:savour_deals_flutter/pages/modalPages/mapModalPage.dart';
 import 'package:savour_deals_flutter/stores/deals_model.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
-import 'package:savour_deals_flutter/pages/vendorPage.dart';
+import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:geolocator/geolocator.dart';
 // import 'package:location/location.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';

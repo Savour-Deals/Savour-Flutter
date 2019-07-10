@@ -9,6 +9,7 @@ class Deal {
   String photo;
   String description;
   Vendor vendor;
+  String vendorName;
   int start;
   int end;
   bool favorited = false;
@@ -20,7 +21,7 @@ class Deal {
   int value;
   List<String> filters = [];
   
-  Deal(this.key, this.description, this.photo, this.vendor, this.start, this.end, this.favorited, this.activeDays, this.code, this.redeemed, this.redeemedTime, this.type, this.value, this.filters);
+  Deal(this.key, this.description, this.photo, this.vendor, this.start, this.end, this.favorited, this.activeDays, this.code, this.redeemed, this.redeemedTime, this.type, this.value, this.filters, this.vendorName);
 
   // Live is whether or not the deal is between the start and end date
   bool isLive(){
@@ -138,7 +139,7 @@ class Deal {
         if (now-rTime > 60*60*24*7*2*1000) {
             //If redeemed 2 weeks ago, allow user to use deal again - Should be changed in the future
             final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
-            final ref = FirebaseDatabase().reference().child("Deals").child(key).child("redeemed");
+            final ref = FirebaseDatabase().reference().child("Deals").child(snapshot.key).child("redeemed");
             ref.child(uid).remove();
             ref.child(uid+randStr).set(rTime/1000);
         }else{
@@ -156,6 +157,7 @@ class Deal {
     code = snapshot.value["code"] ?? "";
     type = snapshot.value["filter"] ?? "";
     value = snapshot.value["value"] ?? 0;
+    vendorName = snapshot.value["vendor_name"]?? "Blank";
     
     for (var filter in snapshot.value["filters"]){
       filters.add(filter);
@@ -181,7 +183,7 @@ class Deal {
         if (now-rTime > 60*60*24*7*2*1000) {
             //If redeemed 2 weeks ago, allow user to use deal again - Should be changed in the future
             final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
-            final ref = FirebaseDatabase().reference().child("Deals").child(key).child("redeemed");
+            final ref = FirebaseDatabase().reference().child("Deals").child(_key).child("redeemed");
             ref.child(uid).remove();
             ref.child(uid+randStr).set(rTime/1000);
         }else{
@@ -199,8 +201,9 @@ class Deal {
     code = data["code"]; 
     type = data["filter"];
     value = data["value"] ?? 0;
-
-    for (var filter in data["filters"]){
+    vendorName = data["vendor_name"]?? "Blank";
+    var dataFilters = data["filters"]?? [];
+    for (var filter in dataFilters){
       filters.add(filter);
     }
 

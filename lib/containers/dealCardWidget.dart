@@ -1,3 +1,4 @@
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -7,6 +8,8 @@ import 'package:savour_deals_flutter/icons/savour_icons_icons.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
+// import 'package:image/image.dart' as IMGTOOLS;
+
 
 
 
@@ -22,10 +25,29 @@ class DealCard extends StatefulWidget {
 
 class _DealCardState extends State<DealCard> {
   double scalar;
+  // Image image;
+
 
   @override
   void initState() {
+    // image = Image.asset("images/glass-and-fork.png");
     scalar = (widget.largeDisplay)? 1.0 : 0.8;
+    // var thisimg = NetworkImage(widget.deal.photo);
+    // thisimg.obtainKey(new ImageConfiguration()).then((val) {
+    //   var load = thisimg.load(val);
+    //   ImageListener imageListener = (ImageInfo imageInfo, syncCall) async {
+    //     ByteData data = await imageInfo.image.toByteData();
+        
+    //     IMGTOOLS.Image resized = IMGTOOLS.copyResize(IMGTOOLS.Image.fromBytes(imageInfo.image.width,imageInfo.image.height,data.buffer.asUint8List()), width: 500);
+
+    //     setState(() {
+    //       image = Image.memory(resized.getBytes());
+    //     });
+    //       // setState(() => );
+    //   };
+    //   ImageStreamListener listenerStream = new ImageStreamListener(imageListener);
+    //   load.addListener(listenerStream);
+    // });
     super.initState();
   }
 
@@ -52,14 +74,16 @@ class _DealCardState extends State<DealCard> {
                       widget.deal.photo,
                       useDiskCache: true,
                       cacheRule: CacheRule(maxAge: const Duration(days: 1)),
+                      scale: 0.2,
+                      printError: true,
                     ),
                     fit: BoxFit.cover,
                     // loadingWidget: Container(
-                      // color: Colors.transparent,
-                      // child: const Icon(Icons.local_dining, 
-                      //   color: Colors.white,
-                      //   size: 150.0,
-                      // ),
+                    //   color: Colors.transparent,
+                    //   child: const Icon(Icons.local_dining, 
+                    //     color: Colors.white,
+                    //     size: 150.0,
+                    //   ),
                     // ),   
                     // forceRebuildWidget: true,                 
                   ),
@@ -80,15 +104,23 @@ class _DealCardState extends State<DealCard> {
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10.0, top: 5.0),
-            child: Text(widget.deal.description, 
-              style: TextStyle(fontWeight: FontWeight.bold, 
-                fontSize: 20.0*scalar
+            child: Container(
+              width: MediaQuery.of(context).size.width*.85,
+              child: new AutoSizeText(
+                widget.deal.description,
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                ),
+                minFontSize: 5,
+                maxFontSize: 18.0,
+                maxLines: 1,
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10.0, top: 5.0),
-            child: Text(widget.deal.vendor.name + " - " + widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude).toStringAsFixed(1)),
+            child: Text(widget.deal.vendor.name + " - " + widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude).toStringAsFixed(1), style: TextStyle(fontSize: 12),),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10.0, top: 5.0),

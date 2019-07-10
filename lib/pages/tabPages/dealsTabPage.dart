@@ -39,7 +39,7 @@ class _DealsPageState extends State<DealsPageWidget> {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
-        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
         geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
         geo.onKeyEntered.listen((data){
           keyEntered(data);
@@ -47,7 +47,7 @@ class _DealsPageState extends State<DealsPageWidget> {
         geo.onKeyExited.listen((data){
           keyExited(data);
         });
-        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
+        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
           if (this.mounted){
             setState(() {
               currentLocation = result;
@@ -129,17 +129,6 @@ class _DealsPageState extends State<DealsPageWidget> {
     }
   }
 
-  // int dealSort(Deal d1, Deal d2){
-  //   if(d1.isActive() && d2.isActive()){
-  //     return d1.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(d2.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude));
-  //   }else{
-  //     if(d1.isActive()){
-  //       return -1;
-  //     }
-  //     return 1;
-  //   }
-  // }
-
   void keyExited(dynamic data){
     // print("key exited dealsPage: " + data["key"]);
     if (this.mounted){
@@ -158,14 +147,18 @@ class _DealsPageState extends State<DealsPageWidget> {
         ),
         trailingActions: <Widget>[
           FlatButton(
-            child: Icon(Icons.account_balance_wallet, color: Colors.white,),
+            child: Image.asset('images/wallet_filled.png',
+              color: Colors.white,
+              width: 30,
+              height: 30,
+            ),
             color: Colors.transparent,
             // splashColor: Colors.transparent,
             onPressed: (){
               Navigator.push(context,
                 platformPageRoute(
                   builder: (BuildContext context) {
-                    return FavoritesPageWidget("Favorites Page");
+                    return WalletPageWidget(deals,vendors);
                   },
                   fullscreenDialog: true
                 )
@@ -232,7 +225,7 @@ class _DealsPageState extends State<DealsPageWidget> {
   }
 
   Widget _buildCarousel(BuildContext context, int carouselIndex) {
-    var carouselDeals = [];
+    List<Deal> carouselDeals = [];
     var carouselText = "";
     switch (carouselIndex) {
       case 0:
@@ -248,7 +241,7 @@ class _DealsPageState extends State<DealsPageWidget> {
         carouselText = "Deals By Distance";
         break;
       default:
-        carouselDeals = deals.getDealsByFilter(carouselIndex-3);
+        carouselDeals = deals.getDealsByFilter(carouselIndex-2);
         carouselText = deals.filters[carouselIndex-2] + " Deals";
     }
     return Column(
@@ -266,7 +259,7 @@ class _DealsPageState extends State<DealsPageWidget> {
           ),
         ),
         SizedBox(
-          height: 290,
+          height: 300,
           child: (carouselDeals.length <= 0)? Container():PageView.builder(
             // store this controller in a State to save the carousel scroll position
             controller: PageController(viewportFraction: 0.9),
@@ -291,3 +284,5 @@ class _DealsPageState extends State<DealsPageWidget> {
     );
   }
 }
+
+

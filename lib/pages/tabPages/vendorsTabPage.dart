@@ -33,7 +33,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
-        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
           geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
           geo.onKeyEntered.listen((data){
             keyEntered(data);
@@ -41,7 +41,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           geo.onKeyExited.listen((data){
             keyExited(data);
           });
-          _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
+          _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
             if (this.mounted){
               setState(() {
                 currentLocation = result;
@@ -129,7 +129,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
         children: <Widget>[
           ListView.builder(
             padding: EdgeInsets.all(0.0),
-            physics: const AlwaysScrollableScrollPhysics (),
+            // physics: const AlwaysScrollableScrollPhysics (),
             itemBuilder: (context, position) {
               return GestureDetector(
                 onTap: () {

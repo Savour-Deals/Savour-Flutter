@@ -39,14 +39,37 @@ class Vendor {
   }
 
   Vendor.fromSnapshot(DataSnapshot snapshot, double _lat, double _long){
+    // print(snapshot.value);
     key = snapshot.key;
-    name = snapshot.value["name"];
-    address = snapshot.value["address"];
-    photo  = snapshot.value["photo"];
-    description =  snapshot.value["description"];
-    menu = snapshot.value["menu"];
+    name = snapshot.value["name"]?? "";
+    address = snapshot.value["address"]?? "";
+    photo  = snapshot.value["photo"]?? "";
+    description =  snapshot.value["description"]?? "";
+    menu = snapshot.value["menu"]?? "";
     isPreferred = snapshot.value["preferred"] ?? false;
-    var days = snapshot.value["daily_hours"];
+    var days = snapshot.value["daily_hours"]?? [];
+    if (days != null){
+      dailyHours.add(days["mon"]);
+      dailyHours.add(days["tues"]);
+      dailyHours.add(days["wed"]);
+      dailyHours.add(days["thur"]);
+      dailyHours.add(days["fri"]);
+      dailyHours.add(days["sat"]);
+      dailyHours.add(days["sun"]);
+    }
+    lat = _lat;
+    long = _long;
+  }
+
+  Vendor.fromMap(String _key, dynamic data, double _lat, double _long){
+    key = _key;
+    name = data["name"];
+    address = data["address"];
+    photo  = data["photo"];
+    description =  data["description"];
+    menu = data["menu"];
+    isPreferred = data["preferred"] ?? false;
+    var days = data["daily_hours"];
     if (days != null){
       dailyHours.add(days["mon"]);
       dailyHours.add(days["tues"]);

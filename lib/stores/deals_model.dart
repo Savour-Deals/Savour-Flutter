@@ -38,7 +38,7 @@ class Deals {
 
   List<Deal> getDealsByValue(){
     var sortedDeals = getAllDeals();
-    sortedDeals.sort((a, b) => a.value.compareTo(b.value));
+    sortedDeals.sort((a, b) => b.value.compareTo(a.value));
     return sortedDeals;
   }
 
@@ -52,6 +52,15 @@ class Deals {
     return getAllDeals().where((deal) => deal.filters.contains(filters[idx].toLowerCase())).toList();
   }
 
+  bool containsDeal(String key){
+    return _deals.indexWhere((deal) => deal.key == key) >=0 ;
+  }
 
-  
+  Deal getDealByKey(String key){
+    return _deals.firstWhere((deal) => deal.key == key);
+  }
+
+  List<Deal> getFavorites(){
+    return getAllDeals().where((deal) => deal.favorited).toList();
+  }
 }
