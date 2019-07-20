@@ -24,21 +24,45 @@ class MapPageWidget extends StatefulWidget {
 class _MapPageWidgetState extends State<MapPageWidget> {
 
   Completer<GoogleMapController> _controller = Completer();
-  List<Marker> _markers = new List<Marker>();
+  Map<MarkerId,Marker> _markers = new Map<MarkerId,Marker>();
   static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
+    target: LatLng(44.977489, -93.264374),
+    zoom: 12.4746,
   );
+
+
+  void _onMarkerPressed(MarkerId markerId) {
+
+  }
+
 
   // static final CameraPosition _kLake = CameraPosition(
   //     bearing: 192.8334901395799,
   //     target: LatLng(37.43296265331129, -122.08832357078792),
   //     tilt: 59.440717697143555,
   //     zoom: 19.151926040649414);
+  @override
+  void initState() {
+    for (Vendor vendor in this.widget.vendors) {
+      vendor;
+      vendor.long;
+      vendor.lat;
+
+      MarkerId markerId = new MarkerId(vendor.name);
+      Marker marker = new Marker(
+        markerId: markerId,
+        position: LatLng(vendor.lat,vendor.long),
+        onTap: () {
+          _onMarkerPressed(markerId);
+        }
+      );
+    }
+
+  }
+
 
   @override
   Widget build(BuildContext context) {
-
     return PlatformScaffold(
       appBar: PlatformAppBar(
         title: Text("Savour Deals",
