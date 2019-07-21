@@ -52,12 +52,16 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       Marker marker = new Marker(
         markerId: markerId,
         position: LatLng(vendor.lat,vendor.long),
+        infoWindow: InfoWindow(title: vendor.name,snippet: vendor.description),
         onTap: () {
           _onMarkerPressed(markerId);
         }
       );
-    }
 
+      setState(() {
+        _markers[markerId] = marker;
+      });
+    }
   }
 
 
@@ -87,6 +91,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);
         },
+        markers: Set<Marker>.of(_markers.values),
       ),
     );
 
