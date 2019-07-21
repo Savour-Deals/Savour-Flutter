@@ -109,9 +109,11 @@ packages:
   flutter_geofire:
     dependency: "direct main"
     description:
-      path: "../flutter_geofire"
-      relative: true
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: d7467f328a90214f4e9596ea216d09d63e774d78
+      url: "https://github.com/Savour-Deals/flutter_geofire.git"
+    source: git
     version: "0.0.2"
   flutter_platform_widgets:
     dependency: "direct main"
