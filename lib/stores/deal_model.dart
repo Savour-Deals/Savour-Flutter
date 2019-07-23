@@ -158,7 +158,6 @@ class Deal {
     type = snapshot.value["filter"] ?? "";
     value = snapshot.value["value"] ?? 0;
     vendorName = snapshot.value["vendor_name"]?? "Blank";
-    
     for (var filter in snapshot.value["filters"]){
       filters.add(filter);
     }

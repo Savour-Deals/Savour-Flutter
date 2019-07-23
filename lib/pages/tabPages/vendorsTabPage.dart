@@ -105,8 +105,21 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   Widget build(BuildContext context) {
     return PlatformScaffold(
       appBar: PlatformAppBar(
-        title: Text("Savour Deals",
-          style: whiteTitle,
+        title: Image.asset("images/Savour_White.png"),
+        leading: FlatButton(
+          child: Icon(Icons.search,
+            color: Colors.white,
+          ),
+          onPressed: (){
+            Navigator.push(context,
+              platformPageRoute(
+                builder: (BuildContext context) {
+                  return SearchPageWidget(vendors: vendors);
+                },
+                fullscreenDialog: true
+              )
+            );
+          },
         ),
         ios: (_) => CupertinoNavigationBarData(
           backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
