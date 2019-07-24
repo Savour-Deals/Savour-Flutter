@@ -70,7 +70,7 @@ PODS:
     - GeoFire
   - GeoFire (3.0.0):
     - Firebase/Database (~> 5.0)
-  - geolocator (5.0.1):
+  - "geolocator (5.1.1+1)":
     - Flutter
   - google_api_availability (2.0.1):
     - Flutter
@@ -115,9 +115,13 @@ PODS:
     - nanopb/encode (= 0.3.901)
   - nanopb/decode (0.3.901)
   - nanopb/encode (0.3.901)
+  - OneSignal (2.10.0)
+  - onesignal_flutter (2.0.0):
+    - Flutter
+    - OneSignal (< 3.0, >= 2.9.5)
   - path_provider (0.0.1):
     - Flutter
-  - permission_handler (3.1.0):
+  - "permission_handler (3.2.1+1)":
     - Flutter
   - share (0.5.2):
     - Flutter
@@ -137,6 +141,8 @@ DEPENDENCIES:
   - google_api_availability (from `.symlinks/plugins/google_api_availability/ios`)
   - google_maps_flutter (from `.symlinks/plugins/google_maps_flutter/ios`)
   - location_permissions (from `.symlinks/plugins/location_permissions/ios`)
+  - OneSignal (< 3.0, >= 2.9.3)
+  - onesignal_flutter (from `.symlinks/plugins/onesignal_flutter/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
   - share (from `.symlinks/plugins/share/ios`)
@@ -162,6 +168,7 @@ SPEC REPOS:
     - GTMSessionFetcher
     - leveldb-library
     - nanopb
+    - OneSignal
 
 EXTERNAL SOURCES:
   firebase_auth:
@@ -184,6 +191,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/google_maps_flutter/ios"
   location_permissions:
     :path: ".symlinks/plugins/location_permissions/ios"
+  onesignal_flutter:
+    :path: ".symlinks/plugins/onesignal_flutter/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
   permission_handler:
@@ -213,7 +222,7 @@ SPEC CHECKSUMS:
   flutter_facebook_login: be61e24a4b7d621515353c6b4583d1981bdaa3d6
   flutter_geofire: afdb697674098a0de9971583aaadd196337ca7bc
   GeoFire: e3ae6f4be3f2466c3467ef6c1c203db3af935c59
-  geolocator: f3dd3b5b1761a15a4da00665774c5a8319e657d6
+  geolocator: 9041fddc3646e5144b49c9843632365ef78d6ac2
   google_api_availability: 163b30f802e6148c67f092aa4501c90ddd8eec8d
   google_maps_flutter: 78a52114c898b42ea647919679a4c58b70abe876
   GoogleAppMeasurement: ffe513e90551844a739e7bcbb1d2aca1c28a4338
@@ -223,12 +232,14 @@ SPEC CHECKSUMS:
   leveldb-library: 08cba283675b7ed2d99629a4bc5fd052cd2bb6a5
   location_permissions: 67cfaff583afbb027a9f9248196f4b79c40f3cdc
   nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
+  OneSignal: 0f5ff711d9f25da54885e4ab06ef0abc221a46ef
+  onesignal_flutter: 9f295af4ef4a987342bb374c5988392e076ccafd
   path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
-  permission_handler: fa6b0d784b1a43cb96b468a5b8365cb130b1956a
+  permission_handler: 6a1b2f94f866da8bd19fa67f3c8f4b9f38580efb
   share: 7d22fe8baedfe93aefd864bf0b73f29711fbb0a3
   shared_preferences: 1feebfa37bb57264736e16865e7ffae7fc99b523
   url_launcher: 0067ddb8f10d36786672aa0722a21717dba3a298
 
-PODFILE CHECKSUM: 29d86bbea721fe6efce858e89c3d550f46f8cf57
+PODFILE CHECKSUM: 6ba71d44e29211829a9da4f2890dc70eb6c5cb14
 
 COCOAPODS: 1.7.1

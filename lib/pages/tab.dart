@@ -1,11 +1,13 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
 import 'package:permission_handler/permission_handler.dart';
-// import 'package:onesignal/onesignal.dart';
-// import 'package:onesignalflutter/onesignalflutter.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 
 class SavourTabPage extends StatefulWidget {
@@ -34,9 +36,6 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     initPlatformState();
   }
 
-  
-
-
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     WidgetsBinding.instance.addObserver(this);
@@ -44,6 +43,56 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     setState(() {
       locationStatus = newState;
     });
+    if (!mounted) return;
+
+    var user = await FirebaseAuth.instance.currentUser();
+
+    var settings = {
+      OSiOSSettings.autoPrompt: false,
+      OSiOSSettings.promptBeforeOpeningPushUrl: true
+    };
+
+    OneSignal.shared.setNotificationReceivedHandler((OSNotification notification) {
+      this.setState(() {
+        print("Received notification: \n${notification.jsonRepresentation().replaceAll("\\n", "\n")}");
+      });
+    });
+
+    OneSignal.shared.setNotificationOpenedHandler((OSNotificationOpenedResult result) {
+      this.setState(() {
+        print("Opened notification: \n${result.notification.jsonRepresentation().replaceAll("\\n", "\n")}");
+      });
+    });
+
+    OneSignal.shared.setInAppMessageClickedHandler((OSInAppMessageAction action) {
+      this.setState(() {
+        print("In App Message Clicked: \n${action.jsonRepresentation().replaceAll("\\n", "\n")}");
+      });
+    });
+
+    OneSignal.shared.setSubscriptionObserver((OSSubscriptionStateChanges changes) {
+      print("SUBSCRIPTION STATE CHANGED: ${changes.jsonRepresentation()}");
+    });
+
+    OneSignal.shared.setPermissionObserver((OSPermissionStateChanges changes) {
+      print("PERMISSION STATE CHANGED: ${changes.jsonRepresentation()}");
+    });
+
+    OneSignal.shared.setEmailSubscriptionObserver((OSEmailSubscriptionStateChanges changes) {
+      print("EMAIL SUBSCRIPTION STATE CHANGED ${changes.jsonRepresentation()}");
+    });
+
+    await OneSignal.shared.init("f1c64902-ab03-4674-95e9-440f7c8f33d0", iOSSettings: settings);
+
+    OneSignal.shared.setInFocusDisplayType(OSNotificationDisplayType.notification);
+
+    OneSignal.shared.promptUserForPushNotificationPermission().then((accepted) {
+      print("Accepted permission: $accepted");
+      if (user.email != null){
+        OneSignal.shared.setEmail();
+      }
+    });
+
   }
 
   @override
@@ -204,7 +253,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
             Padding(
               padding: const EdgeInsets.all(15.0),
               child: Text(
-                "We need your location to find all the deals nearby. Click the button below to enable location in settings.", 
+                "We need your location to find all the nearby deals. Click the button below to enable location in settings.", 
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 20,),
               ),

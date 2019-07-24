@@ -4,6 +4,9 @@ platform :ios, '10.0'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
+# ignore all warnings from all pods
+inhibit_all_warnings!
+
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
@@ -63,6 +66,13 @@ target 'Runner' do
 end
 
 # Prevent Cocoapods from embedding a second Flutter framework and causing an error with the new Xcode build system.
+# install! 'cocoapods', :disable_input_output_paths => true
+
+target 'OneSignalNotificationServiceExtension' do
+  use_frameworks!
+  pod 'OneSignal', '>= 2.9.3', '< 3.0'
+end
+
 install! 'cocoapods', :disable_input_output_paths => true
 
 post_install do |installer|
