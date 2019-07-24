@@ -19,8 +19,9 @@ import 'package:savour_deals_flutter/themes/theme.dart';
 class SearchPageWidget extends StatefulWidget {
   final Deals deals;
   final List<Vendor> vendors;
+  final Position location;
 
-  SearchPageWidget({this.deals, this.vendors});
+  SearchPageWidget({this.deals, this.vendors, this.location});
 
   @override
   _SearchPageWidgetState createState() => _SearchPageWidgetState();
@@ -35,7 +36,6 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
   final _controller = TextEditingController();
   FocusNode _focusNode = FocusNode();
-  bool isFocused;
   
   //Location variables
   final _locationService = Geolocator();
@@ -51,8 +51,23 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       _vendors = widget.vendors;
       _filteredVendors = _vendors;
     }
+    currentLocation = widget.location;
     initPlatform();
   }
+  
+  // @override 
+  // void deactivate(){
+  //   super.deactivate();
+  //   _controller.dispose();
+  //   _focusNode.dispose();
+  // }
+
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   _controller.dispose();
+  //   _focusNode.dispose();
+  // }
 
   bool isDealSearch(){
     return (widget.deals != null);
@@ -60,12 +75,11 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
   void initPlatform() async {
     try {
+      // FocusScope.of(context).requestFocus(_focusNode);
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
         currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-        FocusScope.of(context).requestFocus(_focusNode);
-        setState(() {});
         _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
           if (this.mounted){
             setState(() {
@@ -157,56 +171,52 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   }
 
   Widget bodyWidget(){
-    if (currentLocation != null){
-      if(isDealSearch()){
-        _filteredDeals.sort((a, b) => compareDistanceDeal(a, b));
-        return (_filteredDeals.length > 0)? ListView.builder(
-          itemCount: _filteredDeals.length,
-          itemBuilder: (BuildContext context, int index) {
-            return GestureDetector(
-              onTap: () {
-                print(_filteredDeals[index].key + " clicked");
-                Navigator.push(
-                  context,
-                  platformPageRoute(
-                    builder: (context) => DealPageWidget(_filteredDeals[index], currentLocation),
-                  ),
-                );
-              },
-              child: DealCard(_filteredDeals[index], currentLocation, true),
-            );
-          },
-        ):
-        Center (
-          child: Text("No Deals Found!", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
-        );    
-      }else{
-        _filteredVendors.sort((a, b) => compareDistanceVendor(a, b));
-        return (_filteredVendors.length > 0)? ListView.builder(
-          itemCount: _filteredVendors.length,
-          itemBuilder: (BuildContext context, int index) {
-            return GestureDetector(
-              onTap: () {
-                print(_filteredVendors[index].key + " clicked");
-                Navigator.push(
-                  context,
-                  platformPageRoute(
-                    builder: (context) => VendorPageWidget(_filteredVendors[index]),
-                  ),
-                );
-              },
-              child: VendorCard(_filteredVendors[index], currentLocation),
-            );
-          },
-        ):
-        Center (
-          child: Text("No Vendors Found!", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
-        );
-      }
-    }else{
-      return Center (
-        child: PlatformCircularProgressIndicator()
+    if(isDealSearch()){
+      _filteredDeals.sort((a, b) => compareDistanceDeal(a, b));
+      return (_filteredDeals.length > 0)? ListView.builder(
+        itemCount: _filteredDeals.length,
+        itemBuilder: (BuildContext context, int index) {
+          return GestureDetector(
+            onTap: () {
+              print(_filteredDeals[index].key + " clicked");
+              FocusScope.of(context).requestFocus(new FocusNode());
+              Navigator.push(
+                context,
+                platformPageRoute(
+                  builder: (context) => DealPageWidget(_filteredDeals[index], currentLocation),
+                ),
+              );
+            },
+            child: DealCard(_filteredDeals[index], currentLocation, true),
+          );
+        },
+      ):
+      Center (
+        child: Text("No Deals Found!", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
       );    
+    }else{
+      _filteredVendors.sort((a, b) => compareDistanceVendor(a, b));
+      return (_filteredVendors.length > 0)? ListView.builder(
+        itemCount: _filteredVendors.length,
+        itemBuilder: (BuildContext context, int index) {
+          return GestureDetector(
+            onTap: () {
+              print(_filteredVendors[index].key + " clicked");
+              FocusScope.of(context).requestFocus(new FocusNode());
+              Navigator.push(
+                context,
+                platformPageRoute(
+                  builder: (context) => VendorPageWidget(_filteredVendors[index]),
+                ),
+              );
+            },
+            child: VendorCard(_filteredVendors[index], currentLocation),
+          );
+        },
+      ):
+      Center (
+        child: Text("No Vendors Found!", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+      );
     }
   }  
 }
@@ -269,14 +279,23 @@ class SearchTextField extends StatelessWidget {
         style: new TextStyle(fontSize: 16, color: Colors.white),
         decoration: InputDecoration(
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: Colors.white, width: 2.5),
             borderRadius: BorderRadius.all(Radius.circular(5)),
           ),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: Colors.white, width: 2.5),
-            borderRadius: BorderRadius.all(Radius.circular(20)),
+            borderRadius: BorderRadius.all(Radius.circular(5)),
+            // borderRadius: BorderRadius.all(Radius.circular(20)),
           ),
-          suffixIcon: Icon(Icons.search, color: Colors.white,),
+          suffixIcon: (focusNode.hasFocus)? 
+            GestureDetector(
+              child: Icon(Icons.cancel, color: Colors.white,),
+              onTap: (){
+                controller.clear();
+                FocusScope.of(context).requestFocus(new FocusNode());
+              },
+            ):
+            Icon(Icons.search, color: Colors.white,),
           border: InputBorder.none,
           hintText: "Search " + ((isDealSearch)? "Deals": "Vendors"),
           hintStyle: TextStyle(fontSize: 16, color: Colors.white),

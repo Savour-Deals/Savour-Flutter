@@ -109,25 +109,27 @@ class _DealsPageState extends State<DealsPageWidget> {
     var long = data["long"];
     if (this.mounted){
       vendorRef.child(data["key"]).onValue.listen((vendorEvent) => {
-        setState(() {
-          Vendor newVendor = Vendor.fromSnapshot(vendorEvent.snapshot, lat, long);
-          if (!vendors.contains(newVendor)){
-            vendors.add(newVendor); 
-            dealRef.orderByChild("vendor_id").equalTo(newVendor.key).onValue.listen((dealEvent) {
-              if (this.mounted){
-                setState(() {
-                  Map<String, dynamic> dealDataMap = new Map<String, dynamic>.from(dealEvent.snapshot.value);
-                  dealDataMap.forEach((key,data){
-                    var thisVendor = vendors.firstWhere((v)=> v.key == data["vendor_id"]);
-                    Deal newDeal = new Deal.fromMap(key, data, thisVendor, user.uid);
-                    newDeal.favorited = favorites.containsKey(newDeal.key);
-                    deals.addDeal(newDeal);
+        if (vendorEvent.snapshot != null){
+          setState(() {
+            Vendor newVendor = Vendor.fromSnapshot(vendorEvent.snapshot, lat, long);
+            if (!vendors.contains(newVendor)){
+              vendors.add(newVendor); 
+              dealRef.orderByChild("vendor_id").equalTo(newVendor.key).onValue.listen((dealEvent) {
+                if (this.mounted && dealEvent.snapshot != null){
+                  setState(() {
+                    Map<String, dynamic> dealDataMap = new Map<String, dynamic>.from(dealEvent.snapshot.value);
+                    dealDataMap.forEach((key,data){
+                      var thisVendor = vendors.firstWhere((v)=> v.key == data["vendor_id"]);
+                      Deal newDeal = new Deal.fromMap(key, data, thisVendor, user.uid);
+                      newDeal.favorited = favorites.containsKey(newDeal.key);
+                      deals.addDeal(newDeal);
+                    });
                   });
-                });
-              }
-            });
-          }
-        })
+                }
+              });
+            }
+          })
+        }
       });
     }
   }
@@ -153,7 +155,7 @@ class _DealsPageState extends State<DealsPageWidget> {
             Navigator.push(context,
               platformPageRoute(
                 builder: (BuildContext context) {
-                  return SearchPageWidget(deals: deals);
+                  return SearchPageWidget(deals: deals, location: currentLocation,);
                 },
                 fullscreenDialog: true
               )

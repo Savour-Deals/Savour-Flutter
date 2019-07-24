@@ -73,17 +73,19 @@ class _VendorsPageState extends State<VendorsPageWidget> {
     var long = data["long"];
     if (this.mounted){
       vendorRef.child(data["key"]).onValue.listen((event) => {
-        setState(() {
-          Vendor newVendor = Vendor.fromSnapshot(event.snapshot, lat, long);
-          var idx = vendors.indexWhere((d) => d.key == newVendor.key);
-          if (idx < 0) {//Dont have vendor yet
-            vendors.add(newVendor);
-            vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
-          }else{//vendor present. Update vendor
-            vendors[idx] = newVendor;
-            vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
-          }
-        })
+        if (event.snapshot != null){
+          setState(() {
+            Vendor newVendor = Vendor.fromSnapshot(event.snapshot, lat, long);
+            var idx = vendors.indexWhere((d) => d.key == newVendor.key);
+            if (idx < 0) {//Dont have vendor yet
+              vendors.add(newVendor);
+              vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
+            }else{//vendor present. Update vendor
+              vendors[idx] = newVendor;
+              vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
+            }
+          })
+        }
       });
     }
   }
@@ -114,7 +116,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
             Navigator.push(context,
               platformPageRoute(
                 builder: (BuildContext context) {
-                  return SearchPageWidget(vendors: vendors);
+                  return SearchPageWidget(vendors: vendors, location: currentLocation,);
                 },
                 fullscreenDialog: true
               )
@@ -159,7 +161,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
             itemCount: vendors.length,
           ),
           Align(
-            alignment: Alignment(0.95, 0.95),
+            alignment: Alignment(0.95, 0.85),
             child: FloatingActionButton(
               heroTag: null,
               backgroundColor: SavourColorsMaterial.savourGreen,
