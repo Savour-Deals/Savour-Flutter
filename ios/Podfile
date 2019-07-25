@@ -57,12 +57,31 @@ target 'Runner' do
   }
 
   # Plugin Pods
+   # # Temorary!!
   plugin_pods = parse_KV_file('../.flutter-plugins')
   plugin_pods.map { |p|
-    symlink = File.join('.symlinks', 'plugins', p[:name])
-    File.symlink(p[:path], symlink)
-    pod p[:name], :path => File.join(symlink, 'ios')
+    if p[:name] == 'OneSignal'
+      pod 'OneSignal', :path => '~/onesignal'
+    else
+      symlink = File.join('.symlinks', 'plugins', p[:name])
+      File.symlink(p[:path], symlink)
+      pod p[:name], :path => File.join(symlink, 'ios')
+    end
   }
+
+  # ORIGINAL
+  # plugin_pods = parse_KV_file('../.flutter-plugins')
+  # plugin_pods.map { |p|
+  #   if p[:name] == 'FLUTTER_FRAMEWORK_DIR'
+  #     symlink = File.join('.symlinks', 'flutter')
+  #     File.symlink(File.dirname(p[:path]), symlink)
+  #     pod 'Flutter', :path => File.join(symlink, File.basename(p[:path]))
+  #   else
+  #     symlink = File.join('.symlinks', 'plugins', p[:name])
+  #     File.symlink(p[:path], symlink)
+  #     pod p[:name], :path => File.join(symlink, 'ios')
+  #   end
+  # }
 end
 
 # Prevent Cocoapods from embedding a second Flutter framework and causing an error with the new Xcode build system.
@@ -70,7 +89,8 @@ end
 
 target 'OneSignalNotificationServiceExtension' do
   use_frameworks!
-  pod 'OneSignal', '>= 2.9.3', '< 3.0'
+  # pod 'OneSignal', '>= 2.9.3', '< 3.0'
+  pod 'OneSignal', :path => '~/onesignal'
 end
 
 install! 'cocoapods', :disable_input_output_paths => true
