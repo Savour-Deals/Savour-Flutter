@@ -231,7 +231,7 @@ class _DealsPageState extends State<DealsPageWidget> {
             itemCount: deals.filters.length+2,
           ),
           Align(
-            alignment: Alignment(0.95, 0.85),
+            alignment: Alignment(0.90, 0.85),
             child: FloatingActionButton(
               heroTag: null,
               backgroundColor: SavourColorsMaterial.savourGreen,
