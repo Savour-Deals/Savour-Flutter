@@ -14,6 +14,11 @@ class _DealsPageState extends State<DealsPageWidget> {
   final _locationService = Geolocator();
   Position currentLocation;
 
+  //Declare contextual variables
+  AppState appState;
+  NotificationData notificationData;
+  ThemeData theme;
+
   //database variables 
   DatabaseReference vendorRef = FirebaseDatabase().reference().child("Vendors");
   DatabaseReference dealRef = FirebaseDatabase().reference().child("Deals");
@@ -40,6 +45,7 @@ class _DealsPageState extends State<DealsPageWidget> {
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
         currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+
         geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
         geo.onKeyEntered.listen((data){
           keyEntered(data);
@@ -129,6 +135,32 @@ class _DealsPageState extends State<DealsPageWidget> {
     }
   }
 
+  Future<Deal> getDeal(String dealID) async {
+    if(!deals.containsDeal(dealID)){
+      return await FirebaseDatabase().reference().child("Deals").child(dealID).once().then((dealSnap) async {
+        var newVendor;
+        newVendor = await getVendor(dealSnap.value["vendor_id"]);        
+        var newDeal = Deal.fromSnapshot(dealSnap, newVendor, user.uid);
+        deals.addDeal(newDeal);//save it for future use
+        return newDeal;
+      });
+    }
+    //If the deal is already here, send it back
+    return deals.getDealByKey(dealID);
+  }
+
+  Future<Vendor> getVendor(String vendorID) async {
+    if(vendors.indexWhere((vendor) => vendor.key == vendorID) < 0){
+      return await FirebaseDatabase().reference().child("Vendors").child(vendorID).once().then((vendorSnap) {
+        var newVendor = Vendor.fromSnapshot(vendorSnap, currentLocation.latitude, currentLocation.longitude);
+        vendors.add(newVendor);
+        return newVendor;//save it for future use
+      });
+    }
+    //If the vendor is already here, send it back
+    return vendors.firstWhere((vendor) => vendor.key == vendorID);
+  }
+
   void keyExited(dynamic data){
     // print("key exited dealsPage: " + data["key"]);
     if (this.mounted){
@@ -138,8 +170,27 @@ class _DealsPageState extends State<DealsPageWidget> {
     }
   }
 
+  void displayNotiDeal() async {
+    if (notificationData.isNotiDealPresent){
+      Deal notiDeal = await getDeal(notificationData.consumeNotiDealID);
+      print("DealID: ${notiDeal.key}");
+      Navigator.push(
+        context,
+        platformPageRoute(
+          builder: (context) => DealPageWidget(notiDeal,currentLocation),
+        ),
+      );
+    }else{
+      print("No DealID");
+    }
+  }
   @override
   Widget build(BuildContext context) {
+    appState = Provider.of<AppState>(context);
+    notificationData = Provider.of<NotificationData>(context);
+    if (notificationData.isNotiDealPresent) displayNotiDeal(); //check to make sure we already are pending a notification deal
+    notificationData.addListener(() => displayNotiDeal());//if not, listen for changes!
+    theme = Theme.of(context);
     return PlatformScaffold(
       appBar: PlatformAppBar(
         title: Text("Savour Deals",
@@ -167,13 +218,13 @@ class _DealsPageState extends State<DealsPageWidget> {
           )
         ],
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
           heroTag: "dealTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
         ),
       ),

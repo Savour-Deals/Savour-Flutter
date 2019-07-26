@@ -14,6 +14,10 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   final _locationService = Geolocator();
   Position currentLocation;
 
+  //Declare contextual variables
+  AppState appState;
+  ThemeData theme;
+
   //database variables 
   DatabaseReference vendorRef = FirebaseDatabase().reference().child("Vendors");
   final geo = Geofire();
@@ -103,19 +107,21 @@ class _VendorsPageState extends State<VendorsPageWidget> {
 
   @override
   Widget build(BuildContext context) {
+    appState = Provider.of<AppState>(context);
+    theme = Theme.of(context);
     return PlatformScaffold(
       appBar: PlatformAppBar(
         title: Text("Savour Deals",
           style: whiteTitle,
         ),
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
           heroTag: "vendorTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
         ),
       ),

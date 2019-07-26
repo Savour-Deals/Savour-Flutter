@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
-// import 'package:location/location.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/pulsator.dart';
@@ -14,9 +15,6 @@ import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-
-
 
 class DealPageWidget extends StatefulWidget {
   final Deal deal;
@@ -34,6 +32,10 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   int _start = 0;
   String timerString= "";
   DatabaseReference redemptionRef;
+
+  //Declare contextual variables
+  AppState appState;
+  ThemeData theme;
 
   @override
   void initState() {
@@ -69,18 +71,20 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    appState = Provider.of<AppState>(context);
+    theme = Theme.of(context);
     return PlatformScaffold(
       appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
           leading: CupertinoNavigationBarBackButton(color: Colors.white,),
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
           heroTag: "dealPage",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           leading: BackButton(color: Colors.white,),
           brightness: Brightness.dark,
           centerTitle: true,
@@ -249,6 +253,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
                 Navigator.of(context).pop();
                 print("Deal " + widget.deal.key + " redeemed!");
                 var redemptionTime = widget.deal.redeemedTime = DateTime.now().millisecondsSinceEpoch~/1000;
+                OneSignal.shared.sendTag(widget.deal.vendor.key, true);
                 redemptionRef.set(redemptionTime);
                 setState(() {
                   widget.deal.redeemed = true;

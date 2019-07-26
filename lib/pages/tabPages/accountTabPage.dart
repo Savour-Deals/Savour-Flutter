@@ -15,6 +15,10 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
   String userPhoto;
   SharedPreferences prefs;
 
+  //Declare contextual variables
+  AppState appState;
+  ThemeData theme;
+
   @override
   void initState() { 
     super.initState();
@@ -22,7 +26,6 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
   }
 
   void initialize() async {
-    prefs = await SharedPreferences.getInstance();
     _auth.currentUser().then((_userData) {
       setState(() {
         user = _userData;
@@ -32,18 +35,20 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
 
   @override
   Widget build(BuildContext context) {
+    appState = Provider.of<AppState>(context);
+    theme = Theme.of(context);
     return PlatformScaffold(
       appBar: PlatformAppBar(
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: Theme.of(context).bottomAppBarColor,
-          brightness: Theme.of(context).brightness,
+          backgroundColor: theme.bottomAppBarColor,
+          brightness: theme.brightness,
           heroTag: "dealTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: Theme.of(context).bottomAppBarColor,
+          backgroundColor: theme.bottomAppBarColor,
           elevation: 0.0,
-          brightness: Theme.of(context).brightness,
+          brightness: theme.brightness,
         ),
         trailingActions: <Widget>[
           FlatButton(
@@ -83,7 +88,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 style: TextStyle(fontWeight: 
                   FontWeight.bold, 
                   fontSize: 20.0,
-                  color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black,
+                  color: appState.isDark? Colors.white:Colors.black,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -93,12 +98,12 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.people,
-                    color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black,
+                    color: appState.isDark? Colors.white:Colors.black,
                   ),
                 ),
                 title: Text(
                   "Click to invite more friends!",
-                  style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
+                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                 ),
                 contentPadding: EdgeInsets.all(4.0),
                 onTap: () =>{
@@ -114,12 +119,12 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.mail,
-                    color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black,
+                    color: appState.isDark? Colors.white:Colors.black,
                   ),
                 ),
                 title: Text(
                   "Contact Us",
-                  style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
+                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                 ),
                 contentPadding: EdgeInsets.all(4.0),
                 onTap: ()=> _launchURL('https://www.savourdeals.com/contact/'),
@@ -133,17 +138,14 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.notifications_active,
-                    color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black,
+                    color: appState.isDark? Colors.white:Colors.black,
                   ),
                 ),
                 title: Text(
                   "Notifications",
-                  style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
+                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                 ),
                 contentPadding: EdgeInsets.all(4.0),
-                // trailing: Slider(
-                //   activeColor: SavourColorsMaterial.savourGreen,
-                // ),
               ),
               decoration: BoxDecoration(
                 border: Border(top: BorderSide(width: 0.1))
@@ -154,12 +156,12 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.people,
-                    color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black,
+                    color: appState.isDark? Colors.white:Colors.black,
                   ),
                 ),
                 title: Text(
                   "Learn more about becoming a vendor!",
-                  style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
+                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                 ),
                 contentPadding: EdgeInsets.all(4.0),
                 onTap: ()=> _launchURL('https://www.savourdeals.com/vendorsinfo'),
@@ -173,22 +175,17 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.lightbulb_outline,
-                    color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black,
+                    color: appState.isDark? Colors.white:Colors.black,
                   ),
                 ),
                 title: Text(
-                  "Switch to " + (MyInheritedWidget.of(context).data.isDark? "light":"dark") + " mode",
-                  style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
+                  "Switch to " + (appState.isDark? "light":"dark") + " mode",
+                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                 ),
                 contentPadding: EdgeInsets.all(4.0),
                 onTap: () {
                   setState(() {
-                    MyInheritedWidget.of(context).data.setDarkMode(!MyInheritedWidget.of(context).data.isDark);
-
-                    // settings.isDark = !settings.isDark;
-                    prefs.setBool('isDark', MyInheritedWidget.of(context).data.isDark);
-                    // AppSettings.of(context).updateShouldNotify(AppSettings.of(context));
-                    print("Dark : " + MyInheritedWidget.of(context).data.isDark.toString());
+                    appState.setDarkMode(!appState.isDark);
                   });
                 },
               ),
@@ -196,7 +193,6 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1)),
               ),
             ),
-
           ],
         ),
       )

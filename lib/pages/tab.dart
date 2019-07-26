@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-
 
 class SavourTabPage extends StatefulWidget {
   SavourTabPage({Key key, this.uid}) : super(key: key);
@@ -23,6 +23,10 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   int _currentIndex = 0;
   PermissionStatus locationStatus = PermissionStatus.unknown;
+
+  //Declare contextual variables
+  AppState appState;
+  ThemeData theme;
 
   List<Widget> _children = [
     DealsPageWidget("Deals Page"),
@@ -52,35 +56,30 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
       OSiOSSettings.promptBeforeOpeningPushUrl: true
     };
 
-    OneSignal.shared.setNotificationReceivedHandler((OSNotification notification) {
-      this.setState(() {
-        print("Received notification: \n${notification.jsonRepresentation().replaceAll("\\n", "\n")}");
-      });
-    });
-
     OneSignal.shared.setNotificationOpenedHandler((OSNotificationOpenedResult result) {
-      this.setState(() {
-        print("Opened notification: \n${result.notification.jsonRepresentation().replaceAll("\\n", "\n")}");
-      });
+      if(result.notification.payload.additionalData.isNotEmpty){
+        if(result.notification.payload.additionalData.containsKey("deal")){
+          var dealID = result.notification.payload.additionalData['deal'];
+          this.setState(() {
+            // print("Opened notification: \n${result.notification.jsonRepresentation().replaceAll("\\n", "\n")}");
+            print("Opened notification with deal ID: $dealID");
+            Provider.of<NotificationData>(context).setNotiDealID(dealID);
+          });
+        }else{
+          this.setState(() {
+            var data = result.notification.payload.additionalData;
+            print("Opened notification with additional data: $data");
+          });
+        }
+      }else{
+        this.setState(() {
+          print("Opened notification with no additional data");
+        });
+      }      
+      return;
     });
 
-    OneSignal.shared.setInAppMessageClickedHandler((OSInAppMessageAction action) {
-      this.setState(() {
-        print("In App Message Clicked: \n${action.jsonRepresentation().replaceAll("\\n", "\n")}");
-      });
-    });
-
-    OneSignal.shared.setSubscriptionObserver((OSSubscriptionStateChanges changes) {
-      print("SUBSCRIPTION STATE CHANGED: ${changes.jsonRepresentation()}");
-    });
-
-    OneSignal.shared.setPermissionObserver((OSPermissionStateChanges changes) {
-      print("PERMISSION STATE CHANGED: ${changes.jsonRepresentation()}");
-    });
-
-    OneSignal.shared.setEmailSubscriptionObserver((OSEmailSubscriptionStateChanges changes) {
-      print("EMAIL SUBSCRIPTION STATE CHANGED ${changes.jsonRepresentation()}");
-    });
+    OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
 
     await OneSignal.shared.init("f1c64902-ab03-4674-95e9-440f7c8f33d0", iOSSettings: settings);
 
@@ -127,6 +126,8 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   }
 
   Widget buildTabWidget(){
+    appState = Provider.of<AppState>(context);
+    theme = Theme.of(context);
     if (locationStatus == PermissionStatus.unknown){
       PermissionHandler().requestPermissions([PermissionGroup.location]);
       return PlatformScaffold(
@@ -135,11 +136,11 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
             style: whiteTitle,
           ),
           ios: (_) => CupertinoNavigationBarData(
-            backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
+            backgroundColor: theme.bottomAppBarColor,//SavourColorsMaterial.savourGreen,
             brightness: Brightness.dark,
           ),
           android: (_) => MaterialAppBarData(
-            backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
+            backgroundColor: theme.bottomAppBarColor,//SavourColorsMaterial.savourGreen,
             brightness: Brightness.dark,
           ),
         ),
@@ -156,9 +157,8 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         bottomNavBar: PlatformNavBar(
           currentIndex: _currentIndex,
           itemChanged: onTabTapped,
-          // type: BottomNavigationBarType.fixed,
           ios: (_) => CupertinoTabBarData(
-            backgroundColor: Theme.of(context).bottomAppBarColor.withOpacity(1),//SavourColorsMaterial.savourGreen,
+            backgroundColor: theme.bottomAppBarColor.withOpacity(1),//SavourColorsMaterial.savourGreen,
           ),
           items: [
             BottomNavigationBarItem(
@@ -176,17 +176,6 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
                 style: TextStyle(color: this.getTabOutlineColor()),
               )
             ),
-            // BottomNavigationBarItem(
-            //   icon: Icon(SavourIcons.icons8_like_2,
-            //     color: this.getTabOutlineColor(),
-            //   ),
-            //   activeIcon: Icon(SavourIcons.filled_heart,
-            //     color: this.getTabOutlineColor(),
-            //   ),
-            //   title: Text('Favorites',
-            //     style: TextStyle(color: this.getTabOutlineColor()),
-            //   )
-            // ),
             BottomNavigationBarItem(
               icon: Image.asset('images/vendor.png',
                 color: this.getTabOutlineColor(),
@@ -202,17 +191,6 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
                 style: TextStyle(color: this.getTabOutlineColor()),
               )
             ),
-            // BottomNavigationBarItem(
-            //   icon: Icon(Icons.map,
-            //     color: this.getTabOutlineColor(),
-            //   ),
-            //   activeIcon: Icon(Icons.map,
-            //     color: this.getTabOutlineColor(),
-            //   ),
-            //   title: Text('Referral',
-            //     style: TextStyle(color: this.getTabOutlineColor()),
-            //   )
-            // ),
             BottomNavigationBarItem(
               icon: Image.asset('images/user.png',
                 color: this.getTabOutlineColor(),
@@ -238,11 +216,11 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
             style: whiteTitle,
           ),
           ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
+          backgroundColor: theme.bottomAppBarColor,//SavourColorsMaterial.savourGreen,
             brightness: Brightness.dark,
           ),
           android: (_) => MaterialAppBarData(
-          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
+          backgroundColor: theme.bottomAppBarColor,//SavourColorsMaterial.savourGreen,
             brightness: Brightness.dark,
           ),
         ),
@@ -272,8 +250,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   }
 
   Color getTabOutlineColor(){
-    return MyInheritedWidget.of(context).data.isDark? Theme.of(context).accentColor:SavourColorsMaterial.savourGreen;
-
+    return appState.isDark? theme.accentColor:SavourColorsMaterial.savourGreen;
   }
 
   void onTabTapped(int index) {

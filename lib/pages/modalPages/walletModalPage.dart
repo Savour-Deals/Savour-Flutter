@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
 import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
@@ -39,6 +40,10 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
   int tabIndex = 0;
   TabController _tabController;
 
+  //Declare contextual variables
+  AppState appState;
+  ThemeData theme;
+
   List<Widget> tabs = [Container(),Container()];
 
   @override
@@ -66,12 +71,6 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
             });
           }
         });
-      } else {
-        // bool serviceStatusResult = await _locationService.requestService();
-        // print("Service status activated after request: $serviceStatusResult");
-        // if(serviceStatusResult){
-        //   initPlatform();
-        // }
       }
     } on PlatformException catch (e) {
       print(e);
@@ -93,12 +92,14 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
+    appState = Provider.of<AppState>(context);
+    theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Image.asset("images/Savour_White.png"),
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+        backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
         brightness: Brightness.dark,
         bottom: Platform.isAndroid? 
         TabBar(
@@ -129,9 +130,9 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
                     child: CupertinoSegmentedControl(
                       borderColor: Colors.white,
                       pressedColor: Colors.white.withOpacity(0.5),
-                      unselectedColor: (Theme.of(context).brightness == Brightness.light) ? 
-                        Theme.of(context).primaryColor: 
-                          Theme.of(context).bottomAppBarColor,
+                      unselectedColor: (theme.brightness == Brightness.light) ? 
+                        theme.primaryColor: 
+                          theme.bottomAppBarColor,
                       selectedColor: Colors.white,
                       groupValue: tabIndex,
                       onValueChanged: (value){
@@ -238,6 +239,9 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
   List<Redemption> redemptions = [];
   bool loaded = false;
 
+  //Declare contextual variables
+  ThemeData theme;
+
   Deals deals;
   List<Vendor> vendors = [];
 
@@ -308,6 +312,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
 
   @override
   Widget build(BuildContext context) {
+    theme = Theme.of(context);
     if (redemptions.length > 0){
       return ListView.builder(
         physics: const AlwaysScrollableScrollPhysics (),
@@ -331,7 +336,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
             child: ListTile(
               contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
               leading: CircleAvatar(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: theme.primaryColor,
                 backgroundImage: AdvancedNetworkImage(
                   redemptions[position-1].redemptionPhoto,
                   retryDuration: Duration(milliseconds: 1),

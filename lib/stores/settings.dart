@@ -1,41 +1,44 @@
 import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../main.dart';
+class AppState with ChangeNotifier {
+  bool _darkModeEnabled = false;  
+  SharedPreferences prefs ;
 
-class InheritedStateWidget extends StatefulWidget {
-  @override
-  InheritedStateWidgetState createState() => InheritedStateWidgetState();
-}
+  AppState() {
+    initAppState();
+  }
 
-class InheritedStateWidgetState extends State<InheritedStateWidget> {
-  bool _isDark = true;
-
-  bool get isDark => _isDark;
+  Future initAppState() async {
+    //see if this has been set before, if not, set to light mode
+    prefs = await SharedPreferences.getInstance();
+    setDarkMode(prefs.getBool('isDark') ?? false);
+  }
 
   void setDarkMode(bool newVal) {
-    setState(() {
-      _isDark = newVal;
-    });
+    _darkModeEnabled = newVal;
+    prefs.setBool('isDark', _darkModeEnabled);
+    notifyListeners();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return new MyInheritedWidget(
-      data: this,
-      child: SavourApp(),
-    );
-  }
+  bool get isDark => _darkModeEnabled;
 }
 
-class MyInheritedWidget extends InheritedWidget {
-  final InheritedStateWidgetState data;
+class NotificationData with ChangeNotifier {
+  String _notiDealID;  
 
-  MyInheritedWidget({Key key, this.data, Widget child})
-      : super(key: key, child: child);
+  NotificationData();
 
-  static MyInheritedWidget of(BuildContext context) =>
-      context.inheritFromWidgetOfExactType(MyInheritedWidget);
+  void setNotiDealID(String newVal) {
+    _notiDealID = newVal;
+    notifyListeners();
+  }
 
-  @override
-  bool updateShouldNotify(MyInheritedWidget old) => true;
+  bool get isNotiDealPresent => (_notiDealID != null);
+
+  String get consumeNotiDealID {
+    var dealID = _notiDealID;
+    _notiDealID = null;
+    return dealID;
+  }
 }
