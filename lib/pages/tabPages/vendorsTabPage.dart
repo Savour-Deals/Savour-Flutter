@@ -33,7 +33,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
-        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
           geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
           geo.onKeyEntered.listen((data){
             keyEntered(data);
@@ -41,7 +41,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           geo.onKeyExited.listen((data){
             keyExited(data);
           });
-          _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
+          _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
             if (this.mounted){
               setState(() {
                 currentLocation = result;
@@ -73,17 +73,19 @@ class _VendorsPageState extends State<VendorsPageWidget> {
     var long = data["long"];
     if (this.mounted){
       vendorRef.child(data["key"]).onValue.listen((event) => {
-        setState(() {
-          Vendor newVendor = Vendor.fromSnapshot(event.snapshot, lat, long);
-          var idx = vendors.indexWhere((d) => d.key == newVendor.key);
-          if (idx < 0) {//Dont have vendor yet
-            vendors.add(newVendor);
-            vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
-          }else{//vendor present. Update vendor
-            vendors[idx] = newVendor;
-            vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
-          }
-        })
+        if (event.snapshot != null){
+          setState(() {
+            Vendor newVendor = Vendor.fromSnapshot(event.snapshot, lat, long);
+            var idx = vendors.indexWhere((d) => d.key == newVendor.key);
+            if (idx < 0) {//Dont have vendor yet
+              vendors.add(newVendor);
+              vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
+            }else{//vendor present. Update vendor
+              vendors[idx] = newVendor;
+              vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
+            }
+          })
+        }
       });
     }
   }
@@ -105,8 +107,21 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   Widget build(BuildContext context) {
     return PlatformScaffold(
       appBar: PlatformAppBar(
-        title: Text("Savour Deals",
-          style: whiteTitle,
+        title: Image.asset("images/Savour_White.png"),
+        leading: FlatButton(
+          child: Icon(Icons.search,
+            color: Colors.white,
+          ),
+          onPressed: (){
+            Navigator.push(context,
+              platformPageRoute(
+                builder: (BuildContext context) {
+                  return SearchPageWidget(vendors: vendors, location: currentLocation,);
+                },
+                fullscreenDialog: true
+              )
+            );
+          },
         ),
         ios: (_) => CupertinoNavigationBarData(
           backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
@@ -129,7 +144,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
         children: <Widget>[
           ListView.builder(
             padding: EdgeInsets.all(0.0),
-            physics: const AlwaysScrollableScrollPhysics (),
+            // physics: const AlwaysScrollableScrollPhysics (),
             itemBuilder: (context, position) {
               return GestureDetector(
                 onTap: () {
@@ -146,7 +161,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
             itemCount: vendors.length,
           ),
           Align(
-            alignment: Alignment(0.95,0.95),
+            alignment: Alignment(0.90, 0.85),
             child: FloatingActionButton(
               heroTag: null,
               backgroundColor: SavourColorsMaterial.savourGreen,

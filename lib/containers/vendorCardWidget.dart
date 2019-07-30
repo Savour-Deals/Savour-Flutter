@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:geolocator/geolocator.dart';
+// import 'package:image/image.dart' as prefix0;
 import 'package:savour_deals_flutter/stores/settings.dart';
 // import 'package:location/location.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
@@ -28,6 +29,7 @@ class _VendorCardState extends State<VendorCard> {
           children: <Widget>[
             Container(
               width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
               child: Image(
                 image: AdvancedNetworkImage(
                   widget.vendor.photo,

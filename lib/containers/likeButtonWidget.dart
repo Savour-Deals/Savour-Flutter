@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:savour_deals_flutter/icons/savour_icons_icons.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:firebase_database/firebase_database.dart';
 
@@ -20,15 +19,19 @@ class _LikeButtonState extends State<LikeButton> {
     
     if (widget.deal.favorited){
       return IconButton(
-        icon: Icon(SavourIcons.filled_heart,
-          color: Colors.red,
-        ), onPressed: () {
+        icon: Image.asset('images/like_filled.png',
+        width: 25,
+        height: 25,
+        color: Colors.red,
+      ), onPressed: () {
           setFavorite(false);
         },
       );
     }
     return IconButton(
-      icon: Icon(SavourIcons.icons8_like_2,
+      icon: Image.asset('images/like.png',
+        width: 25,
+        height: 25,
         color: Colors.red,
       ), onPressed: () {
         setFavorite(true);

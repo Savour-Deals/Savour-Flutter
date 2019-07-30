@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
-import 'package:savour_deals_flutter/icons/savour_icons_icons.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
 import 'package:permission_handler/permission_handler.dart';
 // import 'package:onesignal/onesignal.dart';
@@ -87,11 +86,11 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
             style: whiteTitle,
           ),
           ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
+            backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
             brightness: Brightness.dark,
           ),
           android: (_) => MaterialAppBarData(
-          backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
+            backgroundColor: Theme.of(context).bottomAppBarColor,//SavourColorsMaterial.savourGreen,
             brightness: Brightness.dark,
           ),
         ),
@@ -109,13 +108,20 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
           currentIndex: _currentIndex,
           itemChanged: onTabTapped,
           // type: BottomNavigationBarType.fixed,
+          ios: (_) => CupertinoTabBarData(
+            backgroundColor: Theme.of(context).bottomAppBarColor.withOpacity(1),//SavourColorsMaterial.savourGreen,
+          ),
           items: [
             BottomNavigationBarItem(
-              icon: Icon(SavourIcons.icons8_price_tag_2,
+              icon: Image.asset('images/tags.png',
                 color: this.getTabOutlineColor(),
+                width: 30,
+                height: 30,
               ),
-              activeIcon: Icon(SavourIcons.icons8_price_tag_filled,
+              activeIcon: Image.asset('images/tags_filled.png',
                 color: this.getTabOutlineColor(),
+                width: 30,
+                height: 30,
               ),
               title: Text('Deals',
                 style: TextStyle(color: this.getTabOutlineColor()),
@@ -133,11 +139,15 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
             //   )
             // ),
             BottomNavigationBarItem(
-              icon: Icon(SavourIcons.icons8_small_business,
+              icon: Image.asset('images/vendor.png',
                 color: this.getTabOutlineColor(),
+                width: 30,
+                height: 30,
               ),
-              activeIcon: Icon(SavourIcons.icons8_small_business_filled,
+              activeIcon: Image.asset('images/vendor_filled.png',
                 color: this.getTabOutlineColor(),
+                width: 30,
+                height: 30,
               ),
               title: Text('Vendors',
                 style: TextStyle(color: this.getTabOutlineColor()),
@@ -155,11 +165,15 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
             //   )
             // ),
             BottomNavigationBarItem(
-              icon: Icon(SavourIcons.icons8_user_male_circle,
+              icon: Image.asset('images/user.png',
                 color: this.getTabOutlineColor(),
+                width: 30,
+                height: 30,
               ),
-              activeIcon: Icon(SavourIcons.icons8_user_male_circle_filled,
+              activeIcon: Image.asset('images/user_filled.png',
                 color: this.getTabOutlineColor(),
+                width: 30,
+                height: 30,
               ),
               title: Text('Account',
                 style: TextStyle(color: this.getTabOutlineColor()),

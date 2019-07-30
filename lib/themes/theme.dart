@@ -5,7 +5,7 @@ final ThemeData savourMaterialLightThemeData = new ThemeData(
   brightness: Brightness.light,
   primaryColor: SavourColorsMaterial.savourGreen,
   primaryColorBrightness: Brightness.light,
-  accentColor: Colors.black,
+  accentColor: SavourColorsMaterial.savourGreen,//Colors.black,
   accentColorBrightness: Brightness.light,
   highlightColor: Colors.transparent,
   splashColor: Colors.transparent,
@@ -74,12 +74,12 @@ class NoSplash extends InteractiveInkFeature {
   NoSplash({
     @required MaterialInkController controller,
     @required RenderBox referenceBox,
+    VoidCallback onRemoved,
   })  : assert(controller != null),
         assert(referenceBox != null),
-        super(
-          controller: controller,
-          referenceBox: referenceBox,
-        );
+        super(controller: controller,referenceBox: referenceBox,onRemoved: onRemoved){
+          controller.addInkFeature(this);//Added per https://github.com/flutter/flutter/issues/20874
+        }
 
   @override
   void paintFeature(Canvas canvas, Matrix4 transform) {}
