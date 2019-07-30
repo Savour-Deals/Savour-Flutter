@@ -153,7 +153,7 @@ class _DealsPageState extends State<DealsPageWidget> {
           ),
           onPressed: (){
             Navigator.push(context,
-              platformPageRoute(
+              platformPageRoute(maintainState: false,
                 builder: (BuildContext context) {
                   return SearchPageWidget(deals: deals, location: currentLocation,);
                 },
@@ -174,7 +174,7 @@ class _DealsPageState extends State<DealsPageWidget> {
             // splashColor: Colors.transparent,
             onPressed: (){
               Navigator.push(context,
-                platformPageRoute(
+                platformPageRoute(maintainState: false,
                   builder: (BuildContext context) {
                     return WalletPageWidget(deals,vendors);
                   },
@@ -238,7 +238,7 @@ class _DealsPageState extends State<DealsPageWidget> {
               child: Icon(Icons.pin_drop, color: Colors.white,),
               onPressed: (){
                 Navigator.push(context,
-                  platformPageRoute(
+                  platformPageRoute(maintainState: false,
                     builder: (BuildContext context) {
                       return new MapPageWidget("Map Page", this.vendors);
                     },
@@ -279,6 +279,7 @@ class _DealsPageState extends State<DealsPageWidget> {
         SizedBox(
           height: 300,
           child: (carouselDeals.length <= 0)? Container():PageView.builder(
+            physics: AlwaysScrollableScrollPhysics(),
             // store this controller in a State to save the carousel scroll position
             controller: PageController(viewportFraction: 0.9),
             itemBuilder: (BuildContext context, int item) {
@@ -287,7 +288,7 @@ class _DealsPageState extends State<DealsPageWidget> {
                   print(carouselDeals[item].key + " clicked");
                   Navigator.push(
                     context,
-                    platformPageRoute(
+                    platformPageRoute(maintainState: false,
                       builder: (context) => DealPageWidget(carouselDeals[item], currentLocation),
                     ),
                   );
