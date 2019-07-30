@@ -4,7 +4,9 @@ import 'deal_model.dart';
 
 class Deals {
   List<Deal> _deals = [];
+  // Map<String,List<Deal>> _filteredDeals = {};
   List<String> filters = [];
+  Position location;
 
   Deals();
 
@@ -12,6 +14,10 @@ class Deals {
     var idx = this._deals.indexWhere((d1) => d1.key == newDeal.key);
     if(idx<0){//add newDeal if it doesnt exit
       this._deals.add(newDeal);
+      // for(var dealFilter in this.filters){
+      //   _filteredDeals[dealFilter].add(newDeal);
+      //   _filteredDeals[dealFilter] = sortByDistance(_filteredDeals[dealFilter]);
+      // }
     }else{//otherwise, update the deal
       _deals[idx] = newDeal;
     }
@@ -19,14 +25,25 @@ class Deals {
 
   removeDealWithVendorKey(String key){
     this._deals.removeWhere((deal)=> deal.vendor.key == key);
+    // for (var filter in filters){
+    //   _filteredDeals[filter].removeWhere((deal)=> deal.vendor.key == key);
+    // }
   }
 
   setFavoriteByKey(String key, bool favorite){
-    this._deals[this._deals.indexWhere((deal)=> deal.key == key)].favorited = favorite;
+    var idx = this._deals.indexWhere((deal)=> deal.key == key);
+    this._deals[idx].favorited = favorite;
+    // for (var filter in this._deals[idx].filters){
+    //   var fidx = _filteredDeals[filter].indexWhere((deal)=> deal.key == key);
+    //   if (fidx>0){
+    //     _filteredDeals[filter][fidx].favorited = favorite;
+    //   }
+    // }
   }
 
   addFilter(String filter){
     this.filters.add(filter);
+    // this._filteredDeals[filter] = [];
   }
 
   //These getter functions will filter out inactive or redeemed deals so they dont mess up the display of the deal "pages"
@@ -38,18 +55,23 @@ class Deals {
 
   List<Deal> getDealsByValue(){
     var sortedDeals = getAllDeals();
-    sortedDeals.sort((a, b) => b.value.compareTo(a.value));
+    sortedDeals.sort((a, b) {
+      var comp = b.value.compareTo(a.value);
+      if (comp == 0){
+        return compareDistance(a, b);
+      }
+      return comp;
+    });
     return sortedDeals;
   }
 
-  List<Deal> getDealsByDistance(Position location){
-    var sortedDeals = getAllDeals();
-    sortedDeals.sort((a, b) => a.vendor.distanceMilesFrom(location.latitude,location.longitude).compareTo(b.vendor.distanceMilesFrom(location.latitude,location.longitude)));
-    return sortedDeals;
+  List<Deal> getDealsByDistance(){    
+    return sortByDistance(getAllDeals());
   }
 
   List<Deal> getDealsByFilter(int idx){
-    return getAllDeals().where((deal) => deal.filters.contains(filters[idx].toLowerCase())).toList();
+    var filtDeals = getAllDeals().where((deal) => deal.filters.contains(filters[idx].toLowerCase())).toList();
+    return sortByDistance(filtDeals);
   }
 
   bool containsDeal(String key){
@@ -62,5 +84,18 @@ class Deals {
 
   List<Deal> getFavorites(){
     return getAllDeals().where((deal) => deal.favorited).toList();
+  }
+
+  int compareDistance(Deal a, Deal b){
+    return a.vendor.distanceMilesFrom(location.latitude,location.longitude).compareTo(b.vendor.distanceMilesFrom(location.latitude,location.longitude));
+  }
+
+  List<Deal> sortByDistance(List<Deal> deals){
+    deals.sort((a, b) => compareDistance(a, b));
+    return deals;
+  }
+
+  void setLocation(Position _location){
+    this.location = _location;
   }
 }

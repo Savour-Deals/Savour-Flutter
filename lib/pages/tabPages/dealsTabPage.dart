@@ -25,6 +25,7 @@ class _DealsPageState extends State<DealsPageWidget> {
   Deals deals = Deals();
   Map<String,String> favorites = Map();
 
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +41,7 @@ class _DealsPageState extends State<DealsPageWidget> {
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
         currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+        deals.setLocation(currentLocation);
         geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
         geo.onKeyEntered.listen((data){
           keyEntered(data);
@@ -51,6 +53,7 @@ class _DealsPageState extends State<DealsPageWidget> {
           if (this.mounted){
             setState(() {
               currentLocation = result;
+              deals.setLocation(currentLocation);
             });
             geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
           }
@@ -106,25 +109,27 @@ class _DealsPageState extends State<DealsPageWidget> {
     var long = data["long"];
     if (this.mounted){
       vendorRef.child(data["key"]).onValue.listen((vendorEvent) => {
-        setState(() {
-          Vendor newVendor = Vendor.fromSnapshot(vendorEvent.snapshot, lat, long);
-          if (!vendors.contains(newVendor)){
-            vendors.add(newVendor); 
-            dealRef.orderByChild("vendor_id").equalTo(newVendor.key).onValue.listen((dealEvent) {
-              if (this.mounted){
-                setState(() {
-                  Map<String, dynamic> dealDataMap = new Map<String, dynamic>.from(dealEvent.snapshot.value);
-                  dealDataMap.forEach((key,data){
-                    var thisVendor = vendors.firstWhere((v)=> v.key == data["vendor_id"]);
-                    Deal newDeal = new Deal.fromMap(key, data, thisVendor, user.uid);
-                    newDeal.favorited = favorites.containsKey(newDeal.key);
-                    deals.addDeal(newDeal);
+        if (vendorEvent.snapshot != null){
+          setState(() {
+            Vendor newVendor = Vendor.fromSnapshot(vendorEvent.snapshot, lat, long);
+            if (!vendors.contains(newVendor)){
+              vendors.add(newVendor); 
+              dealRef.orderByChild("vendor_id").equalTo(newVendor.key).onValue.listen((dealEvent) {
+                if (this.mounted && dealEvent.snapshot != null){
+                  setState(() {
+                    Map<String, dynamic> dealDataMap = new Map<String, dynamic>.from(dealEvent.snapshot.value);
+                    dealDataMap.forEach((key,data){
+                      var thisVendor = vendors.firstWhere((v)=> v.key == data["vendor_id"]);
+                      Deal newDeal = new Deal.fromMap(key, data, thisVendor, user.uid);
+                      newDeal.favorited = favorites.containsKey(newDeal.key);
+                      deals.addDeal(newDeal);
+                    });
                   });
-                });
-              }
-            });
-          }
-        })
+                }
+              });
+            }
+          })
+        }
       });
     }
   }
@@ -142,9 +147,22 @@ class _DealsPageState extends State<DealsPageWidget> {
   Widget build(BuildContext context) {
     return PlatformScaffold(
       appBar: PlatformAppBar(
-        title: Text("Savour Deals",
-          style: whiteTitle,
+        leading: FlatButton(
+          child: Icon(Icons.search,
+            color: Colors.white,
+          ),
+          onPressed: (){
+            Navigator.push(context,
+              platformPageRoute(
+                builder: (BuildContext context) {
+                  return SearchPageWidget(deals: deals, location: currentLocation,);
+                },
+                fullscreenDialog: true
+              )
+            );
+          },
         ),
+        title: Image.asset("images/Savour_White.png"),
         trailingActions: <Widget>[
           FlatButton(
             child: Image.asset('images/wallet_filled.png',
@@ -189,12 +207,31 @@ class _DealsPageState extends State<DealsPageWidget> {
             physics: const AlwaysScrollableScrollPhysics (),
             padding: EdgeInsets.only(top: 10.0),
             itemBuilder: (context, position) {
-                return _buildCarousel(context, position);
+              List<Deal> filterDeals = [];
+              var filterText = "";
+              switch (position) {
+                case 0:
+                  filterDeals = deals.getDealsByFilter(0);
+                  filterText = deals.filters[0] + " Deals";
+                  break;
+                case 1: 
+                  filterDeals = deals.getDealsByValue();
+                  filterText = "Deals By Value";
+                  break;
+                case 2:
+                  filterDeals = deals.getDealsByDistance();
+                  filterText = "Deals By Distance";
+                  break;
+                default:
+                  filterDeals = deals.getDealsByFilter(position-2);
+                  filterText = deals.filters[position-2] + " Deals";
+              }
+              return (filterDeals.length > 0)? _buildCarousel(context, position, filterDeals, filterText): Container();
             },
             itemCount: deals.filters.length+2,
           ),
           Align(
-            alignment: Alignment(0.95, 0.95),
+            alignment: Alignment(0.90, 0.85),
             child: FloatingActionButton(
               heroTag: null,
               backgroundColor: SavourColorsMaterial.savourGreen,
@@ -224,26 +261,7 @@ class _DealsPageState extends State<DealsPageWidget> {
     }
   }
 
-  Widget _buildCarousel(BuildContext context, int carouselIndex) {
-    List<Deal> carouselDeals = [];
-    var carouselText = "";
-    switch (carouselIndex) {
-      case 0:
-        carouselDeals = deals.getDealsByFilter(0);
-        carouselText = deals.filters[0] + " Deals";
-        break;
-      case 1: 
-        carouselDeals = deals.getDealsByValue();
-        carouselText = "Deals By Value";
-        break;
-      case 2:
-        carouselDeals = deals.getDealsByDistance(currentLocation);
-        carouselText = "Deals By Distance";
-        break;
-      default:
-        carouselDeals = deals.getDealsByFilter(carouselIndex-2);
-        carouselText = deals.filters[carouselIndex-2] + " Deals";
-    }
+  Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carouselDeals, String carouselText) {
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: <Widget>[
@@ -253,7 +271,7 @@ class _DealsPageState extends State<DealsPageWidget> {
           child: Text(carouselText, 
             textAlign: TextAlign.left, 
             style: TextStyle(
-              fontSize: 20.0,
+              fontSize: 25.0,
               fontWeight: FontWeight.bold,
             ),
           ),
