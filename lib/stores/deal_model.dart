@@ -1,7 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:savour_deals_flutter/utils.dart';
 
 class Deal {
@@ -21,14 +20,15 @@ class Deal {
   int value;
   List<String> filters = [];
   
+  
   Deal(this.key, this.description, this.photo, this.vendor, this.start, this.end, this.favorited, this.activeDays, this.code, this.redeemed, this.redeemedTime, this.type, this.value, this.filters, this.vendorName);
 
   // Live is whether or not the deal is between the start and end date
   bool isLive(){
-    // TODO: unset as favorite
     var now = new DateTime.now();
     var startOfToday = new DateTime(now.year, now.month, now.day);
     //begin showing deal at midnight, the day of and end showing it when it expires
+    //TODO: Move deal to expired deals node when we see its done
     return startOfToday.millisecondsSinceEpoch >= start && now.millisecondsSinceEpoch <= end;
   }
 
@@ -93,19 +93,8 @@ class Deal {
       }else{
           return "Available from " + formatter.format(startTime) + " to " + formatter.format(endTime);
       }
-    }//else{//Not Active today
-        // var inactiveString = "";
-        // for (var i = 0; i < 7; i++) {
-        //   if (activeDays[i]){
-        //       if (inactiveString != ""){
-        //           inactiveString = inactiveString + " ";
-        //       }
-        //       inactiveString = inactiveString + ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday",][i];
-        //   }
-        // }
-        // inactiveString = "Available " + inactiveString.replaceAll(" ", ", ");
-        return "";//inactiveString;
-    // }
+    }
+    return "";
   }
 
   String countdownString(){
@@ -158,7 +147,6 @@ class Deal {
     type = snapshot.value["filter"] ?? "";
     value = snapshot.value["value"] ?? 0;
     vendorName = snapshot.value["vendor_name"]?? "Blank";
-    
     for (var filter in snapshot.value["filters"]){
       filters.add(filter);
     }
@@ -181,14 +169,14 @@ class Deal {
         var now = DateTime.now().millisecondsSinceEpoch;
         var rTime = data["redeemed"][uid].toInt()*1000;//database may contain doubles from old code so round 
         if (now-rTime > 60*60*24*7*2*1000) {
-            //If redeemed 2 weeks ago, allow user to use deal again - Should be changed in the future
-            final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
-            final ref = FirebaseDatabase().reference().child("Deals").child(_key).child("redeemed");
-            ref.child(uid).remove();
-            ref.child(uid+randStr).set(rTime/1000);
+          //If redeemed 2 weeks ago, allow user to use deal again - Should be changed in the future
+          final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
+          final ref = FirebaseDatabase().reference().child("Deals").child(_key).child("redeemed");
+          ref.child(uid).remove();
+          ref.child(uid+randStr).set(rTime/1000);
         }else{
-            redeemed = true;
-            redeemedTime = rTime;
+          redeemed = true;
+          redeemedTime = rTime;
         }
       }
     }
