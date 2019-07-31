@@ -63,7 +63,11 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
       body: (user == null) ? Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[PlatformCircularProgressIndicator()],
+        children: <Widget>[
+          Center (
+            child: PlatformCircularProgressIndicator()
+          ),
+        ],
       ):Center(
         child: ListView(
           children: <Widget>[

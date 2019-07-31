@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
 import 'package:savour_deals_flutter/containers/vendorCardWidget.dart';
 import 'package:savour_deals_flutter/pages/infoPages/dealPage.dart';
+import 'package:savour_deals_flutter/pages/modalPages/searchModalPage.dart';
 import 'package:savour_deals_flutter/pages/modalPages/walletModalPage.dart';
 import 'package:savour_deals_flutter/pages/modalPages/mapModalPage.dart';
 import 'package:savour_deals_flutter/stores/deals_model.dart';

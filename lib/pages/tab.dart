@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:location_permissions/location_permissions.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
+
 
 class SavourTabPage extends StatefulWidget {
   SavourTabPage({Key key, this.uid}) : super(key: key);
@@ -19,7 +20,8 @@ class SavourTabPage extends StatefulWidget {
   _SavourTabPageState createState() => _SavourTabPageState();
 }
 
-class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserver{
+class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserver, SingleTickerProviderStateMixin{
+  TabController controller;
 
   int _currentIndex = 0;
   PermissionStatus locationStatus = PermissionStatus.unknown;
@@ -37,13 +39,14 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   @override
   void initState() {
     super.initState();
+    controller = new TabController(length: 3, vsync: this);
     initPlatformState();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     WidgetsBinding.instance.addObserver(this);
-    var newState = await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
+    var newState = await LocationPermissions().checkPermissionStatus();
     setState(() {
       locationStatus = newState;
     });
@@ -94,11 +97,16 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   }
 
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
   @override
   Future didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.inactive:
-        var newState = await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
+        var newState = await LocationPermissions().checkPermissionStatus();
         setState(() {
           locationStatus = newState;
         });
@@ -107,7 +115,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         print("Paused");
         break;
       case AppLifecycleState.resumed:
-        var newState = await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
+        var newState = await LocationPermissions().checkPermissionStatus();
         setState(() {
           locationStatus = newState;
         });
@@ -129,12 +137,10 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     appState = Provider.of<AppState>(context);
     theme = Theme.of(context);
     if (locationStatus == PermissionStatus.unknown){
-      PermissionHandler().requestPermissions([PermissionGroup.location]);
+      LocationPermissions().requestPermissions(permissionLevel: LocationPermissionLevel.locationAlways);
       return PlatformScaffold(
         appBar: PlatformAppBar(
-          title: Text("Savour Deals",
-            style: whiteTitle,
-          ),
+          title: Text("Savour Deals"),
           ios: (_) => CupertinoNavigationBarData(
             backgroundColor: theme.bottomAppBarColor,//SavourColorsMaterial.savourGreen,
             brightness: Brightness.dark,
@@ -239,7 +245,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
             PlatformButton(
               child: Text("Go to Settings", style: whiteText,),
               onPressed: (){
-                PermissionHandler().openAppSettings(); 
+                LocationPermissions().openAppSettings(); 
               },
               color: SavourColorsMaterial.savourGreen,
             ),

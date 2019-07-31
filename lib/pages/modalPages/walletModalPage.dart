@@ -200,7 +200,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
               print(favorites[position].key + " clicked");
               Navigator.push(
                 context,
-                platformPageRoute(
+                platformPageRoute(maintainState: false,
                   builder: (context) => DealPageWidget(favorites[position], widget.location)),
               );
             },
@@ -352,7 +352,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
               onTap: (){
                 if(redemptions[position-1].isDealRedemption()){
                   Navigator.push(context,
-                    platformPageRoute(
+                    platformPageRoute(maintainState: false,
                       builder: (BuildContext context) {
                         return DealPageWidget(redemptions[position-1].deal, widget.location);
                       },
@@ -360,7 +360,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
                   );
                 }else{
                   Navigator.push(context,
-                    platformPageRoute(
+                    platformPageRoute(maintainState: false,
                       builder: (BuildContext context) {
                         return VendorPageWidget(redemptions[position-1].vendor);
                       },

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:savour_deals_flutter/pages/loginPages/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
-import 'package:savour_deals_flutter/pages/loginPages/login.dart';
 import 'package:savour_deals_flutter/pages/tab.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'stores/settings.dart';
