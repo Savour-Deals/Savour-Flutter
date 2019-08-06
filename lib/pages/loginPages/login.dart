@@ -11,6 +11,8 @@ import 'package:savour_deals_flutter/themes/decoration.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:http/http.dart' as http;
 
+import 'CreateAccountPage.dart';
+
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -113,6 +115,20 @@ class _LoginPageState extends State<LoginPage> {
                       facebookLogin();
                     },
                   ),
+                  Container(padding: EdgeInsets.all(5),alignment: Alignment.bottomCenter,),
+                  GestureDetector(
+                    onTap: () {
+                      print("create account pressed");
+                      Navigator.push(context, platformPageRoute(maintainState: false,
+                          builder: (BuildContext context) {
+                            return new CreateAccountPage();
+                          },
+                          fullscreenDialog: true
+                      ),
+                      );
+                    },
+                    child: Text("Create Account", style: TextStyle(color: Colors.white),),
+                  ),
                 ],
               ),
             ),
@@ -122,10 +138,13 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  void createAccount() {
+  }
+
   void login() {
     if (emailController.text.isEmpty || passwordController.text.isEmpty){
       displayError("Missing email or password","Please provide both an email and password", "OK");
-    }else{
+    } else {
         _auth.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error){
           displayError("Login Failed!","Please check that your email and password are correct and try again.", "OK");
         }).then((user){
