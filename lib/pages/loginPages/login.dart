@@ -19,6 +19,8 @@ final FirebaseAuth _auth = FirebaseAuth.instance;
 class LoginPage extends StatefulWidget {
   LoginPage({Key key}) : super(key: key);
 
+
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -36,6 +38,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     return PlatformScaffold(
       backgroundColor: Colors.black,
@@ -158,6 +161,7 @@ class _LoginPageState extends State<LoginPage> {
   void facebookLogin() async {
     var facebook = new FacebookLogin();
     facebook.loginBehavior = FacebookLoginBehavior.webViewOnly;
+
     var result =
         await facebook.logInWithReadPermissions(['email', 'public_profile']);
     switch (result.status) {
@@ -171,7 +175,6 @@ class _LoginPageState extends State<LoginPage> {
           var graphResponse = await http.get('https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email,picture&access_token=${result.accessToken.token}');
 
           var profile = json.decode(graphResponse.body);
-          // print(profile.toString());
           if (profile['name'] != null){
             userUpdateInfo.displayName = profile['name'];
             userRef.child("full_name").set(profile['name']);

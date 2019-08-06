@@ -41,7 +41,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               child: SingleChildScrollView(
                 child: Column(
                   children: <Widget>[
-                    Image(image: AssetImage("images/Savour_Deals_White.png")),
 
                   ],
                 ),
