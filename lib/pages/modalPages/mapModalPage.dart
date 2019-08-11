@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
@@ -30,7 +31,16 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   CameraPosition _userPosition;
 
   void _onMarkerPressed(MarkerId markerId) {
-
+    for (Vendor vendor in this.widget.vendors) {
+      if (markerId.value == vendor.name) {
+         Navigator.push(
+             context,
+            platformPageRoute(maintainState: false,
+             builder: (context) => new VendorPageWidget(vendor),
+           ),
+         );
+      }
+    }
   }
 
   @override
