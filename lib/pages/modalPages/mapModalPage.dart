@@ -4,14 +4,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
-import 'package:flutter_geofire/flutter_geofire.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
-
 
 class MapPageWidget extends StatefulWidget {
   final text;
@@ -24,35 +23,34 @@ class MapPageWidget extends StatefulWidget {
 }
 
 class _MapPageWidgetState extends State<MapPageWidget> {
-  FirebaseUser user = null;
+  FirebaseUser user;
+  final _locationService = Geolocator();
   Completer<GoogleMapController> _controller = Completer();
   Map<MarkerId,Marker> _markers = new Map<MarkerId,Marker>();
-  
-
-  
-
-  static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(44.977489, -93.264374),
-    zoom: 12.4746,
-  );
-
+  CameraPosition _userPosition;
 
   void _onMarkerPressed(MarkerId markerId) {
 
   }
 
-
-  // static final CameraPosition _kLake = CameraPosition(
-  //     bearing: 192.8334901395799,
-  //     target: LatLng(37.43296265331129, -122.08832357078792),
-  //     tilt: 59.440717697143555,
-  //     zoom: 19.151926040649414);
   @override
-  void initState() {
+  void initState() async {
+    user = await FirebaseAuth.instance.currentUser();
+
+    GeolocationStatus serviceStatus;
+    try {
+      serviceStatus = await _locationService.checkGeolocationPermissionStatus();
+    } on Exception catch(e) {
+      throw e;
+    }
+
+    if (serviceStatus != null) {
+      if (serviceStatus == GeolocationStatus.granted) {
+        Position currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+        _userPosition = new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude));
+      }
+    }
     for (Vendor vendor in this.widget.vendors) {
-      vendor;
-      vendor.long;
-      vendor.lat;
 
       MarkerId markerId = new MarkerId(vendor.name);
       Marker marker = new Marker(
@@ -73,10 +71,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    _auth.currentUser().then((FirebaseUser user) {
-      this.user = user;
-    });
-    
+
     return PlatformScaffold(
       appBar: PlatformAppBar(
         title: Text("Savour Deals",
@@ -97,7 +92,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       ),
       body: GoogleMap(
         mapType: MapType.normal,
-        initialCameraPosition: _kGooglePlex,
+        initialCameraPosition: _userPosition,
         onMapCreated: _onMapCreated,
         markers: Set<Marker>.of(_markers.values),
       ),
