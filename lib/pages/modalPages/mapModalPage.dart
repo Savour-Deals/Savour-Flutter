@@ -60,6 +60,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
 
     if (serviceStatus != null) {
       if (serviceStatus == GeolocationStatus.granted) {
+        _locationService.forceAndroidLocationManager = true;
         Position currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
         _userPosition = new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude));
       }

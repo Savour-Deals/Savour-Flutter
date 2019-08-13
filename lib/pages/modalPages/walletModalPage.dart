@@ -53,6 +53,7 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
+        _locationService.forceAndroidLocationManager = true;
         currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
         setState(() {
           tabs.clear();
