@@ -45,6 +45,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
 
   @override
   void initState()  {
+    super.initState();
     initPlatform();
   }
 
