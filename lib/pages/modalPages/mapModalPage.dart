@@ -33,12 +33,12 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   void _onMarkerPressed(MarkerId markerId) {
     for (Vendor vendor in this.widget.vendors) {
       if (markerId.value == vendor.name) {
-         Navigator.push(
-             context,
-            platformPageRoute(maintainState: false,
-             builder: (context) => new VendorPageWidget(vendor),
-           ),
-         );
+        Navigator.push(
+            context,
+          platformPageRoute(maintainState: false,
+            builder: (context) => new VendorPageWidget(vendor),
+          ),
+        );
       }
     }
   }
