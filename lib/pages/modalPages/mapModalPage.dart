@@ -44,7 +44,11 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   }
 
   @override
-  void initState() async {
+  void initState()  {
+    initPlatform();
+  }
+
+  initPlatform() async {
     user = await FirebaseAuth.instance.currentUser();
 
     GeolocationStatus serviceStatus;
