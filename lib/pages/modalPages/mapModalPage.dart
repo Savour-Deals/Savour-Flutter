@@ -11,6 +11,7 @@ import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 
+
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class MapPageWidget extends StatefulWidget {
@@ -58,12 +59,12 @@ class _MapPageWidgetState extends State<MapPageWidget> {
     } on Exception catch(e) {
       throw e;
     }
-
+    
     if (serviceStatus != null) {
       if (serviceStatus == GeolocationStatus.granted) {
         _locationService.forceAndroidLocationManager = true;
         Position currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
-        _userPosition = new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude));
+        _userPosition = new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude), zoom: 12);
       }
     }
     for (Vendor vendor in this.widget.vendors) {
