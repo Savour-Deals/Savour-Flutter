@@ -24,7 +24,7 @@ dependencies:
   cupertino_icons: ^0.1.2
   firebase_auth: ^0.8.3
   flutter_facebook_login: ^2.0.1
-  geolocator: '^5.0.0'
+  geolocator: '^5.1.2'
   location_permissions: '^2.0.0'
   flutter_geofire: #^0.0.4
     git:
