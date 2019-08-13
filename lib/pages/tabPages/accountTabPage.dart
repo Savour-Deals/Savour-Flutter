@@ -39,16 +39,17 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
     theme = Theme.of(context);
     return PlatformScaffold(
       appBar: PlatformAppBar(
+        title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: theme.bottomAppBarColor,
-          brightness: theme.brightness,
+          brightness: Brightness.dark,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           heroTag: "dealTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: theme.bottomAppBarColor,
           elevation: 0.0,
-          brightness: theme.brightness,
+          brightness: Brightness.light,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
         ),
         trailingActions: <Widget>[
           FlatButton(

@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:location_permissions/location_permissions.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
@@ -21,10 +23,12 @@ class SavourTabPage extends StatefulWidget {
 }
 
 class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserver, SingleTickerProviderStateMixin{
-  TabController controller;
 
   int _currentIndex = 0;
   PermissionStatus locationStatus = PermissionStatus.unknown;
+  final _locationService = Geolocator();
+  final geo = Geofire();
+  int vendorsNearby = 0;
 
   //Declare contextual variables
   AppState appState;
@@ -39,18 +43,18 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   @override
   void initState() {
     super.initState();
-    controller = new TabController(length: 3, vsync: this);
     initPlatformState();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
+    geo.initialize("Vendors_Location");
     WidgetsBinding.instance.addObserver(this);
     var newState = await LocationPermissions().checkPermissionStatus();
+    if (!mounted) return;
     setState(() {
       locationStatus = newState;
     });
-    if (!mounted) return;
 
     var user = await FirebaseAuth.instance.currentUser();
 
@@ -63,18 +67,21 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
       if(result.notification.payload.additionalData.isNotEmpty){
         if(result.notification.payload.additionalData.containsKey("deal")){
           var dealID = result.notification.payload.additionalData['deal'];
+          if(!mounted) return
           this.setState(() {
             // print("Opened notification: \n${result.notification.jsonRepresentation().replaceAll("\\n", "\n")}");
             print("Opened notification with deal ID: $dealID");
             Provider.of<NotificationData>(context).setNotiDealID(dealID);
           });
         }else{
+          if(!mounted) return
           this.setState(() {
             var data = result.notification.payload.additionalData;
             print("Opened notification with additional data: $data");
           });
         }
       }else{
+        if(!mounted) return
         this.setState(() {
           print("Opened notification with no additional data");
         });
@@ -97,36 +104,17 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   }
 
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
   @override
   Future didChangeAppLifecycleState(AppLifecycleState state) async {
-    switch (state) {
-      case AppLifecycleState.inactive:
+    if(state == AppLifecycleState.resumed){
         var newState = await LocationPermissions().checkPermissionStatus();
-        setState(() {
-          locationStatus = newState;
-        });
-        break;
-      case AppLifecycleState.paused:
-        print("Paused");
-        break;
-      case AppLifecycleState.resumed:
-        var newState = await LocationPermissions().checkPermissionStatus();
+        if(!mounted) return
         setState(() {
           locationStatus = newState;
         });
         print("Resumed");
-        break;
-      case AppLifecycleState.suspending:
-        print("Suspending");
-        break;
     }
   }
-
   
   @override
   Widget build(BuildContext context) {
@@ -141,20 +129,23 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
       return PlatformScaffold(
         appBar: PlatformAppBar(
           title: Text("Savour Deals"),
-          ios: (_) => CupertinoNavigationBarData(
-            backgroundColor: theme.bottomAppBarColor,//SavourColorsMaterial.savourGreen,
-            brightness: Brightness.dark,
-          ),
-          android: (_) => MaterialAppBarData(
-            backgroundColor: theme.bottomAppBarColor,//SavourColorsMaterial.savourGreen,
-            brightness: Brightness.dark,
-          ),
+
         ),
         body: Center(
           child: PlatformCircularProgressIndicator(),
         ),
       ); 
     }else if (locationStatus == PermissionStatus.granted){
+      _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
+        geo.queryAtLocation(result.latitude, result.longitude, 80.0);
+        geo.onKeyEntered.listen((data){
+          vendorsNearby++;
+          //TODO: Send message on trigger hit
+        });
+        geo.onKeyExited.listen((data){
+          vendorsNearby--;
+        });
+      });
       return PlatformScaffold(
         body: IndexedStack(
             index: _currentIndex,

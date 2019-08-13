@@ -30,7 +30,6 @@ class _DealsPageState extends State<DealsPageWidget> {
   Deals deals = Deals();
   Map<String,String> favorites = Map();
 
-
   @override
   void initState() {
     super.initState();
@@ -139,6 +138,17 @@ class _DealsPageState extends State<DealsPageWidget> {
     }
   }
 
+  void keyExited(dynamic data){
+    // print("key exited dealsPage: " + data["key"]);
+    if (this.mounted){
+      setState(() {
+        deals.removeDealWithVendorKey(data["key"]);
+      });
+    }
+  }
+
+
+
   Future<Deal> getDeal(String dealID) async {
     if(!deals.containsDeal(dealID)){
       return await FirebaseDatabase().reference().child("Deals").child(dealID).once().then((dealSnap) async {
@@ -163,15 +173,6 @@ class _DealsPageState extends State<DealsPageWidget> {
     }
     //If the vendor is already here, send it back
     return vendors.firstWhere((vendor) => vendor.key == vendorID);
-  }
-
-  void keyExited(dynamic data){
-    // print("key exited dealsPage: " + data["key"]);
-    if (this.mounted){
-      setState(() {
-        deals.removeDealWithVendorKey(data["key"]);
-      });
-    }
   }
 
   void displayNotiDeal() async {
