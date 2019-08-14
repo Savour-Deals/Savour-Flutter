@@ -73,10 +73,12 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       Marker marker = new Marker(
         markerId: markerId,
         position: LatLng(vendor.lat,vendor.long),
-        infoWindow: InfoWindow(title: vendor.name,snippet: vendor.description),
-        onTap: () {
-          _onMarkerPressed(markerId);
-        }
+        infoWindow: InfoWindow(
+            title: vendor.name,
+            snippet: vendor.description,
+            onTap: () {
+              _onMarkerPressed(markerId);
+            }),
       );
 
       setState(() {
