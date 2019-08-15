@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
+
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -30,11 +32,25 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   CameraPosition _userPosition;
 
   void _onMarkerPressed(MarkerId markerId) {
-
+    for (Vendor vendor in this.widget.vendors) {
+      if (markerId.value == vendor.name) {
+        Navigator.push(
+            context,
+          platformPageRoute(maintainState: false,
+            builder: (context) => new VendorPageWidget(vendor),
+          ),
+        );
+      }
+    }
   }
 
   @override
-  void initState() async {
+  void initState()  {
+    super.initState();
+    initPlatform();
+  }
+
+  initPlatform() async {
     user = await FirebaseAuth.instance.currentUser();
 
     GeolocationStatus serviceStatus;
@@ -43,11 +59,12 @@ class _MapPageWidgetState extends State<MapPageWidget> {
     } on Exception catch(e) {
       throw e;
     }
-
+    
     if (serviceStatus != null) {
       if (serviceStatus == GeolocationStatus.granted) {
+        _locationService.forceAndroidLocationManager = true;
         Position currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
-        _userPosition = new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude));
+        _userPosition = new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude), zoom: 12);
       }
     }
     for (Vendor vendor in this.widget.vendors) {
@@ -56,10 +73,12 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       Marker marker = new Marker(
         markerId: markerId,
         position: LatLng(vendor.lat,vendor.long),
-        infoWindow: InfoWindow(title: vendor.name,snippet: vendor.description),
-        onTap: () {
-          _onMarkerPressed(markerId);
-        }
+        infoWindow: InfoWindow(
+            title: vendor.name,
+            snippet: vendor.description,
+            onTap: () {
+              _onMarkerPressed(markerId);
+            }),
       );
 
       setState(() {
