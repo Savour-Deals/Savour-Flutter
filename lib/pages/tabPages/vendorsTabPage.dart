@@ -184,7 +184,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
     return Future.microtask(() {
       switch (pageType) {
         case PageType.mapPage:
-          return MapPageWidget("Map Page", this.vendors);
+          return MapPageWidget("Map Page", this.vendors,new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude), zoom: 12.0));
           break;
         case PageType.searchPage:
           return SearchPageWidget(vendors: vendors,location: currentLocation,);
@@ -192,6 +192,8 @@ class _VendorsPageState extends State<VendorsPageWidget> {
         case PageType.vendorPage:
           return VendorPageWidget(vendors[position]);
           break;
+        default:
+          return null;
       }
     });
 }

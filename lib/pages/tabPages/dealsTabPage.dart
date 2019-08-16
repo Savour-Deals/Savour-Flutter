@@ -241,7 +241,7 @@ class _DealsPageState extends State<DealsPageWidget> {
                 Navigator.push(context,
                   platformPageRoute(maintainState: false,
                     builder: (BuildContext context) {
-                      return new MapPageWidget("Map Page", this.vendors);
+                      return new MapPageWidget("Map Page", this.vendors, new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude), zoom: 12.0));
                     },
                     fullscreenDialog: true
                   )
