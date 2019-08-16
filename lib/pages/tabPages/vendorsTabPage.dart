@@ -9,6 +9,10 @@ class VendorsPageWidget extends StatefulWidget {
   _VendorsPageState createState() => _VendorsPageState();
 }
 
+enum PageType {
+  mapPage, vendorPage, searchPage
+}
+
 class _VendorsPageState extends State<VendorsPageWidget> {
   //Location variables
   final _locationService = Geolocator();
@@ -20,6 +24,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   bool loaded = false;
 
   List<Vendor> vendors = [];
+  
   @override
   void initState() {
     super.initState();
@@ -33,6 +38,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
+        _locationService.forceAndroidLocationManager = true;
         currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
           geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
           geo.onKeyEntered.listen((data){
@@ -49,12 +55,6 @@ class _VendorsPageState extends State<VendorsPageWidget> {
               geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
             }
           });
-      } else {
-        // bool serviceStatusResult = await _locationService.requestService();
-        // print("Service status activated after request: $serviceStatusResult");
-        // if(serviceStatusResult){
-        //   initPlatform();
-        // }
       }
     } on PlatformException catch (e) {
       print(e);
@@ -112,15 +112,10 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           child: Icon(Icons.search,
             color: Colors.white,
           ),
-          onPressed: (){
-            Navigator.push(context,
-              platformPageRoute(
-                builder: (BuildContext context) {
-                  return SearchPageWidget(vendors: vendors, location: currentLocation,);
-                },
-                fullscreenDialog: true
-              )
-            );
+          onPressed: () async {
+            var page = await buildPageAsync(PageType.searchPage);
+            var route = MaterialPageRoute(builder: (_) => page, maintainState: false, fullscreenDialog: true);
+            Navigator.push(context,route);
           },
         ),
         ios: (_) => CupertinoNavigationBarData(
@@ -143,17 +138,16 @@ class _VendorsPageState extends State<VendorsPageWidget> {
       return Stack(
         children: <Widget>[
           ListView.builder(
+            physics: AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.all(0.0),
             // physics: const AlwaysScrollableScrollPhysics (),
             itemBuilder: (context, position) {
               return GestureDetector(
-                onTap: () {
+                onTap: () async {
                   print(vendors[position].name + " clicked");
-                  Navigator.push(
-                    context,
-                    platformPageRoute(
-                      builder: (context) => VendorPageWidget(vendors[position])),
-                  );
+                  var page = await buildPageAsync(PageType.vendorPage, position: position);
+                  var route = MaterialPageRoute(builder: (_) => page, maintainState: false);
+                  Navigator.push(context,route);
                 },
                 child: VendorCard(vendors[position], currentLocation)
               );
@@ -166,15 +160,10 @@ class _VendorsPageState extends State<VendorsPageWidget> {
               heroTag: null,
               backgroundColor: SavourColorsMaterial.savourGreen,
               child: Icon(Icons.pin_drop, color: Colors.white,),
-              onPressed: (){
-                Navigator.push(context,
-                  platformPageRoute(
-                    builder: (BuildContext context) {
-                      return new MapPageWidget("Map Page", this.vendors);
-                    },
-                    fullscreenDialog: true
-                  )
-                );
+              onPressed: () async {
+                var page = await buildPageAsync(PageType.mapPage);
+                var route = MaterialPageRoute(builder: (_) => page, maintainState: false, fullscreenDialog: true);
+                Navigator.push(context,route);
               },
             ),
           )
@@ -190,4 +179,22 @@ class _VendorsPageState extends State<VendorsPageWidget> {
       }
     }
   }
+
+  Future<Widget> buildPageAsync(PageType pageType, {position: int}) async {
+    return Future.microtask(() {
+      switch (pageType) {
+        case PageType.mapPage:
+          return MapPageWidget("Map Page", this.vendors,new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude), zoom: 12.0));
+          break;
+        case PageType.searchPage:
+          return SearchPageWidget(vendors: vendors,location: currentLocation,);
+          break;
+        case PageType.vendorPage:
+          return VendorPageWidget(vendors[position]);
+          break;
+        default:
+          return null;
+      }
+    });
+}
 }

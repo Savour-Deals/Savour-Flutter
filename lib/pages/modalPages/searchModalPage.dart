@@ -79,6 +79,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
+        _locationService.forceAndroidLocationManager = true;
         currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
         _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
           if (this.mounted){
@@ -182,7 +183,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               FocusScope.of(context).requestFocus(new FocusNode());
               Navigator.push(
                 context,
-                platformPageRoute(
+                platformPageRoute(maintainState: false,
                   builder: (context) => DealPageWidget(_filteredDeals[index], currentLocation),
                 ),
               );
@@ -205,7 +206,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               FocusScope.of(context).requestFocus(new FocusNode());
               Navigator.push(
                 context,
-                platformPageRoute(
+                platformPageRoute(maintainState: false,
                   builder: (context) => VendorPageWidget(_filteredVendors[index]),
                 ),
               );

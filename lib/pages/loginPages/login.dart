@@ -11,11 +11,15 @@ import 'package:savour_deals_flutter/themes/decoration.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:http/http.dart' as http;
 
+import 'CreateAccountPage.dart';
+
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key}) : super(key: key);
+
+
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -34,6 +38,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     return PlatformScaffold(
       backgroundColor: Colors.black,
@@ -113,6 +118,20 @@ class _LoginPageState extends State<LoginPage> {
                       facebookLogin();
                     },
                   ),
+                  Container(padding: EdgeInsets.all(5),alignment: Alignment.bottomCenter,),
+                  GestureDetector(
+                    onTap: () {
+                      print("create account pressed");
+                      Navigator.push(context, platformPageRoute(maintainState: false,
+                          builder: (BuildContext context) {
+                            return new CreateAccountPage();
+                          },
+                          fullscreenDialog: true
+                      ),
+                      );
+                    },
+                    child: Text("Create Account", style: TextStyle(color: Colors.white),),
+                  ),
                 ],
               ),
             ),
@@ -122,10 +141,13 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  void createAccount() {
+  }
+
   void login() {
     if (emailController.text.isEmpty || passwordController.text.isEmpty){
       displayError("Missing email or password","Please provide both an email and password", "OK");
-    }else{
+    } else {
         _auth.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error){
           displayError("Login Failed!","Please check that your email and password are correct and try again.", "OK");
         }).then((user){
@@ -139,6 +161,7 @@ class _LoginPageState extends State<LoginPage> {
   void facebookLogin() async {
     var facebook = new FacebookLogin();
     facebook.loginBehavior = FacebookLoginBehavior.webViewOnly;
+
     var result =
         await facebook.logInWithReadPermissions(['email', 'public_profile']);
     switch (result.status) {
@@ -152,7 +175,6 @@ class _LoginPageState extends State<LoginPage> {
           var graphResponse = await http.get('https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email,picture&access_token=${result.accessToken.token}');
 
           var profile = json.decode(graphResponse.body);
-          // print(profile.toString());
           if (profile['name'] != null){
             userUpdateInfo.displayName = profile['name'];
             userRef.child("full_name").set(profile['name']);
