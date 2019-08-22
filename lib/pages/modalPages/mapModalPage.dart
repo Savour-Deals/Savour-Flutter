@@ -95,9 +95,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
 
     return PlatformScaffold(
       appBar: PlatformAppBar(
-        title: Text("Savour Deals",
-          style: whiteTitle,
-        ),
+        title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
           actionsForegroundColor: Colors.white,
           backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,

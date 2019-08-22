@@ -59,18 +59,22 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     switch (state) {
       case AppLifecycleState.inactive:
         var newState = await LocationPermissions().checkPermissionStatus();
-        setState(() {
-          locationStatus = newState;
-        });
+        if (this.mounted){
+          setState(() {
+            locationStatus = newState;
+          });
+        }
         break;
       case AppLifecycleState.paused:
         print("Paused");
         break;
       case AppLifecycleState.resumed:
         var newState = await LocationPermissions().checkPermissionStatus();
-        setState(() {
-          locationStatus = newState;
-        });
+        if (this.mounted){
+          setState(() {
+            locationStatus = newState;
+          });
+        }
         print("Resumed");
         break;
       case AppLifecycleState.suspending:
