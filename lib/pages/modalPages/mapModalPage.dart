@@ -63,24 +63,24 @@ class _MapPageWidgetState extends State<MapPageWidget> {
         _locationService.forceAndroidLocationManager = true;
         Position currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
         this._userPosition = new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude), zoom: 12);
-
         _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
           this._userPosition = new CameraPosition(target: LatLng(result.latitude,result.longitude), zoom: 12);
+
         });
       }
     }
     for (Vendor vendor in this.widget.vendors) {
-
       MarkerId markerId = new MarkerId(vendor.name);
       Marker marker = new Marker(
         markerId: markerId,
         position: LatLng(vendor.lat,vendor.long),
         infoWindow: InfoWindow(
-            title: vendor.name,
-            snippet: vendor.description,
-            onTap: () {
-              _onMarkerPressed(markerId);
-            }),
+          title: "",
+          snippet: vendor.name,
+          onTap: () {
+            _onMarkerPressed(markerId);
+          }
+        ),
       );
 
       setState(() {
@@ -115,6 +115,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
         mapType: MapType.normal,
         initialCameraPosition: (_userPosition != null) ? _userPosition: this.widget.cameraPosition,
         onMapCreated: _onMapCreated,
+        myLocationEnabled: true,
         markers: Set<Marker>.of(_markers.values),
       ),
     );
