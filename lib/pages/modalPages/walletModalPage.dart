@@ -59,11 +59,13 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
         currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-        setState(() {
-          tabs.clear();
-          tabs.add(FavoritesPageWidget(widget.deals, currentLocation));
-          tabs.add(RedeemedWidget(widget.deals,widget.vendors, currentLocation));
-        });
+        if (this.mounted){
+          setState(() {
+            tabs.clear();
+            tabs.add(FavoritesPageWidget(widget.deals, currentLocation));
+            tabs.add(RedeemedWidget(widget.deals,widget.vendors, currentLocation));
+          });
+        }
         _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
           if (this.mounted){
             setState(() {

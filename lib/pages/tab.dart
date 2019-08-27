@@ -1,17 +1,20 @@
 import 'dart:async';
 
+//TODO: When data handling is restructured, setup local notifications
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
-import 'package:geolocator/geolocator.dart';
+// import 'package:geolocator/geolocator.dart';
 import 'package:location_permissions/location_permissions.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
-
+// import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class SavourTabPage extends StatefulWidget {
   SavourTabPage({Key key, this.uid}) : super(key: key);
@@ -26,9 +29,13 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   int _currentIndex = 0;
   PermissionStatus locationStatus = PermissionStatus.unknown;
-  final _locationService = Geolocator();
+  // final _locationService = Geolocator();
   final geo = Geofire();
   int vendorsNearby = 0;
+
+  // SharedPreferences prefs;
+  // int lastNearbyNotificationTime;
+  // FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   //Declare contextual variables
   AppState appState;
@@ -48,7 +55,6 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    geo.initialize("Vendors_Location");
     WidgetsBinding.instance.addObserver(this);
     var newState = await LocationPermissions().checkPermissionStatus();
     if (!mounted) return;
@@ -56,8 +62,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
       locationStatus = newState;
     });
 
-    var user = await FirebaseAuth.instance.currentUser();
-
+    //setup remote notifications
     var settings = {
       OSiOSSettings.autoPrompt: false,
       OSiOSSettings.promptBeforeOpeningPushUrl: true
@@ -89,30 +94,54 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
       return;
     });
 
-    OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
+    // OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
 
     await OneSignal.shared.init("f1c64902-ab03-4674-95e9-440f7c8f33d0", iOSSettings: settings);
 
     OneSignal.shared.setInFocusDisplayType(OSNotificationDisplayType.notification);
 
+    var user = await FirebaseAuth.instance.currentUser();
+
     OneSignal.shared.promptUserForPushNotificationPermission().then((accepted) {
       print("Accepted permission: $accepted");
       if (user.email != null){
-        OneSignal.shared.setEmail();
+        OneSignal.shared.setEmail(email: user.email);
       }
     });
 
+    // //Setup local notifications
+    // prefs = await SharedPreferences.getInstance();
+    // lastNearbyNotificationTime = prefs.getInt('lastNearbyNotificationTime') ?? 0;
+    // flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+    // // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
+    // var initializationSettingsAndroid = new AndroidInitializationSettings('icon_logo');
+    // var initializationSettingsIOS = new IOSInitializationSettings(
+    //     requestAlertPermission: false, //this should be handles by onesignal above
+    //     requestBadgePermission: false, //we dont need this
+    //     defaultPresentBadge: false,
+    // );
+    // var initializationSettings = new InitializationSettings(
+    //     initializationSettingsAndroid, 
+    //     initializationSettingsIOS
+    // );
+    // flutterLocalNotificationsPlugin.initialize(
+    //   initializationSettings,
+    //   onSelectNotification: onSelectNotification
+    // ); 
+
+    // //setup geofire
+    // geo.initialize("Vendors_Location");
   }
 
   @override
   Future didChangeAppLifecycleState(AppLifecycleState state) async {
     if(state == AppLifecycleState.resumed){
-        var newState = await LocationPermissions().checkPermissionStatus();
-        if(!mounted) return
-        setState(() {
-          locationStatus = newState;
-        });
-        print("Resumed");
+      var newState = await LocationPermissions().checkPermissionStatus();
+      if(!this.mounted) return
+      setState(() {
+        locationStatus = newState;
+      });
+      print("Resumed");
     }
   }
   
@@ -128,24 +157,38 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
       LocationPermissions().requestPermissions(permissionLevel: LocationPermissionLevel.locationAlways);
       return PlatformScaffold(
         appBar: PlatformAppBar(
-          title: Text("Savour Deals"),
-
+          title: Image.asset("images/Savour_White.png"),
+          ios: (_) => CupertinoNavigationBarData(
+            brightness: Brightness.dark,
+            backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
+            heroTag: "dealTab",
+            transitionBetweenRoutes: false,
+          ),
+          android: (_) => MaterialAppBarData(
+            elevation: 0.0,
+            brightness: Brightness.light,
+            backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          ),
         ),
         body: Center(
           child: PlatformCircularProgressIndicator(),
         ),
       ); 
     }else if (locationStatus == PermissionStatus.granted){
-      _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
-        geo.queryAtLocation(result.latitude, result.longitude, 80.0);
-        geo.onKeyEntered.listen((data){
-          vendorsNearby++;
-          //TODO: Send message on trigger hit
-        });
-        geo.onKeyExited.listen((data){
-          vendorsNearby--;
-        });
-      });
+      // _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
+      //   geo.queryAtLocation(result.latitude, result.longitude, 0.25);
+      //   geo.onKeyEntered.listen((data){
+      //     vendorsNearby++;
+      //     if (vendorsNearby > 0 && (lastNearbyNotificationTime + Duration(seconds: 50/*days: 1*/).inMilliseconds) <= DateTime.now().millisecondsSinceEpoch){
+      //       //We are nearby a ton of vendors and we havent sent a message in a while. 
+      //       lastNearbyNotificationTime = DateTime.now().millisecondsSinceEpoch;
+      //       sendLocalNotification();
+      //     }
+      //   });
+      //   geo.onKeyExited.listen((data){
+      //     vendorsNearby--;
+      //   });
+      // });
       return PlatformScaffold(
         body: IndexedStack(
             index: _currentIndex,
@@ -209,16 +252,17 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     }else{
       return PlatformScaffold(
         appBar: PlatformAppBar(
-          title: Text("Savour Deals",
-            style: whiteTitle,
-          ),
+          title: Image.asset("images/Savour_White.png"),
           ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: theme.bottomAppBarColor,//SavourColorsMaterial.savourGreen,
             brightness: Brightness.dark,
+            backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
+            heroTag: "dealTab",
+            transitionBetweenRoutes: false,
           ),
           android: (_) => MaterialAppBarData(
-          backgroundColor: theme.bottomAppBarColor,//SavourColorsMaterial.savourGreen,
-            brightness: Brightness.dark,
+            elevation: 0.0,
+            brightness: Brightness.light,
+            backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           ),
         ),
         body: Column(
@@ -249,6 +293,38 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   Color getTabOutlineColor(){
     return appState.isDark? theme.accentColor:SavourColorsMaterial.savourGreen;
   }
+
+  // sendLocalNotification() async {
+  //   var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+  //     'vendorsnearby', 'Nearby Notifications', 'These notifications let you know when lots of restaurants, bars, and other shops are nearby.',
+  //     importance: Importance.Max, 
+  //     priority: Priority.High, 
+  //     ticker: 'ticker'
+  //   );
+  //   var iOSPlatformChannelSpecifics = IOSNotificationDetails(
+  //     presentAlert: true,
+  //     presentBadge: false,
+  //     presentSound: true,
+  //   );
+  //   var platformChannelSpecifics = NotificationDetails(
+  //       androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+  //   debugPrint('Sending local push notification');
+  //   await flutterLocalNotificationsPlugin.show(
+  //     0, 
+  //     "Woah You're Near Some Hot Deals! 😋", 
+  //     "Look at all the current deals nearby! 🍴", 
+  //     platformChannelSpecifics,
+  //   );   
+  // }
+
+  // Future onSelectNotification(String payload) async {
+  //   if (payload != null) {
+  //     debugPrint('notification payload: ' + payload);
+  //   }
+  //   setState(() {
+  //     _currentIndex = 1; //set page to vendor page
+  //   });
+  // }
 
   void onTabTapped(int index) {
     setState(() {
