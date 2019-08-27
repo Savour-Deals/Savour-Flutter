@@ -15,7 +15,7 @@ import 'package:savour_deals_flutter/stores/vendor_model.dart';
 class MapPageWidget extends StatefulWidget {
   final text;
   final List<Vendor> vendors;
-  CameraPosition cameraPosition;
+  final CameraPosition cameraPosition;
   MapPageWidget(this.text, this.vendors,this.cameraPosition);
 
   @override
