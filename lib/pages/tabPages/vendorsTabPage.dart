@@ -42,7 +42,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
-        currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium);
+          currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium);
           geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
           geo.onKeyEntered.listen((data){
             keyEntered(data);
