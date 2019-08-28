@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 //TODO: When data handling is restructured, setup local notifications
 
@@ -64,7 +65,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
     //setup remote notifications
     var settings = {
-      OSiOSSettings.autoPrompt: false,
+      OSiOSSettings.autoPrompt: true,
       OSiOSSettings.promptBeforeOpeningPushUrl: true
     };
 
@@ -72,28 +73,20 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
       _notificationHandler(result);
     });
 
-    // OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
+    OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
 
     await OneSignal.shared.init("f1c64902-ab03-4674-95e9-440f7c8f33d0", iOSSettings: settings);
 
     OneSignal.shared.setInFocusDisplayType(OSNotificationDisplayType.notification);
 
-    var user = await FirebaseAuth.instance.currentUser();
-
-    // OneSignal.shared.getPermissionSubscriptionState().then((permissionState) async {
-    //   if (permissionState.permissionStatus.hasPrompted){
-
-    //   }else{
-    //     await OneSignal.shared.promptUserForPushNotificationPermission();
-    //   }
-    // });
-    var accepted = await OneSignal.shared.promptUserForPushNotificationPermission();
-    if (accepted){
-      print("Accepted permission: $accepted");
-      
-      if (user.email != null){
-        OneSignal.shared.setEmail(email: user.email);
-      }
+    if(Platform.isIOS){
+      OneSignal.shared.promptUserForPushNotificationPermission().then((accepted){
+        print("Accepted permission: $accepted");
+        _notificationPermissionHandler(accepted);
+      });
+    }else{
+      print("Accepted permission: Not needed for android");
+      _notificationPermissionHandler(true);
     }
 
     // //Setup local notifications
@@ -124,10 +117,11 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   Future didChangeAppLifecycleState(AppLifecycleState state) async {
     if(state == AppLifecycleState.resumed){
       var newState = await LocationPermissions().checkPermissionStatus();
-      if(!this.mounted) return
-      setState(() {
-        locationStatus = newState;
-      });
+      if(this.mounted){
+        setState(() {
+          locationStatus = newState;
+        });
+      }
       print("Resumed");
     }
   }
@@ -319,25 +313,39 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     });
   }
 
+  Future _notificationPermissionHandler(bool accepted) async {
+    if (accepted){
+      var user = await FirebaseAuth.instance.currentUser();
+      Provider.of<NotificationSettings>(context).setNotificationsSetting(true);
+      OneSignal.shared.setSubscription(true);
+      if (user.email != null){
+        OneSignal.shared.setEmail(email: user.email);
+      }
+    }else{
+      Provider.of<NotificationSettings>(context).setNotificationsSetting(false);
+      OneSignal.shared.setSubscription(false);
+    }
+  }
+
   void _notificationHandler(OSNotificationOpenedResult result){
     if(result.notification.payload.additionalData.isNotEmpty){
-        if(result.notification.payload.additionalData.containsKey("deal")){
-          var dealID = result.notification.payload.additionalData['deal'];
-          if(!mounted) return
+        if(result.notification.payload.additionalData.containsKey("deal_id")){
+          var dealID = result.notification.payload.additionalData['deal_id'];
+          if(!mounted) return;
           this.setState(() {
             // print("Opened notification: \n${result.notification.jsonRepresentation().replaceAll("\\n", "\n")}");
             print("Opened notification with deal ID: $dealID");
             Provider.of<NotificationData>(context).setNotiDealID(dealID);
           });
         }else{
-          if(!mounted) return
+          if(!mounted) return;
           this.setState(() {
             var data = result.notification.payload.additionalData;
             print("Opened notification with additional data: $data");
           });
         }
       }else{
-        if(!mounted) return
+        if(!mounted) return;
         this.setState(() {
           print("Opened notification with no additional data");
         });

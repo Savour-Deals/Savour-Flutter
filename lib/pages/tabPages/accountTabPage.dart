@@ -17,6 +17,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
 
   //Declare contextual variables
   AppState appState;
+  NotificationSettings notificationSettings;
   ThemeData theme;
 
   @override
@@ -36,6 +37,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
   @override
   Widget build(BuildContext context) {
     appState = Provider.of<AppState>(context);
+    notificationSettings = Provider.of<NotificationSettings>(context);
     theme = Theme.of(context);
     return PlatformScaffold(
       appBar: PlatformAppBar(
@@ -150,8 +152,16 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                   "Notifications",
                   style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                 ),
+                // trailing: PlatformSwitch(
+                //   value: notificationSettings.isNotificationsEnabled,
+                //   onChanged: (value) {
+                //     _toggleNotifications();
+                //   },
+                //   // activeTrackColor: theme.primaryColor, 
+                //   activeColor: theme.primaryColor,
+                // ),
+                onTap: () => _toggleNotifications(),
                 contentPadding: EdgeInsets.all(4.0),
-                onTap: ()=> _toggleNotifications(),
               ),
               decoration: BoxDecoration(
                 border: Border(top: BorderSide(width: 0.1))
@@ -225,11 +235,36 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
     return AssetImage("images/Savour_Deals_FullColor-white-back.png");
   }
 
-  _toggleNotifications(){
-    if(appState.isNotificationsEnabled){
-      appState.setNotificationsSetting(false);
+  _toggleNotifications() async {
+    AppSettings.openAppSettings();
+    // if(notificationSettings.isNotificationsEnabled){
+    //   _notificationPermissionHandler(false);
+    // }else{
+    //   if(Platform.isIOS){
+    //     OneSignal.shared.promptUserForPushNotificationPermission().then((accepted){
+    //       print("Accepted permission: $accepted");
+    //       _notificationPermissionHandler(accepted);
+    //     });
+    //   }else{
+    //     print("Accepted permission: Not needed for android");
+    //     _notificationPermissionHandler(true);
+    //   }
+    // }
+  }
+
+  Future _notificationPermissionHandler(bool accepted) async {
+    if (accepted){
+      print("Notifications turned on!");
+      var user = await FirebaseAuth.instance.currentUser();
+      Provider.of<NotificationSettings>(context).setNotificationsSetting(true);
+      OneSignal.shared.setSubscription(true);
+      if (user.email != null){
+        OneSignal.shared.setEmail(email: user.email);
+      }
     }else{
-      appState.setNotificationsSetting(true);
+      print("Notifications turned off!");
+      OneSignal.shared.setSubscription(false);
+      notificationSettings.setNotificationsSetting(false);
     }
   }
 }

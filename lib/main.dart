@@ -18,6 +18,9 @@ void main() async {
         ChangeNotifierProvider<NotificationData>(
           builder: (_) => NotificationData(),
         ),
+        ChangeNotifierProvider<NotificationSettings>(
+          builder: (_) => NotificationSettings(),
+        ),
       ],
       child: SavourApp(),
     )
