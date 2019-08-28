@@ -44,7 +44,7 @@ class _DealsPageState extends State<DealsPageWidget> {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
-        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+        currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium);
         deals.setLocation(currentLocation);
         geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
         geo.onKeyEntered.listen((data){

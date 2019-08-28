@@ -80,7 +80,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
-        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+        currentLocation = await _locationService.getLastKnownPosition
+(desiredAccuracy: LocationAccuracy.high);
         _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
           if (this.mounted){
             setState(() {

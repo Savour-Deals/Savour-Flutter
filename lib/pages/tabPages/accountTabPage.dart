@@ -48,7 +48,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
         ),
         android: (_) => MaterialAppBarData(
           elevation: 0.0,
-          brightness: Brightness.light,
+          brightness: Brightness.dark,
           backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
         ),
         trailingActions: <Widget>[
@@ -151,6 +151,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                   style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                 ),
                 contentPadding: EdgeInsets.all(4.0),
+                onTap: ()=> _toggleNotifications(),
               ),
               decoration: BoxDecoration(
                 border: Border(top: BorderSide(width: 0.1))
@@ -222,5 +223,13 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
       );
     }
     return AssetImage("images/Savour_Deals_FullColor-white-back.png");
+  }
+
+  _toggleNotifications(){
+    if(appState.isNotificationsEnabled){
+      appState.setNotificationsSetting(false);
+    }else{
+      appState.setNotificationsSetting(true);
+    }
   }
 }

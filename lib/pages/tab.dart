@@ -69,29 +69,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     };
 
     OneSignal.shared.setNotificationOpenedHandler((OSNotificationOpenedResult result) {
-      if(result.notification.payload.additionalData.isNotEmpty){
-        if(result.notification.payload.additionalData.containsKey("deal")){
-          var dealID = result.notification.payload.additionalData['deal'];
-          if(!mounted) return
-          this.setState(() {
-            // print("Opened notification: \n${result.notification.jsonRepresentation().replaceAll("\\n", "\n")}");
-            print("Opened notification with deal ID: $dealID");
-            Provider.of<NotificationData>(context).setNotiDealID(dealID);
-          });
-        }else{
-          if(!mounted) return
-          this.setState(() {
-            var data = result.notification.payload.additionalData;
-            print("Opened notification with additional data: $data");
-          });
-        }
-      }else{
-        if(!mounted) return
-        this.setState(() {
-          print("Opened notification with no additional data");
-        });
-      }      
-      return;
+      _notificationHandler(result);
     });
 
     // OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
@@ -102,12 +80,21 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
     var user = await FirebaseAuth.instance.currentUser();
 
-    OneSignal.shared.promptUserForPushNotificationPermission().then((accepted) {
+    // OneSignal.shared.getPermissionSubscriptionState().then((permissionState) async {
+    //   if (permissionState.permissionStatus.hasPrompted){
+
+    //   }else{
+    //     await OneSignal.shared.promptUserForPushNotificationPermission();
+    //   }
+    // });
+    var accepted = await OneSignal.shared.promptUserForPushNotificationPermission();
+    if (accepted){
       print("Accepted permission: $accepted");
+      
       if (user.email != null){
         OneSignal.shared.setEmail(email: user.email);
       }
-    });
+    }
 
     // //Setup local notifications
     // prefs = await SharedPreferences.getInstance();
@@ -330,5 +317,31 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     setState(() {
       _currentIndex = index;
     });
+  }
+
+  void _notificationHandler(OSNotificationOpenedResult result){
+    if(result.notification.payload.additionalData.isNotEmpty){
+        if(result.notification.payload.additionalData.containsKey("deal")){
+          var dealID = result.notification.payload.additionalData['deal'];
+          if(!mounted) return
+          this.setState(() {
+            // print("Opened notification: \n${result.notification.jsonRepresentation().replaceAll("\\n", "\n")}");
+            print("Opened notification with deal ID: $dealID");
+            Provider.of<NotificationData>(context).setNotiDealID(dealID);
+          });
+        }else{
+          if(!mounted) return
+          this.setState(() {
+            var data = result.notification.payload.additionalData;
+            print("Opened notification with additional data: $data");
+          });
+        }
+      }else{
+        if(!mounted) return
+        this.setState(() {
+          print("Opened notification with no additional data");
+        });
+      }      
+      return;
   }
 }

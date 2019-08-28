@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AppState with ChangeNotifier {
   bool _darkModeEnabled = false;  
+  bool _notificationsEnabled = false;
   SharedPreferences prefs ;
 
   AppState() {
@@ -13,6 +14,7 @@ class AppState with ChangeNotifier {
     //see if this has been set before, if not, set to light mode
     prefs = await SharedPreferences.getInstance();
     setDarkMode(prefs.getBool('isDark') ?? false);
+    setNotificationsSetting(prefs.getBool('isNotificationsEnabled') ?? false);
   }
 
   void setDarkMode(bool newVal) {
@@ -22,6 +24,14 @@ class AppState with ChangeNotifier {
   }
 
   bool get isDark => _darkModeEnabled;
+
+  void setNotificationsSetting(bool newVal) {
+    _notificationsEnabled = newVal;
+    prefs.setBool('isNotificationsEnabled', _notificationsEnabled);
+    notifyListeners();
+  }
+
+  bool get isNotificationsEnabled => _notificationsEnabled;
 }
 
 class NotificationData with ChangeNotifier {
