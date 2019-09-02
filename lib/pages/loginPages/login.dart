@@ -124,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
                       print("create account pressed");
                       Navigator.push(context, platformPageRoute(maintainState: false,
                           builder: (BuildContext context) {
-                            return new CreateAccountPage();
+                            return new CreateAccountPage(_auth);
                           },
                           fullscreenDialog: true
                       ),
