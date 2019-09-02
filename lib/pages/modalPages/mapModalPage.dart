@@ -12,13 +12,11 @@ import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 
 
-final FirebaseAuth _auth = FirebaseAuth.instance;
-
 class MapPageWidget extends StatefulWidget {
   final text;
   final List<Vendor> vendors;
-
-  MapPageWidget(this.text, this.vendors);
+  final CameraPosition cameraPosition;
+  MapPageWidget(this.text, this.vendors,this.cameraPosition);
 
   @override
   _MapPageWidgetState createState() => _MapPageWidgetState();
@@ -28,8 +26,8 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   FirebaseUser user;
   final _locationService = Geolocator();
   Completer<GoogleMapController> _controller = Completer();
-  Map<MarkerId,Marker> _markers = new Map<MarkerId,Marker>();
   CameraPosition _userPosition;
+  Map<MarkerId,Marker> _markers = new Map<MarkerId,Marker>();
 
   void _onMarkerPressed(MarkerId markerId) {
     for (Vendor vendor in this.widget.vendors) {
@@ -64,21 +62,25 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       if (serviceStatus == GeolocationStatus.granted) {
         _locationService.forceAndroidLocationManager = true;
         Position currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
-        _userPosition = new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude), zoom: 12);
+        this._userPosition = new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude), zoom: 12);
+        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
+          this._userPosition = new CameraPosition(target: LatLng(result.latitude,result.longitude), zoom: 12);
+
+        });
       }
     }
     for (Vendor vendor in this.widget.vendors) {
-
       MarkerId markerId = new MarkerId(vendor.name);
       Marker marker = new Marker(
         markerId: markerId,
         position: LatLng(vendor.lat,vendor.long),
         infoWindow: InfoWindow(
-            title: vendor.name,
-            snippet: vendor.description,
-            onTap: () {
-              _onMarkerPressed(markerId);
-            }),
+          title: "",
+          snippet: vendor.name + "  ⓘ",
+          onTap: () {
+            _onMarkerPressed(markerId);
+          }
+        ),
       );
 
       setState(() {
@@ -93,9 +95,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
 
     return PlatformScaffold(
       appBar: PlatformAppBar(
-        title: Text("Savour Deals",
-          style: whiteTitle,
-        ),
+        title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
           actionsForegroundColor: Colors.white,
           backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
@@ -111,8 +111,9 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       ),
       body: GoogleMap(
         mapType: MapType.normal,
-        initialCameraPosition: _userPosition,
+        initialCameraPosition: (_userPosition != null) ? _userPosition: this.widget.cameraPosition,
         onMapCreated: _onMapCreated,
+        myLocationEnabled: true,
         markers: Set<Marker>.of(_markers.values),
       ),
     );

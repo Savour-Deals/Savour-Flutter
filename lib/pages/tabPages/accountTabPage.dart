@@ -34,14 +34,15 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
   Widget build(BuildContext context) {
     return PlatformScaffold(
       appBar: PlatformAppBar(
+        title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: Theme.of(context).bottomAppBarColor,
+          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Theme.of(context).brightness,
-          heroTag: "dealTab",
+          heroTag: "accountTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: Theme.of(context).bottomAppBarColor,
+          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
           elevation: 0.0,
           brightness: Theme.of(context).brightness,
         ),
