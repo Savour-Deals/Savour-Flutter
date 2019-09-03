@@ -141,9 +141,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void createAccount() {
-  }
-
   void login() {
     if (emailController.text.isEmpty || passwordController.text.isEmpty){
       displayError("Missing email or password","Please provide both an email and password", "OK");
