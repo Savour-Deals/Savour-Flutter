@@ -354,7 +354,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
               onTap: (){
                 if(redemptions[position-1].isDealRedemption()){
                   Navigator.push(context,
-                    platformPageRoute(maintainState: false,
+                    platformPageRoute(
                       builder: (BuildContext context) {
                         return DealPageWidget(redemptions[position-1].deal, widget.location);
                       },
@@ -362,7 +362,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
                   );
                 }else{
                   Navigator.push(context,
-                    platformPageRoute(maintainState: false,
+                    platformPageRoute(
                       builder: (BuildContext context) {
                         return VendorPageWidget(redemptions[position-1].vendor);
                       },
