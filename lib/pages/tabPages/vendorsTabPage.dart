@@ -18,6 +18,10 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   final _locationService = Geolocator();
   Position currentLocation;
 
+  //Declare contextual variables
+  AppState appState;
+  ThemeData theme;
+
   //database variables 
   DatabaseReference vendorRef = FirebaseDatabase().reference().child("Vendors");
   final geo = Geofire();
@@ -38,8 +42,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
-        _locationService.forceAndroidLocationManager = true;
-        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+          currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium);
           geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
           geo.onKeyEntered.listen((data){
             keyEntered(data);
@@ -105,6 +108,8 @@ class _VendorsPageState extends State<VendorsPageWidget> {
 
   @override
   Widget build(BuildContext context) {
+    appState = Provider.of<AppState>(context);
+    theme = Theme.of(context);
     return PlatformScaffold(
       appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
@@ -119,13 +124,13 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           },
         ),
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
           heroTag: "vendorTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
         ),
       ),
@@ -181,7 +186,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   }
 
   Future<Widget> buildPageAsync(PageType pageType, {position: int}) async {
-    return Future.microtask(() {
+    return Future.microtask(() async {
       switch (pageType) {
         case PageType.mapPage:
           return MapPageWidget("Map Page", this.vendors);

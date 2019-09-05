@@ -1,8 +1,12 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
@@ -18,6 +22,15 @@ class VendorPageWidget extends StatefulWidget {
 }
 
 class _VendorPageWidgetState extends State<VendorPageWidget> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseUser user;
+  DatabaseReference _userRef;
+
+  //Declare contextual variables
+  AppState appState;
+  ThemeData theme;
+
+  bool following = false;
 
   @override
   void initState() {
@@ -26,32 +39,33 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
   }
 
   void initialize() async {
-    // ref.child("Users").child((Auth.auth().currentUser?.uid)!).observeSingleEvent(of: .value, with: { (snapshot) in
-    //         //let value = snapshot.value as? NSDictionary
-    //         if snapshot.childSnapshot(forPath: "following").hasChild((self.thisVendor.id)!){
-    //             self.followString = "Following"
-    //         }
-    //         else{
-    //             self.followString = "Follow"
-    //         }
-    //         self.reloadTable()
-    //     })
+    user = await _auth.currentUser();
+    _userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
+    _userRef.child("following").onValue.listen((data){
+      if (data.snapshot != null){
+        setState(() {
+          following = data.snapshot.value[widget.vendor.key]?? false;
+        });        
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    appState = Provider.of<AppState>(context);
+    theme = Theme.of(context);
     return PlatformScaffold(
       appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           leading: CupertinoNavigationBarBackButton(color: Colors.white,),
           brightness: Brightness.dark,
           heroTag: "vendorPage",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           leading: BackButton(color: Colors.white,),
           brightness: Brightness.dark,
           centerTitle: true,
@@ -90,7 +104,7 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
             child: VendorButtonRow(
               address: widget.vendor.address,
               menuURL: widget.vendor.menu,
-              following: false,
+              vendorID: widget.vendor.key,
             ),
           ),
           Container(height: 20,),
@@ -118,6 +132,7 @@ class _AboutWidgetState extends State<AboutWidget> {
 
   @override
   Widget build(BuildContext context) {
+    var theme = Theme.of(context);
     return Stack(
       children: <Widget>[
         Container(
@@ -201,7 +216,7 @@ class _AboutWidgetState extends State<AboutWidget> {
               "About",
               style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 25.0),
             ),
-            color: Theme.of(context).scaffoldBackgroundColor,
+            color: theme.scaffoldBackgroundColor,
           ),
         ),
       ],
@@ -212,13 +227,12 @@ class _AboutWidgetState extends State<AboutWidget> {
 class VendorButtonRow extends StatefulWidget {
   final String menuURL;
   final String address;
-  final bool following;
-
+  final String vendorID;
   VendorButtonRow({
     Key key,
     @required this.menuURL,
     @required this.address,
-    @required this.following,
+    @required this.vendorID,
   }) : super(key: key);
 
   @override
@@ -228,10 +242,26 @@ class VendorButtonRow extends StatefulWidget {
 class _VendorButtonRowState extends State<VendorButtonRow> {
   bool _following = false;
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseUser user;
+  DatabaseReference _userRef;
+
   @override
   void initState() {
     super.initState();
-    _following = widget.following;
+    initialize();
+  }
+
+  void initialize() async {
+    user = await _auth.currentUser();
+    _userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
+    _userRef.child("following").onValue.listen((data){
+      if (data.snapshot != null){
+        setState(() {
+          _following = data.snapshot.value[widget.vendorID]?? false;
+        });        
+      }
+    });
   }
 
   @override
@@ -306,14 +336,15 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
   }
 
   _toggleFollow(){
-    if (_following){
-      setState(() {
-        _following = false;
-      });
+    setState(() {
+      _following = !_following;
+    });
+    if (!_following){
+      _userRef.child("following").child(widget.vendorID).remove();
+      OneSignal.shared.deleteTag(widget.vendorID);
     }else{
-      setState(() {
-        _following = true;
-      });
+      _userRef.child("following").child(widget.vendorID).set(true);
+      OneSignal.shared.sendTag(widget.vendorID, true);
     }
   }
 

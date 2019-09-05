@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
 import 'package:savour_deals_flutter/containers/vendorCardWidget.dart';
 import 'package:savour_deals_flutter/pages/infoPages/dealPage.dart';
@@ -79,8 +80,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
-        _locationService.forceAndroidLocationManager = true;
-        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+        currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
         _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
           if (this.mounted){
             setState(() {
@@ -164,7 +164,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         title: SearchTextField(_controller, _focusNode, isDealSearch()),
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+        backgroundColor: Provider.of<AppState>(context).isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
         brightness: Brightness.dark,
       ),
       body: bodyWidget(),

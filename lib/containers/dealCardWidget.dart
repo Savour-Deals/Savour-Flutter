@@ -30,24 +30,7 @@ class _DealCardState extends State<DealCard> {
 
   @override
   void initState() {
-    // image = Image.asset("images/glass-and-fork.png");
     scalar = (widget.largeDisplay)? 1.0 : 0.8;
-    // var thisimg = NetworkImage(widget.deal.photo);
-    // thisimg.obtainKey(new ImageConfiguration()).then((val) {
-    //   var load = thisimg.load(val);
-    //   ImageListener imageListener = (ImageInfo imageInfo, syncCall) async {
-    //     ByteData data = await imageInfo.image.toByteData();
-        
-    //     IMGTOOLS.Image resized = IMGTOOLS.copyResize(IMGTOOLS.Image.fromBytes(imageInfo.image.width,imageInfo.image.height,data.buffer.asUint8List()), width: 500);
-
-    //     setState(() {
-    //       image = Image.memory(resized.getBytes());
-    //     });
-    //       // setState(() => );
-    //   };
-    //   ImageStreamListener listenerStream = new ImageStreamListener(imageListener);
-    //   load.addListener(listenerStream);
-    // });
     super.initState();
   }
 
