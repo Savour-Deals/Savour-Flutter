@@ -298,7 +298,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
               },
             ),
             FlatButton(
-              child: Text("Not Now"),
+              child: new Text("Not Now", style: TextStyle(color: Colors.red),),
               onPressed: () {
                 Navigator.of(context).pop();
               },
