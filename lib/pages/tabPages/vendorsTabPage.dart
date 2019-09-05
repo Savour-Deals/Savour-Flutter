@@ -186,7 +186,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   }
 
   Future<Widget> buildPageAsync(PageType pageType, {position: int}) async {
-    return Future.microtask(() {
+    return Future.microtask(() async {
       switch (pageType) {
         case PageType.mapPage:
           return MapPageWidget("Map Page", this.vendors);

@@ -117,9 +117,13 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   Future didChangeAppLifecycleState(AppLifecycleState state) async {
     if(state == AppLifecycleState.resumed){
       var newState = await LocationPermissions().checkPermissionStatus();
+      var notificationStatus = await OneSignal.shared.getPermissionSubscriptionState();
+      var notificationsEnabled = notificationStatus.permissionStatus.status == OSNotificationPermission.authorized;
+      debugPrint("Accepted: $notificationsEnabled");
       if(this.mounted){
         setState(() {
           locationStatus = newState;
+          _notificationPermissionHandler(notificationsEnabled);
         });
       }
       print("Resumed");
@@ -275,6 +279,8 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     return appState.isDark? theme.accentColor:SavourColorsMaterial.savourGreen;
   }
 
+// The following commented code is for notifications when a user is nearby so many vendors
+// To implement this, data handling needs to be refactored 
   // sendLocalNotification() async {
   //   var androidPlatformChannelSpecifics = AndroidNotificationDetails(
   //     'vendorsnearby', 'Nearby Notifications', 'These notifications let you know when lots of restaurants, bars, and other shops are nearby.',
@@ -328,28 +334,21 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   }
 
   void _notificationHandler(OSNotificationOpenedResult result){
+    if(!mounted) return;
     if(result.notification.payload.additionalData.isNotEmpty){
-        if(result.notification.payload.additionalData.containsKey("deal_id")){
-          var dealID = result.notification.payload.additionalData['deal_id'];
-          if(!mounted) return;
+        if(result.notification.payload.additionalData.containsKey("deal")){
+          var dealID = result.notification.payload.additionalData['deal'];
           this.setState(() {
             // print("Opened notification: \n${result.notification.jsonRepresentation().replaceAll("\\n", "\n")}");
             print("Opened notification with deal ID: $dealID");
             Provider.of<NotificationData>(context).setNotiDealID(dealID);
           });
         }else{
-          if(!mounted) return;
           this.setState(() {
             var data = result.notification.payload.additionalData;
             print("Opened notification with additional data: $data");
           });
         }
-      }else{
-        if(!mounted) return;
-        this.setState(() {
-          print("Opened notification with no additional data");
-        });
-      }      
-      return;
+      }//else Opened notification with no additional data
   }
 }

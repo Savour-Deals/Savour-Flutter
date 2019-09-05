@@ -152,15 +152,15 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                   "Notifications",
                   style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                 ),
-                // trailing: PlatformSwitch(
-                //   value: notificationSettings.isNotificationsEnabled,
-                //   onChanged: (value) {
-                //     _toggleNotifications();
-                //   },
-                //   // activeTrackColor: theme.primaryColor, 
-                //   activeColor: theme.primaryColor,
-                // ),
-                onTap: () => _toggleNotifications(),
+                trailing: PlatformSwitch(
+                  value: notificationSettings.isNotificationsEnabled,
+                  onChanged: (value) {
+                    _toggleNotifications();
+                  },
+                  // activeTrackColor: theme.primaryColor, 
+                  activeColor: theme.primaryColor,
+                ),
+                // onTap: () => _toggleNotifications(),
                 contentPadding: EdgeInsets.all(4.0),
               ),
               decoration: BoxDecoration(
@@ -236,20 +236,34 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
   }
 
   _toggleNotifications() async {
-    AppSettings.openAppSettings();
-    // if(notificationSettings.isNotificationsEnabled){
-    //   _notificationPermissionHandler(false);
-    // }else{
-    //   if(Platform.isIOS){
-    //     OneSignal.shared.promptUserForPushNotificationPermission().then((accepted){
-    //       print("Accepted permission: $accepted");
-    //       _notificationPermissionHandler(accepted);
-    //     });
-    //   }else{
-    //     print("Accepted permission: Not needed for android");
-    //     _notificationPermissionHandler(true);
-    //   }
-    // }
+    if(notificationSettings.isNotificationsEnabled){
+      _notificationPermissionHandler(false);
+    }else{
+      if(Platform.isIOS){
+        OneSignal.shared.getPermissionSubscriptionState().then((subscriptionState){
+          switch (subscriptionState.permissionStatus.status) {
+            case OSNotificationPermission.authorized:
+              //we have iOS permissions, resubscribe with onesignal
+              _notificationPermissionHandler(true);
+              break;
+            case OSNotificationPermission.denied:
+              // User denied previously, prompt them to go to settings
+              // Accept/deny handled in tab.dart::didChangeAppLifecycleState
+              _showSettingsDialog();
+              break;
+            default:
+            // User was never prompted. WTH man!
+              OneSignal.shared.promptUserForPushNotificationPermission().then((accepted){
+                print("Accepted permission: $accepted");
+                _notificationPermissionHandler(accepted);
+              });
+          }
+        });
+      }else{
+        print("Accepted permission: Not needed for android");
+        _notificationPermissionHandler(true);
+      }
+    }
   }
 
   Future _notificationPermissionHandler(bool accepted) async {
@@ -266,5 +280,32 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
       OneSignal.shared.setSubscription(false);
       notificationSettings.setNotificationsSetting(false);
     }
+  }
+
+  void _showSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return PlatformAlertDialog(
+          title: Text("Notification Permission Needed"),
+          content: Text("Please turn on notifications in settings."),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("Go to Settings"),
+              onPressed: () {
+                AppSettings.openAppSettings();
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text("Not Now"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
