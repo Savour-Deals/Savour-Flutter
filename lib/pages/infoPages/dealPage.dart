@@ -201,7 +201,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   bool inRange(){
-    return (widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude) < 100.1);
+    return (widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude) < 0.1); //100.1); //Chnage to large radius for testing
   }
 
   Widget redemptionButton(){
