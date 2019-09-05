@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
@@ -90,22 +91,27 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   }
 
 
+  //Declare contextual variables
+  AppState appState;
+  ThemeData theme;
+
   @override
   Widget build(BuildContext context) {
-
+    appState = Provider.of<AppState>(context);
+    theme = Theme.of(context);
     return PlatformScaffold(
       appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
           actionsForegroundColor: Colors.white,
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
           heroTag: "favTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
           iconTheme: IconThemeData(color: Colors.white),
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
         ),
       ),
