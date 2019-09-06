@@ -107,6 +107,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       );
     }
     void createAccount() {
+
+      _onLoading();
+
       if (passwordConfirmController.text != passwordController.text) {
         displayError("The passwords do not match", "Re-enter passwords", "OK");
       } else if (emailController.text.isEmpty || passwordController.text.isEmpty || passwordConfirmController.text.isEmpty){
@@ -117,17 +120,23 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 
        }).then((user) {
           //TODO: Handle account creation with a re-route to the login page, and a message to confirm email
+
+         Navigator.pop(context);
+
          Navigator.push(context, platformPageRoute(maintainState: false,
          builder: (BuildContext context) {
-           return new LoginPage();
+           return new LoginPage("Please check your email to authenticate your account.");
          },
          fullscreenDialog: true
          ));
+
+
        });
       }
     }
 
   void displayError(title, message, buttonText){
+    Navigator.pop(context);
     showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
@@ -148,5 +157,17 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       },
     );
   }
-
+  void _onLoading() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      child: new Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          new CircularProgressIndicator(),
+        ],
+      )
+    );
+  }
 }
+

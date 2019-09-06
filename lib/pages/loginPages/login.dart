@@ -17,8 +17,8 @@ import 'CreateAccountPage.dart';
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class LoginPage extends StatefulWidget {
-  LoginPage({Key key}) : super(key: key);
-
+  String snackBarText;
+  LoginPage([this.snackBarText]);
 
 
   @override
@@ -38,7 +38,16 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    SnackBar snack = new SnackBar(
+      content: Text("WASD!"),
+      action: SnackBarAction(
+          label: "Close",
+          onPressed: () {}
+      )
 
+
+    );
+    Widget snackBar = (this.widget.snackBarText != null) ? snack : SizedBox.shrink();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     return PlatformScaffold(
       backgroundColor: Colors.black,
@@ -58,6 +67,7 @@ class _LoginPageState extends State<LoginPage> {
             child: SingleChildScrollView(
                 child: Column(
                 children: <Widget>[
+                  snackBar,
                   Image(image: AssetImage("images/Savour_Deals_White.png")),
                   LoginTextInput(
                     hint: "Email", 
