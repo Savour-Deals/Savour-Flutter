@@ -108,7 +108,9 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
             ),
           ),
           Container(height: 20,),
-          AboutWidget(vendor: widget.vendor,)
+          AboutWidget(vendor: widget.vendor,),
+          Container(height: 20,),
+          (widget.vendor.loyalty.count > -1) ? LoyaltyWidget(vendor: widget.vendor): Container(),
         ],
       ),
     );
@@ -136,7 +138,7 @@ class _AboutWidgetState extends State<AboutWidget> {
     return Stack(
       children: <Widget>[
         Container(
-          padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 30.0),
+          padding: EdgeInsets.fromLTRB(30.0, 20.0, 30.0, 0.0),
           child: Column(
             children: <Widget>[
               Row(
@@ -159,14 +161,14 @@ class _AboutWidgetState extends State<AboutWidget> {
                 children: <Widget>[
                   Container(
                     width:  MediaQuery.of(context).size.width*0.4,
-                    child: Text(widget.vendor.address, textAlign: TextAlign.center,style: TextStyle(fontSize: 15)),
+                    child: Text(widget.vendor.address, textAlign: TextAlign.center,style: TextStyle(fontSize: 13)),
                   ),
                   Container(
                     width:  MediaQuery.of(context).size.width*0.4,
                     child: Text(
                       (widget.vendor.todaysHours() == null) ? "Hours not available":widget.vendor.todaysHours(), 
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 15)
+                      style: TextStyle(fontSize: 13)
                     ),
                   ),
                 ],
@@ -199,6 +201,7 @@ class _AboutWidgetState extends State<AboutWidget> {
                   },
                 ),
               ),
+              
             ],
           ),
           decoration: BoxDecoration(
@@ -397,5 +400,86 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
         }
       }
     }
+  }
+}
+
+class LoyaltyWidget extends StatefulWidget {
+  final Vendor vendor;
+
+  const LoyaltyWidget({Key key, this.vendor}) : super(key: key);
+  @override
+  State<StatefulWidget> createState() => _LoyaltyWidgetState();
+}
+
+class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProviderStateMixin {
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseUser user;
+  DatabaseReference _userRef;
+  @override
+  void initState() {
+    super.initState();
+    initialize();
+  }
+
+  void initialize() async {
+    
+    user = await _auth.currentUser();
+    _userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
+    
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        SizedBox(
+          width: MediaQuery.of(context).size.width*0.60,
+          height: 40.0,
+          child: FlatButton(
+            child: Text("Loyalty Check-in", style: TextStyle(color: Colors.white)),
+            shape:  RoundedRectangleBorder(borderRadius: new BorderRadius.circular(20)),
+            onPressed: () {
+            },
+            color: SavourColorsMaterial.savourGreen,
+          ),
+        ),
+        Container(height: 5),
+        Text("Today: +" + widget.vendor.loyalty.todaysPoints().toString()),
+        Container(height: 5),
+        Text("Reach your points goal and recieve:"),
+        Text(widget.vendor.loyalty.deal),
+        Stack(
+          children: <Widget>[
+            Container(
+              child: Container(
+                //Container visually indicating progress
+                height: 30.0,
+                width: MediaQuery.of(context).size.width*0.50,
+                decoration: new BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(20.0), bottomLeft: Radius.circular(20.0)),
+                ),
+              ),
+            ),
+            Container(
+              child: Container(
+                //Border for progress
+                height: 30.0,
+                width: MediaQuery.of(context).size.width*0.75,
+                decoration: new BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.all(Radius.circular(15.0)),
+                  border: Border.all(width: 2.0, color: Colors.grey),
+                ),
+              ),
+            ),
+          ],
+        ),
+        Container(height: 10,),
+      ],
+    );
   }
 }
