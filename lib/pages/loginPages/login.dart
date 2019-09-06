@@ -38,16 +38,18 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    SnackBar snack = new SnackBar(
-      content: Text("WASD!"),
-      action: SnackBarAction(
-          label: "Close",
-          onPressed: () {}
-      )
+//    SnackBar snack = new SnackBar(
+//      content: Text("WASD!"),
+//      action: SnackBarAction(
+//          label: "Close",
+//          onPressed: () {}
+//      )
+//
+//
+//    );
+//    Widget snackBar = (this.widget.snackBarText != null) ? snack : SizedBox.shrink();
 
-
-    );
-    Widget snackBar = (this.widget.snackBarText != null) ? snack : SizedBox.shrink();
+//    Scaffold.of(context).showSnackBar(snack);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     return PlatformScaffold(
       backgroundColor: Colors.black,
@@ -67,7 +69,6 @@ class _LoginPageState extends State<LoginPage> {
             child: SingleChildScrollView(
                 child: Column(
                 children: <Widget>[
-                  snackBar,
                   Image(image: AssetImage("images/Savour_Deals_White.png")),
                   LoginTextInput(
                     hint: "Email", 
