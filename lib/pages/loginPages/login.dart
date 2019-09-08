@@ -141,7 +141,10 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _displayCreateAccountSuccess() {
+  void _displayCreateAccountSuccess() async {
+    var currentUser = await _auth.currentUser();
+    print("CURRENT USER");
+    print(currentUser.email);
     showPlatformDialog(
       context: context,
       builder: (BuildContext context) {

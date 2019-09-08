@@ -107,7 +107,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ),
       );
     }
-    void createAccount() {
+    void createAccount() async {
 
       _onLoading();
 
@@ -116,27 +116,20 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       } else if (emailController.text.isEmpty || passwordController.text.isEmpty || passwordConfirmController.text.isEmpty){
         displayError("Missing email or password","Please provide both an email and password", "OK");
       } else {
-       this.widget.auth.createUserWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error) {
+       await this.widget.auth.createUserWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error) {
          displayError("Account Creation Failed!","Sorry, the account could not be created.", "OK");
 
-       }).then((user) {
+       }).then((user)  {
           //TODO: Handle account creation with a re-route to the login page, and a message to confirm email
-
+         print("USERHERE");
+         print(user.email);
          // this removes the loading bar
          Navigator.pop(context);
 
          // this removes the create account page and takes the user back to the login page
          Navigator.pop(context);
 
-
-//         Navigator.push(context, platformPageRoute(maintainState: false,
-//         builder: (BuildContext context) {
-//           return new LoginPage("Please check your email to authenticate your account.");
-//         },
-//         fullscreenDialog: true
-//         ));
-
-
+         user.sendEmailVerification();
        });
       }
     }
