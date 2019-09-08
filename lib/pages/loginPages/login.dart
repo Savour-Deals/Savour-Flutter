@@ -17,8 +17,7 @@ import 'CreateAccountPage.dart';
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class LoginPage extends StatefulWidget {
-  String snackBarText;
-  LoginPage([this.snackBarText]);
+
 
 
   @override
@@ -30,6 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = new TextEditingController();
   bool _passwordObscured = true;
   DatabaseReference userRef;
+  GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -38,20 +38,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-//    SnackBar snack = new SnackBar(
-//      content: Text("WASD!"),
-//      action: SnackBarAction(
-//          label: "Close",
-//          onPressed: () {}
-//      )
-//
-//
-//    );
-//    Widget snackBar = (this.widget.snackBarText != null) ? snack : SizedBox.shrink();
 
-//    Scaffold.of(context).showSnackBar(snack);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     return PlatformScaffold(
+      key: scaffoldKey,
       backgroundColor: Colors.black,
       body: Container(
         decoration: BoxDecoration(
@@ -90,9 +80,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       onPressed: () {
                         setState(() {
-                          _passwordObscured
-                              ? _passwordObscured = false
-                              : _passwordObscured = true;
+                          _passwordObscured = !_passwordObscured;
                         });
                       },
                     ),
@@ -131,15 +119,16 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   Container(padding: EdgeInsets.all(5),alignment: Alignment.bottomCenter,),
                   GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       print("create account pressed");
-                      Navigator.push(context, platformPageRoute(maintainState: false,
-                          builder: (BuildContext context) {
-                            return new CreateAccountPage(_auth);
-                          },
+                      await Navigator.push(context, platformPageRoute(maintainState: false,
+                            builder: (BuildContext context) {
+                        return new CreateAccountPage(_auth, scaffoldKey);
+                      },
                           fullscreenDialog: true
                       ),
                       );
+                      _displayCreateAccountSuccess();
                     },
                     child: Text("Create Account", style: TextStyle(color: Colors.white),),
                   ),
@@ -149,6 +138,28 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _displayCreateAccountSuccess() {
+    showPlatformDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return PlatformAlertDialog(
+          title: new Text("Account Created!"),
+          content: new Text("Please check your email to authenticate your account"),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text("Close"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -170,8 +181,7 @@ class _LoginPageState extends State<LoginPage> {
     var facebook = new FacebookLogin();
     facebook.loginBehavior = FacebookLoginBehavior.webViewOnly;
 
-    var result =
-        await facebook.logInWithReadPermissions(['email', 'public_profile']);
+    var result = await facebook.logInWithReadPermissions(['email', 'public_profile']);
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
         _auth.signInWithCredential(FacebookAuthProvider.getCredential(

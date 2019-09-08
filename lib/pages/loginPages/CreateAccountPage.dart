@@ -12,8 +12,9 @@ import 'login.dart';
 class CreateAccountPage extends StatefulWidget {
 
   final FirebaseAuth auth;
+  final GlobalKey<ScaffoldState> scaffoldKey;
 
-  CreateAccountPage(this.auth);
+  CreateAccountPage(this.auth, this.scaffoldKey);
 
   @override
   _CreateAccountPageState createState() => _CreateAccountPageState();
@@ -121,14 +122,19 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
        }).then((user) {
           //TODO: Handle account creation with a re-route to the login page, and a message to confirm email
 
+         // this removes the loading bar
          Navigator.pop(context);
 
-         Navigator.push(context, platformPageRoute(maintainState: false,
-         builder: (BuildContext context) {
-           return new LoginPage("Please check your email to authenticate your account.");
-         },
-         fullscreenDialog: true
-         ));
+         // this removes the create account page and takes the user back to the login page
+         Navigator.pop(context);
+
+
+//         Navigator.push(context, platformPageRoute(maintainState: false,
+//         builder: (BuildContext context) {
+//           return new LoginPage("Please check your email to authenticate your account.");
+//         },
+//         fullscreenDialog: true
+//         ));
 
 
        });
@@ -157,6 +163,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       },
     );
   }
+
   void _onLoading() {
     showDialog(
       context: context,
