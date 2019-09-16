@@ -57,7 +57,7 @@ class _ResetAccountPageState extends State<ResetAccountPage> {
                       ),
                     ),
                     color: SavourColorsMaterial.savourGreen,
-                    child: Text("Create Account", style: whiteText),
+                    child: Text("Reset Password", style: whiteText),
                     onPressed: () {
                       _resetAccount();
                     },
