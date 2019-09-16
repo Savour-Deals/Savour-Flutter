@@ -12,9 +12,8 @@ import 'login.dart';
 class CreateAccountPage extends StatefulWidget {
 
   final FirebaseAuth auth;
-  final GlobalKey<ScaffoldState> scaffoldKey;
 
-  CreateAccountPage(this.auth, this.scaffoldKey);
+  CreateAccountPage(this.auth);
 
   @override
   _CreateAccountPageState createState() => _CreateAccountPageState();
@@ -96,7 +95,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       color: SavourColorsMaterial.savourGreen,
                       child: Text("Create Account", style: whiteText),
                       onPressed: () {
-                        createAccount();
+                        _createAccount();
                       },
                     ),
                   ],
@@ -107,7 +106,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         ),
       );
     }
-    void createAccount() async {
+    void _createAccount() async {
 
       _onLoading();
 
@@ -135,6 +134,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     }
 
   void displayError(title, message, buttonText){
+
     Navigator.pop(context);
     showPlatformDialog(
       context: context,

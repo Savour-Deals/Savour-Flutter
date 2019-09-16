@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:savour_deals_flutter/pages/loginPages/ResetAccountPage.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/themes/decoration.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
@@ -123,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
                       print("create account pressed");
                       await Navigator.push(context, platformPageRoute(maintainState: false,
                             builder: (BuildContext context) {
-                        return new CreateAccountPage(_auth, scaffoldKey);
+                        return new CreateAccountPage(_auth);
                       },
                           fullscreenDialog: true
                       ),
@@ -131,6 +132,20 @@ class _LoginPageState extends State<LoginPage> {
                       _displayCreateAccountSuccess();
                     },
                     child: Text("Create Account", style: TextStyle(color: Colors.white),),
+                  ),
+                  Container(padding: EdgeInsets.all(5),alignment: Alignment.bottomCenter,),
+                  GestureDetector(
+                    onTap: () async {
+                      await Navigator.push(context, platformPageRoute(maintainState: false,
+                          builder: (BuildContext context) {
+                            return new ResetAccountPage(_auth);
+                          },
+                          fullscreenDialog: true
+                      ),
+                      );
+                      _displayResetAccountSuccess();
+                    },
+                    child: Text("Reset Account", style: TextStyle(color: Colors.white),),
                   ),
                 ],
               ),
@@ -166,6 +181,31 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+
+  void _displayResetAccountSuccess() async {
+    var currentUser = await _auth.currentUser();
+    print("CURRENT USER");
+    print(currentUser.email);
+    showPlatformDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return PlatformAlertDialog(
+          title: new Text("Account Reset!"),
+          content: new Text("Please check your email to reset your password"),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text("Close"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
   void login() {
     if (emailController.text.isEmpty || passwordController.text.isEmpty){
       displayError("Missing email or password","Please provide both an email and password", "OK");
