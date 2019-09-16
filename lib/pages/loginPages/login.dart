@@ -6,13 +6,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
-import 'package:savour_deals_flutter/pages/loginPages/ResetAccountPage.dart';
+import 'package:savour_deals_flutter/pages/loginPages/resetAccountPage.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/themes/decoration.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:http/http.dart' as http;
 
-import 'CreateAccountPage.dart';
+import 'createAccountPage.dart';
 
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
