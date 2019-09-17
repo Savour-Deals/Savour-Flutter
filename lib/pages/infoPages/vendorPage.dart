@@ -421,6 +421,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
   int userPoints;
   int pointsGoal;
   double pointPercent;
+  int redemptionTime;
 
   @override
   void initState() {
@@ -430,7 +431,6 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
   }
 
   void initialize() async {
-    
     user = await _auth.currentUser();
     _userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
 
@@ -438,6 +438,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
       if (data.snapshot != null){
         setState(() {
           userPoints = data.snapshot.value["count"] ?? 0;
+          redemptionTime = data.snapshot.value["time"] ?? 0;
           pointPercent = userPoints.toDouble()/pointsGoal.toDouble();
           if (pointPercent > 1.0){
             pointPercent = 1.0; //clip at 100% filled progress bar
@@ -462,21 +463,30 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
           width: MediaQuery.of(context).size.width*0.75,
           height: 50.0,
           child: FlatButton(
-            child: Text("Loyalty Check-in", style: TextStyle(color: Colors.white)),
+            child: (pointPercent < 1.0)? Text("Loyalty Check-in", style: TextStyle(color: Colors.white)):
+              Text("Loyalty Check-in", style: TextStyle(color: Colors.white)),
             shape:  RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25)),
             onPressed: () {
+              _handleLoyaltyPressed();
             },
             color: SavourColorsMaterial.savourGreen,
           ),
         ),
         Container(height: 5),
-        Text("Today: +" + widget.vendor.loyalty.todaysPoints().toString(), style: TextStyle(fontSize: 18),),
-        Container(height: 5),
-        Text("Reach your points goal and recieve:", style: TextStyle(fontSize: 18),),
-        Text(widget.vendor.loyalty.deal, style: TextStyle(fontSize: 18),),
+        Column(
+          children: (pointPercent < 1.0)? 
+            <Widget>[
+              Text("Today: +" + widget.vendor.loyalty.todaysPoints().toString(), style: TextStyle(fontSize: 18),),
+              Container(height: 5),
+              Text("Reach your points goal and recieve:", style: TextStyle(fontSize: 18),),
+              Text(widget.vendor.loyalty.deal, style: TextStyle(fontSize: 18),),
+            ]:
+            <Widget>[
+              Text("You're ready to redeem your " + widget.vendor.loyalty.deal, style: TextStyle(fontSize: 18),),
+            ],
+        ),
         Container(height: 5,),
         Stack(
-          // alignment: ,
           children: <Widget>[
             Container(
               //Border for progress
@@ -491,7 +501,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
             Container(
               //Container visually indicating progress
               height: 35.0,
-              width: progressWidth*,
+              width: progressWidth*pointPercent,
               decoration: new BoxDecoration(
                 color: Color.fromARGB(255, 89, 204, 93),
                 borderRadius: BorderRadius.all(Radius.circular(17.5)),
@@ -511,6 +521,90 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
         ),
         Container(height: 10,),
       ],
+    );
+  }
+
+  _handleLoyaltyPressed(){
+    if(pointPercent < 1.0){
+      //not enough points to redeem, send them to checkin
+      _loyaltyCheckin();
+    }else{
+      // enough points to redeem. Check if they can
+      _loyaltyRedeem();
+    }
+  }
+
+  _loyaltyCheckin(){
+    
+  }
+
+  _loyaltyRedeem(){
+    //Check if the deal is within range?
+    if (true){// TODO: widget.vendor.distanceMilesFrom(fromLat, fromLong) < 0.2){
+      //close enough to continue. Check duration since last checkin.
+      var now = DateTime.now().millisecondsSinceEpoch~/1000; //convert to seconds
+      if ((redemptionTime + 10800) < now){//three hours
+        //We are ready to redeem! Prompt user with next steps
+        promptRedeem(); 
+      }else{
+        displayMessage("Too Soon!", "Come back tomorrow to redeem your points!", "Okay");
+      }
+
+    }else{
+      //vendor too far away
+      displayMessage("Too far away!","Go to location to use their loyalty program!","Okay");
+    }
+  }
+
+  void displayMessage(String title, String message, String buttonText){
+    Navigator.pop(context);
+    showPlatformDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return PlatformAlertDialog(
+          title: new Text(title),
+          content: new Text(message),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text(buttonText),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void promptRedeem(){
+    Navigator.pop(context);
+    showPlatformDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return PlatformAlertDialog(
+          title: new Text("Confirm Redemption!"),
+          content: new Text("If you wish to redeem this loyalty deal now, show this message to the server. If you wish to save this deal for later, hit CANCEL."),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text("CANCEL", style: TextStyle(color: Colors.red),),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            new FlatButton(
+              child: new Text("Redeem", style: TextStyle(color: Theme.of(context).accentColor),),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
