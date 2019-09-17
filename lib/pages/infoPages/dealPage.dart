@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -180,23 +181,87 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
 
   openMap() async {
     print("Navigation to " + widget.deal.vendor.address + " initiated!");
-    // Android
-    var url =  Uri.encodeFull('geo:'+widget.deal.vendor.address);
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      // iOS
-      var url = Uri.encodeFull('comgooglemaps://?daddr='+widget.deal.vendor.address);
-      if (await canLaunch(url)) {
-        await launch(url);
-      } else {
-        var url =  Uri.encodeFull('http://maps.apple.com/?q='+widget.deal.vendor.address);
-        if (await canLaunch(url)) {
-          await launch(url);
-        } else {
-          throw 'Could not launch $url';
-        }
+    Map<String,String> mapURLs = {};
+    if(Platform.isIOS){
+      var gURL = Uri.encodeFull('comgooglemaps://?daddr='+widget.deal.vendor.address);
+      if (await canLaunch(gURL)) {
+        mapURLs["Google Maps"] =  gURL;
       }
+      var aURl =  Uri.encodeFull('http://maps.apple.com/?q='+widget.deal.vendor.address);
+      if (await canLaunch(aURl)) {
+        mapURLs["Apple Maps"] =  aURl;
+      }
+    }else if (Platform.isAndroid){
+      // Android
+      var gURL =  Uri.encodeFull('geo:'+widget.deal.vendor.address);
+      if (await canLaunch(gURL)) {
+        mapURLs["Google Maps"] =  gURL;
+      }
+    }
+    var wURL = Uri.encodeFull('https://waze.com/ul?q='+widget.deal.vendor.address);
+    if (await canLaunch(wURL)) {
+      mapURLs["Waze"] =  wURL;
+    }
+    List<Widget> mapApps = [];
+    if(Platform.isIOS){
+      mapURLs.forEach((appName, url) {
+        mapApps.add(
+          CupertinoActionSheetAction(
+            child: Text(appName),
+            onPressed: () async {
+              await launch(url);
+              Navigator.of(context).pop();
+            },
+          )
+        );
+      });
+      showCupertinoModalPopup(
+        context: context,
+        builder: (BuildContext context) => CupertinoActionSheet(
+          title: const Text('Navigate with:'),
+          actions: mapApps,
+          cancelButton: CupertinoActionSheetAction(            
+            child: Text("Cancel", style: TextStyle(color: Colors.red),),
+            onPressed: () async {
+              Navigator.of(context).pop();
+            },          
+          ),
+        ),
+      );
+    }else if (Platform.isAndroid){
+      mapApps.add(
+        ListTile(
+          title: new Text("Navigate with:", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),)
+        ),
+      );
+      mapURLs.forEach((appName, url) {
+        mapApps.add(
+          ListTile(
+            title: new Text(appName),
+            onTap: () async {
+              await launch(url);
+            },          
+          ),
+        );
+      });
+      mapApps.add(
+        ListTile(
+          title: Text("Cancel", style: TextStyle(color: Colors.red),),
+          onTap: () async {
+            Navigator.of(context).pop();
+          },
+        )
+      );
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc){
+          return Container(
+            child: new Wrap(
+              children: mapApps,
+            ),
+          );
+        }
+      );
     }
   }
 
@@ -308,4 +373,6 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
       textAlign: TextAlign.center,
     );
   }
+
+  
 }

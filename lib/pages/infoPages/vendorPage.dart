@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -353,7 +355,7 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
   }
 
   _launchURL(String url) async {
-    if (url != null){
+    if (url != null && url != ""){
       if (await canLaunch(url)) {
         await launch(url);
       } else {
@@ -369,7 +371,7 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
             actions: <Widget>[
               // usually buttons at the bottom of the dialog
               new FlatButton(
-                child: new Text("😢 Okay"),
+                child: new Text("😢 Okay", style: TextStyle(color: Theme.of(context).accentColor),),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -383,23 +385,89 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
 
   openMap() async {
     print("Navigation to " + widget.address + " initiated!");
-    // Android
-    var url =  Uri.encodeFull('geo:'+widget.address);
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      // iOS
-      var url = Uri.encodeFull('comgooglemaps://?daddr='+widget.address);
-      if (await canLaunch(url)) {
-        await launch(url);
-      } else {
-        var url =  Uri.encodeFull('http://maps.apple.com/?q='+widget.address);
-        if (await canLaunch(url)) {
-          await launch(url);
-        } else {
-          throw 'Could not launch $url';
-        }
+    Map<String,String> mapURLs = {};
+    if(Platform.isIOS){
+      var gURL = Uri.encodeFull('comgooglemaps://?daddr='+widget.address);
+      if (await canLaunch(gURL)) {
+        mapURLs["Google Maps"] =  gURL;
       }
+      var aURl =  Uri.encodeFull('http://maps.apple.com/?q='+widget.address);
+      if (await canLaunch(aURl)) {
+        mapURLs["Apple Maps"] =  aURl;
+      }
+    }else if (Platform.isAndroid){
+      // Android
+      var gURL =  Uri.encodeFull('geo:'+widget.address);
+      if (await canLaunch(gURL)) {
+        mapURLs["Google Maps"] =  gURL;
+      }
+    }
+    var wURL = Uri.encodeFull('https://waze.com/ul?q='+widget.address);
+    if (await canLaunch(wURL)) {
+      mapURLs["Waze"] =  wURL;
+    }
+    List<Widget> mapApps = [];
+    if(Platform.isIOS){
+      mapURLs.forEach((appName, url) {
+        mapApps.add(
+          CupertinoActionSheetAction(
+            child: Text(appName),
+            onPressed: () async {
+              await launch(url);
+              Navigator.of(context).pop();
+            },
+          )
+        );
+      });
+      mapApps.add(
+        CupertinoActionSheetAction(
+          child: Text("Cancel", style: TextStyle(color: Colors.red),),
+          onPressed: () async {
+            Navigator.of(context).pop();
+          },
+        )
+      );
+      showCupertinoModalPopup(
+        context: context,
+        builder: (BuildContext context) => CupertinoActionSheet(
+          title: const Text('Navigate with:'),
+          actions: mapApps,
+        ),
+      );
+    }else if (Platform.isAndroid){
+      mapApps.add(
+        ListTile(
+          title: new Text("Navigate with:", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),)
+        ),
+      );
+      mapURLs.forEach((appName, url) {
+        mapApps.add(
+          ListTile(
+            title: new Text(appName),
+            onTap: () async {
+              await launch(url);
+            },          
+          ),
+        );
+      });
+      mapApps.add(
+        ListTile(
+          title: Text("Cancel", style: TextStyle(color: Colors.red),),
+          onTap: () async {
+            Navigator.of(context).pop();
+          },
+        )
+      );
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc){
+          return Container(
+            child: new Wrap(
+              children: mapApps,
+            ),
+          );
+        }
+      );
     }
   }
 }
@@ -535,7 +603,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
   }
 
   _loyaltyCheckin(){
-    
+
   }
 
   _loyaltyRedeem(){
