@@ -438,6 +438,10 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
       if (data.snapshot != null){
         setState(() {
           userPoints = data.snapshot.value["count"] ?? 0;
+          pointPercent = userPoints.toDouble()/pointsGoal.toDouble();
+          if (pointPercent > 1.0){
+            pointPercent = 1.0; //clip at 100% filled progress bar
+          }
         });        
       }
     });
@@ -487,7 +491,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
             Container(
               //Container visually indicating progress
               height: 35.0,
-              width: progressWidth*userPoints.toDouble()/pointsGoal.toDouble(),
+              width: progressWidth*,
               decoration: new BoxDecoration(
                 color: Color.fromARGB(255, 89, 204, 93),
                 borderRadius: BorderRadius.all(Radius.circular(17.5)),
