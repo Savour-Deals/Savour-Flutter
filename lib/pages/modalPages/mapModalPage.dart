@@ -66,7 +66,6 @@ class _MapPageWidgetState extends State<MapPageWidget> {
         this._userPosition = new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude), zoom: 12);
         _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
           this._userPosition = new CameraPosition(target: LatLng(result.latitude,result.longitude), zoom: 12);
-
         });
       }
     }

@@ -1,12 +1,13 @@
 import 'dart:io';
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
@@ -27,6 +28,10 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseUser user;
   DatabaseReference _userRef;
+
+  //Location variables
+  final _locationService = Geolocator();
+  Position currentLocation;
 
   //Declare contextual variables
   AppState appState;
@@ -50,12 +55,36 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
         });        
       }
     });
+    // try {
+    //   var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
+    //   if (serviceStatus == GeolocationStatus.granted) {//we should have permission but maybe they turned it off since they got here
+    //       // currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.best);
+    //       _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.best)).listen((Position result) async {
+    //         if (this.mounted){
+    //           setState(() {
+    //             currentLocation = result;
+    //           });
+    //         }
+    //       });
+    //   }
+    // } on PlatformException catch (e) {
+    //   print(e);
+    //   if (e.code == 'PERMISSION_DENIED') {
+    //     print(e.message);
+    //   } else if (e.code == 'SERVICE_STATUS_ERROR') {
+    //     print(e.message);
+    //   }
+    //   currentLocation = null;
+    // }
   }
 
   @override
   Widget build(BuildContext context) {
     appState = Provider.of<AppState>(context);
     theme = Theme.of(context);
+    // if (currentLocation == null){//wait until we have location to continue
+    //   return Container();
+    // }
     return PlatformScaffold(
       appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
@@ -97,7 +126,22 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text(widget.vendor.name, style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold, fontSize: 30.0)),
+                child: ListTile(
+                  title: Text(
+                    widget.vendor.name,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  subtitle: Text(
+                    widget.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).toStringAsFixed(1) + " Miles Away", 
+                    style: whiteText,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               )
             ] 
           ),
@@ -112,7 +156,7 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
           Container(height: 20,),
           AboutWidget(vendor: widget.vendor,),
           Container(height: 20,),
-          (widget.vendor.loyalty.count > -1) ? LoyaltyWidget(vendor: widget.vendor): Container(),
+          (widget.vendor.loyalty.count > -1) ? LoyaltyWidget(vendor: widget.vendor, currentLocation: currentLocation): Container(),
         ],
       ),
     );
@@ -366,12 +410,12 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
         builder: (BuildContext context) {
           // return object of type Dialog
           return PlatformAlertDialog(
-            title: new Text("Sorry!"),
-            content: new Text("Looks like this vendor has not yet made their menu avaliable to us! Sorry for the inconvenience."),
+            title: Text("Sorry!"),
+            content: Text("Looks like this vendor has not yet made their menu avaliable to us! Sorry for the inconvenience."),
             actions: <Widget>[
               // usually buttons at the bottom of the dialog
-              new FlatButton(
-                child: new Text("😢 Okay", style: TextStyle(color: Theme.of(context).accentColor),),
+              PlatformDialogAction(
+                child: PlatformText("😢 Okay"),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -474,8 +518,9 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
 
 class LoyaltyWidget extends StatefulWidget {
   final Vendor vendor;
+  final Position currentLocation;
 
-  const LoyaltyWidget({Key key, this.vendor}) : super(key: key);
+  const LoyaltyWidget({Key key, this.vendor, this.currentLocation}) : super(key: key);
   @override
   State<StatefulWidget> createState() => _LoyaltyWidgetState();
 }
@@ -603,7 +648,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
   }
 
   _loyaltyCheckin(){
-
+    
   }
 
   _loyaltyRedeem(){
@@ -629,14 +674,12 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
     showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
-        // return object of type Dialog
         return PlatformAlertDialog(
-          title: new Text(title),
-          content: new Text(message),
+          title: Text(title),
+          content: Text(message),
           actions: <Widget>[
-            // usually buttons at the bottom of the dialog
-            new FlatButton(
-              child: new Text(buttonText),
+            PlatformDialogAction(
+              child: PlatformText(buttonText),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -652,20 +695,18 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
     showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
-        // return object of type Dialog
         return PlatformAlertDialog(
-          title: new Text("Confirm Redemption!"),
-          content: new Text("If you wish to redeem this loyalty deal now, show this message to the server. If you wish to save this deal for later, hit CANCEL."),
+          title: Text("Confirm Redemption!"),
+          content: Text("If you wish to redeem this loyalty deal now, show this message to the server. If you wish to save this deal for later, hit CANCEL."),
           actions: <Widget>[
-            // usually buttons at the bottom of the dialog
-            new FlatButton(
-              child: new Text("CANCEL", style: TextStyle(color: Colors.red),),
+            PlatformDialogAction(
+              child: PlatformText("CANCEL", style: TextStyle(color: Colors.red),),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
-            new FlatButton(
-              child: new Text("Redeem", style: TextStyle(color: Theme.of(context).accentColor),),
+            PlatformDialogAction(
+              child: PlatformText("Redeem"),
               onPressed: () {
                 Navigator.of(context).pop();
               },

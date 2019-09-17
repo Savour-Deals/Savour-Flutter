@@ -306,14 +306,12 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
     showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
-        // return object of type Dialog
         return PlatformAlertDialog(
-          title: new Text("Vendor Approval"),
-          content: new Text("This deal is intended for one person only.\n\nShow this message to the vendor to redeem your coupon.\n\nThe deal is not guaranteed if the vendor does not see this message."),
+          title: Text("Vendor Approval"),
+          content: Text("This deal is intended for one person only.\n\nShow this message to the vendor to redeem your coupon.\n\nThe deal is not guaranteed if the vendor does not see this message."),
           actions: <Widget>[
-            // usually buttons at the bottom of the dialog
-            new FlatButton(
-              child: new Text("Approve", style: TextStyle(color: Colors.green),),
+            new PlatformDialogAction(
+              child: PlatformText("Approve", style: TextStyle(color: Colors.green),),
               onPressed: () {
                 Navigator.of(context).pop();
                 print("Deal " + widget.deal.key + " redeemed!");
@@ -326,8 +324,8 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
                 });
               },
             ),
-            new FlatButton(
-              child: new Text("Not Now", style: TextStyle(color: Colors.red),),
+            PlatformDialogAction(
+              child: PlatformText("Not Now", style: TextStyle(color: Colors.red),),
               onPressed: () {
                 print("Deal " + widget.deal.key + " redemption canceled.");
                 Navigator.of(context).pop();
@@ -350,7 +348,6 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
           timer.cancel();
         } else {
           _start = _start + 1;
-          // print(_start);
           var minutes = (_start) ~/ 60 % 60;
           var seconds = (_start) % 60;
           timerString = "Redeemed "+minutes.toString() +" minutes "+ seconds.toString() + " seconds ago";
