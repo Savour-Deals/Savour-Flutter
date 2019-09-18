@@ -368,7 +368,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
                   Navigator.push(context,
                     platformPageRoute(
                       builder: (BuildContext context) {
-                        return VendorPageWidget(redemptions[position-1].vendor);
+                        return VendorPageWidget(redemptions[position-1].vendor, widget.location);
                       },
                     )
                   );

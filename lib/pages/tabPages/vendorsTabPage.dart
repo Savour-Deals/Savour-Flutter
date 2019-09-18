@@ -189,13 +189,13 @@ class _VendorsPageState extends State<VendorsPageWidget> {
     return Future.microtask(() async {
       switch (pageType) {
         case PageType.mapPage:
-          return MapPageWidget("Map Page", this.vendors,new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude), zoom: 12.0));
+          return MapPageWidget("Map Page", this.vendors, currentLocation);
           break;
         case PageType.searchPage:
-          return SearchPageWidget(vendors: vendors,location: currentLocation,);
+          return SearchPageWidget(vendors: vendors,location: currentLocation);
           break;
         case PageType.vendorPage:
-          return VendorPageWidget(vendors[position]);
+          return VendorPageWidget(vendors[position], currentLocation);
           break;
         default:
           return null;

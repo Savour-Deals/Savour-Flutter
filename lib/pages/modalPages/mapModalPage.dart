@@ -16,8 +16,8 @@ import 'package:savour_deals_flutter/stores/vendor_model.dart';
 class MapPageWidget extends StatefulWidget {
   final text;
   final List<Vendor> vendors;
-  final CameraPosition cameraPosition;
-  MapPageWidget(this.text, this.vendors,this.cameraPosition);
+  final Position location;
+  MapPageWidget(this.text, this.vendors,this.location);
 
   @override
   _MapPageWidgetState createState() => _MapPageWidgetState();
@@ -36,7 +36,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
         Navigator.push(
             context,
           platformPageRoute(maintainState: false,
-            builder: (context) => new VendorPageWidget(vendor),
+            builder: (context) => new VendorPageWidget(vendor, widget.location),
           ),
         );
       }
@@ -46,6 +46,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   @override
   void initState()  {
     super.initState();
+    this._userPosition = new CameraPosition(target: LatLng(widget.location.latitude, widget.location.longitude), zoom: 12);
     initPlatform();
   }
 
@@ -116,7 +117,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       ),
       body: GoogleMap(
         mapType: MapType.normal,
-        initialCameraPosition: (_userPosition != null) ? _userPosition: this.widget.cameraPosition,
+        initialCameraPosition:_userPosition,
         onMapCreated: _onMapCreated,
         myLocationEnabled: true,
         markers: Set<Marker>.of(_markers.values),

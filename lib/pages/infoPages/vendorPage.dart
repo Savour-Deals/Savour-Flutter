@@ -17,8 +17,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 class VendorPageWidget extends StatefulWidget {
   final Vendor vendor;
+  final Position location;
 
-  VendorPageWidget(this.vendor);
+  VendorPageWidget(this.vendor, this.location);
 
   @override
   _VendorPageWidgetState createState() => _VendorPageWidgetState();
@@ -42,6 +43,7 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
   @override
   void initState() {
     super.initState();
+    currentLocation = widget.location;
     initialize();
   }
 
@@ -55,27 +57,27 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
         });        
       }
     });
-    // try {
-    //   var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
-    //   if (serviceStatus == GeolocationStatus.granted) {//we should have permission but maybe they turned it off since they got here
-    //       // currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.best);
-    //       _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.best)).listen((Position result) async {
-    //         if (this.mounted){
-    //           setState(() {
-    //             currentLocation = result;
-    //           });
-    //         }
-    //       });
-    //   }
-    // } on PlatformException catch (e) {
-    //   print(e);
-    //   if (e.code == 'PERMISSION_DENIED') {
-    //     print(e.message);
-    //   } else if (e.code == 'SERVICE_STATUS_ERROR') {
-    //     print(e.message);
-    //   }
-    //   currentLocation = null;
-    // }
+    try {
+      var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
+      if (serviceStatus == GeolocationStatus.granted) {//we should have permission but maybe they turned it off since they got here
+          currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.best);
+          _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.best)).listen((Position result) async {
+            if (this.mounted){
+              setState(() {
+                currentLocation = result;
+              });
+            }
+          });
+      }
+    } on PlatformException catch (e) {
+      print(e);
+      if (e.code == 'PERMISSION_DENIED') {
+        print(e.message);
+      } else if (e.code == 'SERVICE_STATUS_ERROR') {
+        print(e.message);
+      }
+      currentLocation = null;
+    }
   }
 
   @override
@@ -134,12 +136,10 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                   subtitle: Text(
                     widget.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).toStringAsFixed(1) + " Miles Away", 
                     style: whiteText,
-                    textAlign: TextAlign.center,
                   ),
                 ),
               )
@@ -563,7 +563,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    var progressWidth = MediaQuery.of(context).size.width*0.75;
+    var progressWidth = MediaQuery.of(context).size.width*0.85;
     if (userPoints == null){
       //wait until we know how many points they have
       return Container();
@@ -648,7 +648,13 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
   }
 
   _loyaltyCheckin(){
-    
+    setState(() {
+      userPoints = userPoints + widget.vendor.loyalty.todaysPoints();
+      pointPercent = userPoints.toDouble()/pointsGoal.toDouble();
+      if (pointPercent > 1.0){
+        pointPercent = 1.0; //clip at 100% filled progress bar
+      }    
+    });
   }
 
   _loyaltyRedeem(){
@@ -670,7 +676,6 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
   }
 
   void displayMessage(String title, String message, String buttonText){
-    Navigator.pop(context);
     showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
@@ -691,7 +696,6 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
   }
 
   void promptRedeem(){
-    Navigator.pop(context);
     showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
@@ -708,6 +712,13 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
             PlatformDialogAction(
               child: PlatformText("Redeem"),
               onPressed: () {
+                setState(() {
+                  userPoints = userPoints - pointsGoal;
+                  pointPercent = userPoints.toDouble()/pointsGoal.toDouble();
+                  if (pointPercent > 1.0){
+                    pointPercent = 1.0; //clip at 100% filled progress bar
+                  }    
+                });
                 Navigator.of(context).pop();
               },
             ),

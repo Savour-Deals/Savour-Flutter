@@ -158,7 +158,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => VendorPageWidget(widget.deal.vendor)
+                        builder: (context) => VendorPageWidget(widget.deal.vendor, widget.location)
                       ),
                     );
                   },

@@ -207,7 +207,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               Navigator.push(
                 context,
                 platformPageRoute(maintainState: false,
-                  builder: (context) => VendorPageWidget(_filteredVendors[index]),
+                  builder: (context) => VendorPageWidget(_filteredVendors[index], currentLocation),
                 ),
               );
             },
