@@ -40,33 +40,26 @@ class _VendorsPageState extends State<VendorsPageWidget> {
     geo.initialize("Vendors_Location");
     try {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
-      print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
-          currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium);
-          geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-          geo.onKeyEntered.listen((data){
-            keyEntered(data);
-          });
-          geo.onKeyExited.listen((data){
-            keyExited(data);
-          });
-          _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
-            if (this.mounted){
-              setState(() {
-                currentLocation = result;
-              });
-              geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-            }
-          });
+        currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium); //this may be null! Thats ok!
+        geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+        geo.onKeyEntered.listen((data){
+          keyEntered(data);
+        });
+        geo.onKeyExited.listen((data){
+          keyExited(data);
+        });
+        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
+          if (this.mounted){
+            setState(() {
+              currentLocation = result;
+            });
+            geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+          }
+        });
       }
     } on PlatformException catch (e) {
-      print(e);
-      if (e.code == 'PERMISSION_DENIED') {
-        print(e.message);
-      } else if (e.code == 'SERVICE_STATUS_ERROR') {
-        print(e.message);
-      }
-      currentLocation = null;
+      print(e.message);
     }
   }
 

@@ -42,9 +42,8 @@ class _DealsPageState extends State<DealsPageWidget> {
     user = await FirebaseAuth.instance.currentUser();
     try {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
-      print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
-        currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium);
+        currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium); //this may be null! Thats ok!
         deals.setLocation(currentLocation);
         geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
         geo.onKeyEntered.listen((data){
@@ -89,21 +88,9 @@ class _DealsPageState extends State<DealsPageWidget> {
             }
           }
         });
-      } else {
-        // bool serviceStatusResult = await _locationService.requestService();
-        // print("Service status activated after request: $serviceStatusResult");
-        // if(serviceStatusResult){
-        //   initPlatform();
-        // }
       }
     } on PlatformException catch (e) {
-      print(e);
-      if (e.code == 'PERMISSION_DENIED') {
-        print(e.message);
-      } else if (e.code == 'SERVICE_STATUS_ERROR') {
-        print(e.message);
-      }
-      currentLocation = null;
+      print(e.message);
     }
   }
 
@@ -222,7 +209,6 @@ class _DealsPageState extends State<DealsPageWidget> {
               height: 30,
             ),
             color: Colors.transparent,
-            // splashColor: Colors.transparent,
             onPressed: (){
               Navigator.push(context,
                 platformPageRoute(maintainState: false,

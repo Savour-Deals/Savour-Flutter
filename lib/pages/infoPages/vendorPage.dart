@@ -60,23 +60,16 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
     try {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       if (serviceStatus == GeolocationStatus.granted) {//we should have permission but maybe they turned it off since they got here
-          currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.best);
-          _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.best)).listen((Position result) async {
-            if (this.mounted){
-              setState(() {
-                currentLocation = result;
-              });
-            }
-          });
+        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.best)).listen((Position result) async {
+          if (this.mounted){
+            setState(() {
+              currentLocation = result;
+            });
+          }
+        });
       }
     } on PlatformException catch (e) {
-      print(e);
-      if (e.code == 'PERMISSION_DENIED') {
-        print(e.message);
-      } else if (e.code == 'SERVICE_STATUS_ERROR') {
-        print(e.message);
-      }
-      currentLocation = null;
+      print(e.message);
     }
   }
 
@@ -84,9 +77,6 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
   Widget build(BuildContext context) {
     appState = Provider.of<AppState>(context);
     theme = Theme.of(context);
-    // if (currentLocation == null){//wait until we have location to continue
-    //   return Container();
-    // }
     return PlatformScaffold(
       appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),

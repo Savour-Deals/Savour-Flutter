@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -30,18 +31,9 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   CameraPosition _userPosition;
   Map<MarkerId,Marker> _markers = new Map<MarkerId,Marker>();
 
-  void _onMarkerPressed(MarkerId markerId) {
-    for (Vendor vendor in this.widget.vendors) {
-      if (markerId.value == vendor.name) {
-        Navigator.push(
-            context,
-          platformPageRoute(maintainState: false,
-            builder: (context) => new VendorPageWidget(vendor, widget.location),
-          ),
-        );
-      }
-    }
-  }
+  //Declare contextual variables
+  AppState appState;
+  ThemeData theme;
 
   @override
   void initState()  {
@@ -56,20 +48,17 @@ class _MapPageWidgetState extends State<MapPageWidget> {
     GeolocationStatus serviceStatus;
     try {
       serviceStatus = await _locationService.checkGeolocationPermissionStatus();
-    } on Exception catch(e) {
-      throw e;
-    }
-    
-    if (serviceStatus != null) {
-      if (serviceStatus == GeolocationStatus.granted) {
-        _locationService.forceAndroidLocationManager = true;
-        Position currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
-        this._userPosition = new CameraPosition(target: LatLng(currentLocation.latitude,currentLocation.longitude), zoom: 12);
-        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
-          this._userPosition = new CameraPosition(target: LatLng(result.latitude,result.longitude), zoom: 12);
-        });
+      if (serviceStatus != null) {
+        if (serviceStatus == GeolocationStatus.granted) {
+          _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
+            this._userPosition = new CameraPosition(target: LatLng(result.latitude,result.longitude), zoom: 12);
+          });
+        }
       }
+    }  on PlatformException catch (e) {
+      print(e.message);
     }
+
     for (Vendor vendor in this.widget.vendors) {
       MarkerId markerId = new MarkerId(vendor.name);
       Marker marker = new Marker(
@@ -89,11 +78,6 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       });
     }
   }
-
-
-  //Declare contextual variables
-  AppState appState;
-  ThemeData theme;
 
   @override
   Widget build(BuildContext context) {
@@ -128,5 +112,19 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   }
   _onMapCreated(GoogleMapController controller) {
     _controller.complete(controller);
+  }
+
+  void _onMarkerPressed(MarkerId markerId) {
+    for (Vendor vendor in this.widget.vendors) {
+      if (markerId.value == vendor.name) {
+        Navigator.push(
+          context,
+          platformPageRoute(maintainState: false,
+            builder: (context) => new VendorPageWidget(vendor, widget.location),
+          ),
+        );
+        return; //if we push one, we are done
+      }
+    }
   }
 }

@@ -262,28 +262,26 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
   void init() async {
     user = await FirebaseAuth.instance.currentUser();
     redemptionRef.orderByChild("user_id").equalTo(user.uid).onValue.listen((datasnapshot) {
-      if (this.mounted){
-        if (datasnapshot.snapshot.value != null) {
-          Map<String, dynamic> redemptionData = new Map<String, dynamic>.from(datasnapshot.snapshot.value);
-          redemptionData.forEach((key,data) async {
-            var newRedemption = Redemption.fromMap(key,data);
-            if (newRedemption.type == "deal"){
-              var rdeal = await getDeal(newRedemption.dealID);
-              newRedemption.setDeal(rdeal);
-              setState(() {
-                redemptions.add(newRedemption);
-                redemptions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-              });
-            }else{
-              var rvendor = await getVendor(newRedemption.vendorID);
-              newRedemption.setVendor(rvendor);
-              setState(() {
-                redemptions.add(newRedemption);
-                redemptions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-              });
-            }
-          });
-        }
+      if (this.mounted && datasnapshot.snapshot.value != null) {
+        Map<String, dynamic> redemptionData = new Map<String, dynamic>.from(datasnapshot.snapshot.value);
+        redemptionData.forEach((key,data) async {
+          var newRedemption = Redemption.fromMap(key,data);
+          if (newRedemption.type == "deal"){
+            var rdeal = await getDeal(newRedemption.dealID);
+            newRedemption.setDeal(rdeal);
+            setState(() {
+              redemptions.add(newRedemption);
+              redemptions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+            });
+          }else{
+            var rvendor = await getVendor(newRedemption.vendorID);
+            newRedemption.setVendor(rvendor);
+            setState(() {
+              redemptions.add(newRedemption);
+              redemptions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+            });
+          }
+        });
       }
     });
   }

@@ -28,7 +28,6 @@ class Deal {
     var now = new DateTime.now();
     var startOfToday = new DateTime(now.year, now.month, now.day);
     //begin showing deal at midnight, the day of and end showing it when it expires
-    //TODO: Move deal to expired deals node when we see its done
     return startOfToday.millisecondsSinceEpoch >= start && now.millisecondsSinceEpoch <= end;
   }
 
