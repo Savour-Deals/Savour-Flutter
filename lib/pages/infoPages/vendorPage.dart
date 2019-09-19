@@ -111,28 +111,31 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
                   )
                 ),
               ),
-              Container(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height*0.3,
-                color: Colors.black.withOpacity(0.3),
-              ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: ListTile(
-                  title: Text(
-                    widget.vendor.name,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
+                child: Container(
+                  child: ListTile(
+                    title: Text(
+                      widget.vendor.name,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    subtitle: Text(
+                      widget.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).toStringAsFixed(1) + " Miles Away", 
+                      style: whiteText,
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                  subtitle: Text(
-                    widget.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).toStringAsFixed(1) + " Miles Away", 
-                    style: whiteText,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.8),
+                    borderRadius: BorderRadius.all(Radius.circular(5))
                   ),
                 ),
-              )
+              ),
             ] 
           ),
           Padding(
@@ -284,6 +287,7 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseUser user;
   DatabaseReference _userRef;
+  DatabaseReference _vendorRef;
 
   @override
   void initState() {
@@ -294,6 +298,7 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
   void initialize() async {
     user = await _auth.currentUser();
     _userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
+    _vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.vendorID);
     _userRef.child("following").onValue.listen((data){
       if (data.snapshot != null){
         setState(() {
@@ -376,15 +381,46 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
   }
 
   _toggleFollow(){
-    setState(() {
-      _following = !_following;
-    });
-    if (!_following){
-      _userRef.child("following").child(widget.vendorID).remove();
-      OneSignal.shared.deleteTag(widget.vendorID);
+    if (_following){
+      //user is following, unfollow if they are fine losing loyalty points
+      showPlatformDialog(
+        builder: (BuildContext context) {
+          return PlatformAlertDialog(
+            title: Text("Notice!"),
+            content: Text("By unfollowing this restaurant you will lose all your loyalty check-ins!"),
+            actions: <Widget>[
+              PlatformDialogAction(
+                child: PlatformText("Unfollow"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _userRef.child("loyalty").child(widget.vendorID).child("redemptions").remove();
+                  _userRef.child("following").child(widget.vendorID).remove();
+                  _vendorRef.child("followers").child(user.uid).remove();
+                  OneSignal.shared.deleteTag(widget.vendorID);
+                },
+              ),
+              PlatformDialogAction(
+                child: PlatformText("Cancel", style: TextStyle(color: Colors.red),),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        }, context: context,
+      );
     }else{
+      //user is not following, follow this vendor
       _userRef.child("following").child(widget.vendorID).set(true);
       OneSignal.shared.sendTag(widget.vendorID, true);
+      OneSignal.shared.getPermissionSubscriptionState().then((status){
+        if (status.subscriptionStatus.subscribed){
+          _vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
+        }else{
+          // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
+          _vendorRef.child("followers").child(user.uid).set(user.uid);
+        }
+      });      
     }
   }
 
@@ -520,6 +556,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
   final FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseUser user;
   DatabaseReference _userRef;
+  DatabaseReference _vendorRef;
 
   int userPoints;
   int pointsGoal;
@@ -531,14 +568,17 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
     super.initState();
     initialize();
     pointsGoal = widget.vendor.loyalty.count;
+    if (pointsGoal == 0){
+      pointsGoal = 1; //avoid a divide by zero!
+    }
   }
 
   void initialize() async {
     user = await _auth.currentUser();
     _userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
-
+    _vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.vendor.key);
     _userRef.child("loyalty").child(widget.vendor.key).child("redemptions").onValue.listen((data){
-      if (data.snapshot != null){
+      if (data.snapshot.value != null){
         setState(() {
           userPoints = data.snapshot.value["count"] ?? 0;
           redemptionTime = data.snapshot.value["time"] ?? 0;
@@ -547,6 +587,12 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
             pointPercent = 1.0; //clip at 100% filled progress bar
           }
         });        
+      }else{
+        setState(() {
+          userPoints = 0;
+          redemptionTime = 0;
+          pointPercent = userPoints.toDouble()/pointsGoal.toDouble();
+        });
       }
     });
   }
@@ -567,7 +613,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
           height: 50.0,
           child: FlatButton(
             child: (pointPercent < 1.0)? Text("Loyalty Check-in", style: TextStyle(color: Colors.white)):
-              Text("Loyalty Check-in", style: TextStyle(color: Colors.white)),
+              Text("Redeem", style: TextStyle(color: Colors.white)),
             shape:  RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25)),
             onPressed: () {
               _handleLoyaltyPressed();
@@ -628,40 +674,56 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
   }
 
   _handleLoyaltyPressed(){
-    if(pointPercent < 1.0){
-      //not enough points to redeem, send them to checkin
-      _loyaltyCheckin();
+    if (true){// TODO: widget.vendor.distanceMilesFrom(fromLat, fromLong) < 0.2){
+      //close enough to continue. Check duration since last checkin.
+      if(pointPercent < 1.0){
+        //not enough points to redeem, send them to checkin
+        _loyaltyCheckin();
+      }else{
+        // enough points to redeem. Check if they can
+        _loyaltyRedeem();
+      }
     }else{
-      // enough points to redeem. Check if they can
-      _loyaltyRedeem();
+      //vendor too far away
+      displayMessage("Too far away!","Go to location to use their loyalty program!","Okay");
     }
   }
 
   _loyaltyCheckin(){
-    setState(() {
-      userPoints = userPoints + widget.vendor.loyalty.todaysPoints();
-      pointPercent = userPoints.toDouble()/pointsGoal.toDouble();
-      if (pointPercent > 1.0){
-        pointPercent = 1.0; //clip at 100% filled progress bar
-      }    
-    });
+    var now = DateTime.now().millisecondsSinceEpoch~/1000; //convert to seconds
+    if ((redemptionTime + 10800) < now){//three hours
+      //We are ready to checkin! Prompt user with next steps
+      //subscribe to notifications
+      _userRef.child("following").child(widget.vendor.key).set(true);
+      OneSignal.shared.sendTag(widget.vendor.key, true);
+      OneSignal.shared.getPermissionSubscriptionState().then((status){
+        if (status.subscriptionStatus.subscribed){
+          _vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
+        }else{
+          // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
+          _vendorRef.child("followers").child(user.uid).set(user.uid);
+        }
+      });
+      setState(() {
+        userPoints = userPoints + widget.vendor.loyalty.todaysPoints();
+        pointPercent = userPoints.toDouble()/pointsGoal.toDouble();
+        if (pointPercent > 1.0){
+          pointPercent = 1.0; //clip at 100% filled progress bar
+        }    
+        _userRef.child("loyalty").child(widget.vendor.key).child("redemptions").update({'count': userPoints,'time': DateTime.now().millisecondsSinceEpoch~/1000});
+      });
+    }else{
+      displayMessage("Too Soon!", "Come back tomorrow to check-in!", "Okay");
+    }
   }
 
   _loyaltyRedeem(){
-    //Check if the deal is within range?
-    if (true){// TODO: widget.vendor.distanceMilesFrom(fromLat, fromLong) < 0.2){
-      //close enough to continue. Check duration since last checkin.
-      var now = DateTime.now().millisecondsSinceEpoch~/1000; //convert to seconds
-      if ((redemptionTime + 10800) < now){//three hours
-        //We are ready to redeem! Prompt user with next steps
-        promptRedeem(); 
-      }else{
-        displayMessage("Too Soon!", "Come back tomorrow to redeem your points!", "Okay");
-      }
-
+    var now = DateTime.now().millisecondsSinceEpoch~/1000; //convert to seconds
+    if ((redemptionTime + 10800) < now){//three hours
+      //We are ready to redeem! Prompt user with next steps
+      promptRedeem(); 
     }else{
-      //vendor too far away
-      displayMessage("Too far away!","Go to location to use their loyalty program!","Okay");
+      displayMessage("Too Soon!", "Come back tomorrow to redeem your points!", "Okay");
     }
   }
 
@@ -702,6 +764,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
             PlatformDialogAction(
               child: PlatformText("Redeem"),
               onPressed: () {
+                Navigator.of(context).pop();
                 setState(() {
                   userPoints = userPoints - pointsGoal;
                   pointPercent = userPoints.toDouble()/pointsGoal.toDouble();
@@ -709,7 +772,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
                     pointPercent = 1.0; //clip at 100% filled progress bar
                   }    
                 });
-                Navigator.of(context).pop();
+                _userRef.child("loyalty")..child(widget.vendor.key).child("redemptions").update({'count': userPoints, 'time': DateTime.now().millisecondsSinceEpoch~/1000});
               },
             ),
           ],

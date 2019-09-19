@@ -33,10 +33,14 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   int _start = 0;
   String timerString= "";
   DatabaseReference redemptionRef;
+  DatabaseReference userRef;
+  DatabaseReference vendorRef;
 
   //Declare contextual variables
   AppState appState;
   ThemeData theme;
+
+  FirebaseUser user;
 
   @override
   void initState() {
@@ -49,8 +53,10 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   void initialization() async{
-    var user = await FirebaseAuth.instance.currentUser();
+    user = await FirebaseAuth.instance.currentUser();
     redemptionRef = FirebaseDatabase().reference().child("Deals").child(widget.deal.key).child("redeemed").child(user.uid);
+    userRef = FirebaseDatabase().reference().child("Users");
+    vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.deal.vendor.key);
   }
 
   @override
@@ -266,7 +272,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   bool inRange(){
-    return (widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude) < 100.1); //Chnage to large radius for testing
+    return (widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude) < 0.1);//100.1); //Chnage to large radius for testing
   }
 
   Widget redemptionButton(){
@@ -311,13 +317,24 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
           content: Text("This deal is intended for one person only.\n\nShow this message to the vendor to redeem your coupon.\n\nThe deal is not guaranteed if the vendor does not see this message."),
           actions: <Widget>[
             new PlatformDialogAction(
-              child: PlatformText("Approve", style: TextStyle(color: Colors.green),),
+              child: PlatformText("Approve", style: TextStyle(color: Color.fromARGB(255, 0, 255, 0)),),
               onPressed: () {
                 Navigator.of(context).pop();
                 print("Deal " + widget.deal.key + " redeemed!");
                 var redemptionTime = widget.deal.redeemedTime = DateTime.now().millisecondsSinceEpoch~/1000;
-                OneSignal.shared.sendTag(widget.deal.vendor.key, true);
                 redemptionRef.set(redemptionTime);
+
+                //notification subscriptions
+                userRef.child("following").child(widget.deal.vendor.key).set(true);
+                OneSignal.shared.sendTag(widget.deal.vendor.key, true);
+                OneSignal.shared.getPermissionSubscriptionState().then((status){
+                  if (status.subscriptionStatus.subscribed){
+                    vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
+                  }else{
+                    // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
+                    vendorRef.child("followers").child(user.uid).set(user.uid);
+                  }
+                });
                 setState(() {
                   widget.deal.redeemed = true;
                   widget.deal.redeemedTime = redemptionTime*1000;
