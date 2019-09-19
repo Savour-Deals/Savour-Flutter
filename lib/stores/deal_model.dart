@@ -124,8 +124,8 @@ class Deal {
       if (val[uid] != null){//if there is a redemption time
         var now = DateTime.now().millisecondsSinceEpoch;
         var rTime = snapshot.value["redeemed"][uid].toInt()*1000;//database may contain doubles from old code so round 
-        if (now-rTime > 60*60*24*7*2*1000) {
-            //If redeemed 2 weeks ago, allow user to use deal again - Should be changed in the future
+        if (now-rTime > 60*60*24*7*1000) {
+            //If redeemed 1 weeks ago, allow user to use deal again - Should be changed in the future
             final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
             final ref = FirebaseDatabase().reference().child("Deals").child(snapshot.key).child("redeemed");
             ref.child(uid).remove();
@@ -167,8 +167,8 @@ class Deal {
       if (data["redeemed"][uid] != null){//if there is a redemption time
         var now = DateTime.now().millisecondsSinceEpoch;
         var rTime = data["redeemed"][uid].toInt()*1000;//database may contain doubles from old code so round 
-        if (now-rTime > 60*60*24*7*2*1000) {
-          //If redeemed 2 weeks ago, allow user to use deal again - Should be changed in the future
+        if (now-rTime > 60*60*24*7*1000) {
+          //If redeemed 1 weeks ago, allow user to use deal again - Should be changed in the future
           final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
           final ref = FirebaseDatabase().reference().child("Deals").child(_key).child("redeemed");
           ref.child(uid).remove();

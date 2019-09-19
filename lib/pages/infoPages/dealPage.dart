@@ -111,11 +111,11 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
               overflow: Overflow.visible,
               alignment: AlignmentDirectional.center,
               children: <Widget>[ 
-                new CustomPaint(
-                  painter: new SpritePainter(_controller, 
-                    (!widget.deal.isActive()) ? Colors.red : (widget.deal.redeemed && ((DateTime.now().millisecondsSinceEpoch~/1000) - widget.deal.redeemedTime~/1000 >= 1800)) ? Colors.red : SavourColorsMaterial.savourGreen,
+                CustomPaint(
+                  painter: SpritePainter(_controller, 
+                    _pulsatorColor(),
                   ),
-                  child: new SizedBox(
+                  child: SizedBox(
                     width: MediaQuery.of(context).size.height*0.45,
                     height: MediaQuery.of(context).size.height*0.45,
                   ),
@@ -266,7 +266,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   bool inRange(){
-    return (widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude) < 0.1); //100.1); //Chnage to large radius for testing
+    return (widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude) < 100.1); //Chnage to large radius for testing
   }
 
   Widget redemptionButton(){
@@ -371,5 +371,23 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
     );
   }
 
+  Color _pulsatorColor(){
+    if (widget.deal.isActive()){
+      if (widget.deal.redeemed){
+        if (_start > 1800){
+          //deal redeemed over half hour ago
+          return Colors.red;
+        }else{
+          //deal was redeemed less than half hour ago
+          return Color.fromARGB(255, 0, 255, 0);
+        }
+      }else{
+        return SavourColorsMaterial.savourGreen;
+      }
+
+    }else{
+      return Colors.red;
+    }
+  }
   
 }
