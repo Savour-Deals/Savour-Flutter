@@ -119,7 +119,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       if (markerId.value == vendor.name) {
         Navigator.push(
           context,
-          platformPageRoute(maintainState: false,
+          platformPageRoute(//maintainState: false,
             builder: (context) => new VendorPageWidget(vendor, widget.location),
           ),
         );

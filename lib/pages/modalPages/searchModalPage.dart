@@ -153,7 +153,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               FocusScope.of(context).requestFocus(new FocusNode());
               Navigator.push(
                 context,
-                platformPageRoute(maintainState: false,
+                platformPageRoute(
                   builder: (context) => DealPageWidget(_filteredDeals[index], currentLocation),
                 ),
               );
@@ -176,7 +176,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               FocusScope.of(context).requestFocus(new FocusNode());
               Navigator.push(
                 context,
-                platformPageRoute(maintainState: false,
+                platformPageRoute(
                   builder: (context) => VendorPageWidget(_filteredVendors[index], currentLocation),
                 ),
               );

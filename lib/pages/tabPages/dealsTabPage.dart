@@ -191,7 +191,7 @@ class _DealsPageState extends State<DealsPageWidget> {
           ),
           onPressed: (){
             Navigator.push(context,
-              platformPageRoute(maintainState: false,
+              platformPageRoute(
                 builder: (BuildContext context) {
                   return SearchPageWidget(deals: deals, location: currentLocation,);
                 },
@@ -211,7 +211,7 @@ class _DealsPageState extends State<DealsPageWidget> {
             color: Colors.transparent,
             onPressed: (){
               Navigator.push(context,
-                platformPageRoute(maintainState: false,
+                platformPageRoute(
                   builder: (BuildContext context) {
                     return WalletPageWidget(deals,vendors);
                   },
@@ -275,7 +275,7 @@ class _DealsPageState extends State<DealsPageWidget> {
               child: Icon(Icons.pin_drop, color: Colors.white,),
               onPressed: (){
                 Navigator.push(context,
-                  platformPageRoute(maintainState: false,
+                  platformPageRoute(
                     builder: (BuildContext context) {
                       return new MapPageWidget("Map Page", this.vendors, currentLocation);
                     },
@@ -325,7 +325,7 @@ class _DealsPageState extends State<DealsPageWidget> {
                   print(carouselDeals[item].key + " clicked");
                   Navigator.push(
                     context,
-                    platformPageRoute(maintainState: false,
+                    platformPageRoute(
                       builder: (context) => DealPageWidget(carouselDeals[item], currentLocation),
                     ),
                   );

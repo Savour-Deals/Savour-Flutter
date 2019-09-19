@@ -206,7 +206,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
               print(favorites[position].key + " clicked");
               Navigator.push(
                 context,
-                platformPageRoute(maintainState: false,
+                platformPageRoute(
                   builder: (context) => DealPageWidget(favorites[position], widget.location)),
               );
             },

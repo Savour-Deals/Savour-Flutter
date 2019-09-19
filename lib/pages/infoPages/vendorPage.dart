@@ -674,7 +674,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
   }
 
   _handleLoyaltyPressed(){
-    if (true){// TODO: widget.vendor.distanceMilesFrom(fromLat, fromLong) < 0.2){
+    if (widget.vendor.distanceMilesFrom(widget.currentLocation.latitude, widget.currentLocation.longitude) < 0.2){
       //close enough to continue. Check duration since last checkin.
       if(pointPercent < 1.0){
         //not enough points to redeem, send them to checkin
