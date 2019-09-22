@@ -114,6 +114,11 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
                   )
                 ),
               ),
+              Container(
+                width: double.infinity,
+                height: MediaQuery.of(context).size.height*0.3,
+                color: Colors.black.withOpacity(0.3),
+              ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Container(
