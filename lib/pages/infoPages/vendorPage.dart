@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:app_settings/app_settings.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:barcode_scan/barcode_scan.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
@@ -724,29 +726,45 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
     }
   }
 
-  _loyaltyCheckin(){
+  _loyaltyCheckin() async {
     var now = DateTime.now().millisecondsSinceEpoch~/1000; //convert to seconds
     if ((redemptionTime + 10800) < now){//three hours
       //We are ready to checkin! Prompt user with next steps
-      //subscribe to notifications
-      _userRef.child("following").child(widget.vendor.key).set(true);
-      OneSignal.shared.sendTag(widget.vendor.key, true);
-      OneSignal.shared.getPermissionSubscriptionState().then((status){
-        if (status.subscriptionStatus.subscribed){
-          _vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
+      try {
+        String barcode = await BarcodeScanner.scan();
+        if (barcode == widget.vendor.loyalty.code){
+          //Code was correct!
+          //subscribe to notifications
+          _userRef.child("following").child(widget.vendor.key).set(true);
+          OneSignal.shared.sendTag(widget.vendor.key, true);
+          OneSignal.shared.getPermissionSubscriptionState().then((status){
+            if (status.subscriptionStatus.subscribed){
+              _vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
+            }else{
+              // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
+              _vendorRef.child("followers").child(user.uid).set(user.uid);
+            }
+          });
+          setState(() {
+            userPoints = userPoints + widget.vendor.loyalty.todaysPoints();
+            pointPercent = userPoints.toDouble()/pointsGoal.toDouble();
+            if (pointPercent > 1.0){
+              pointPercent = 1.0; //clip at 100% filled progress bar
+            }    
+            _userRef.child("loyalty").child(widget.vendor.key).child("redemptions").update({'count': userPoints,'time': DateTime.now().millisecondsSinceEpoch~/1000});
+          });
         }else{
-          // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
-          _vendorRef.child("followers").child(user.uid).set(user.uid);
+          displayMessage("Incorrect code!", "The QR code is incorrect. Contact us if you think this is a mistake.", "Okay");
         }
-      });
-      setState(() {
-        userPoints = userPoints + widget.vendor.loyalty.todaysPoints();
-        pointPercent = userPoints.toDouble()/pointsGoal.toDouble();
-        if (pointPercent > 1.0){
-          pointPercent = 1.0; //clip at 100% filled progress bar
-        }    
-        _userRef.child("loyalty").child(widget.vendor.key).child("redemptions").update({'count': userPoints,'time': DateTime.now().millisecondsSinceEpoch~/1000});
-      });
+      } on PlatformException catch (e) {
+        if (e.code == BarcodeScanner.CameraAccessDenied) {
+          _showSettingsDialog();
+        }
+      } on FormatException{
+        // setState(() => this.barcode = 'null (User returned using the "back"-button before scanning anything. Result)');
+      } catch (e) {
+        displayMessage("An error occured", "Please try again later.", "Okay");
+      }
     }else{
       displayMessage("Too Soon!", "Come back tomorrow to check-in!", "Okay");
     }
@@ -808,6 +826,33 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
                   }    
                 });
                 _userRef.child("loyalty")..child(widget.vendor.key).child("redemptions").update({'count': userPoints, 'time': DateTime.now().millisecondsSinceEpoch~/1000});
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return PlatformAlertDialog(
+          title: Text("Camera Permission Needed"),
+          content: Text("Please turn on camera access in settings so you can scan the loyalty code!s."),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("Go to Settings"),
+              onPressed: () {
+                AppSettings.openAppSettings();
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: new Text("Not Now", style: TextStyle(color: Colors.red),),
+              onPressed: () {
+                Navigator.of(context).pop();
               },
             ),
           ],
