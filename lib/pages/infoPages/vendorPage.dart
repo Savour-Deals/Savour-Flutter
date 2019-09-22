@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
+import 'package:savour_deals_flutter/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class VendorPageWidget extends StatefulWidget {
@@ -143,7 +144,7 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
             child: VendorButtonRow(
               address: widget.vendor.address,
               menuURL: widget.vendor.menu,
-              vendorID: widget.vendor.key,
+              vendor: widget.vendor,
             ),
           ),
           Container(height: 20,),
@@ -170,6 +171,9 @@ class AboutWidget extends StatefulWidget {
 
 class _AboutWidgetState extends State<AboutWidget> {
   bool _showMore = false;
+  var myGroup = AutoSizeGroup();
+  var myGroup1 = AutoSizeGroup();
+
 
   @override
   Widget build(BuildContext context) {
@@ -185,11 +189,25 @@ class _AboutWidgetState extends State<AboutWidget> {
                 children: <Widget>[
                   Container(
                     width:  MediaQuery.of(context).size.width*0.4,
-                    child: Text("Address", textAlign: TextAlign.center,style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
+                    child: AutoSizeText("Address", 
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                      minFontSize: 10.0,
+                      maxFontSize: 22.0,
+                      maxLines: 1,
+                      group: myGroup,
+                    ),
                   ),
                   Container(
                     width:  MediaQuery.of(context).size.width*0.4,
-                    child: Text("Today's Hours", textAlign: TextAlign.center,style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
+                    child: AutoSizeText("Today's Hours", 
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                      minFontSize: 10.0,
+                      maxFontSize: 22.0,
+                      maxLines: 1,
+                      group: myGroup,
+                    ),
                   ),
                 ],
               ),
@@ -200,14 +218,25 @@ class _AboutWidgetState extends State<AboutWidget> {
                 children: <Widget>[
                   Container(
                     width:  MediaQuery.of(context).size.width*0.4,
-                    child: Text(widget.vendor.address, textAlign: TextAlign.center,style: TextStyle(fontSize: 15)),
+                    child: AutoSizeText(widget.vendor.address, 
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 15),
+                      minFontSize: 10.0,
+                      maxFontSize: 15.0,
+                      maxLines: 2,
+                      group: myGroup1,
+                    ),
                   ),
                   Container(
                     width:  MediaQuery.of(context).size.width*0.4,
-                    child: Text(
+                    child: AutoSizeText(
                       (widget.vendor.todaysHours() == null) ? "Hours not available":widget.vendor.todaysHours(), 
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 15)
+                      style: TextStyle(fontSize: 15),
+                      minFontSize: 10.0,
+                      maxFontSize: 15.0,
+                      maxLines: 2,
+                      group: myGroup1,
                     ),
                   ),
                 ],
@@ -215,12 +244,11 @@ class _AboutWidgetState extends State<AboutWidget> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(0,15.0,0.0,0.0),
                 child: GestureDetector(
-                  child: AutoSizeText(
+                  child: Text(
                     widget.vendor.description, 
-                    minFontSize: 18.0,
-                    maxFontSize: 18.0,
                     maxLines: (_showMore) ? 100000 : 3,
                     overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),
                   ),
                   onTap: (){
                     setState(() {
@@ -229,18 +257,14 @@ class _AboutWidgetState extends State<AboutWidget> {
                   },
                 ),
               ),
-              FractionalTranslation(
-                translation: Offset(1.4, 0.0),
-                child: FlatButton(
-                  child: (_showMore) ? Text("show less"): Text("show more"), 
-                  onPressed: () {
-                    setState(() {
-                      _showMore = !_showMore;
-                    });
-                  },
-                ),
+              FlatButton(
+                child: (_showMore) ? Text("show less"): Text("show more"), 
+                onPressed: () {
+                  setState(() {
+                    _showMore = !_showMore;
+                  });
+                },
               ),
-              
             ],
           ),
           decoration: BoxDecoration(
@@ -269,12 +293,12 @@ class _AboutWidgetState extends State<AboutWidget> {
 class VendorButtonRow extends StatefulWidget {
   final String menuURL;
   final String address;
-  final String vendorID;
+  final Vendor vendor;
   VendorButtonRow({
     Key key,
     @required this.menuURL,
     @required this.address,
-    @required this.vendorID,
+    @required this.vendor,
   }) : super(key: key);
 
   @override
@@ -298,11 +322,11 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
   void initialize() async {
     user = await _auth.currentUser();
     _userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
-    _vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.vendorID);
+    _vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.vendor.key);
     _userRef.child("following").onValue.listen((data){
       if (data.snapshot != null){
         setState(() {
-          _following = data.snapshot.value[widget.vendorID]?? false;
+          _following = data.snapshot.value[widget.vendor.key]?? false;
         });        
       }
     });
@@ -383,36 +407,44 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
   _toggleFollow(){
     if (_following){
       //user is following, unfollow if they are fine losing loyalty points
-      showPlatformDialog(
-        builder: (BuildContext context) {
-          return PlatformAlertDialog(
-            title: Text("Notice!"),
-            content: Text("By unfollowing this restaurant you will lose all your loyalty check-ins!"),
-            actions: <Widget>[
-              PlatformDialogAction(
-                child: PlatformText("Unfollow"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _userRef.child("loyalty").child(widget.vendorID).child("redemptions").remove();
-                  _userRef.child("following").child(widget.vendorID).remove();
-                  _vendorRef.child("followers").child(user.uid).remove();
-                  OneSignal.shared.deleteTag(widget.vendorID);
-                },
-              ),
-              PlatformDialogAction(
-                child: PlatformText("Cancel", style: TextStyle(color: Colors.red),),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        }, context: context,
-      );
+      if (widget.vendor.loyalty.count > -1){
+        showPlatformDialog(
+          builder: (BuildContext context) {
+            return PlatformAlertDialog(
+              title: Text("Notice!"),
+              content: Text("By unfollowing this restaurant you will lose all your loyalty check-ins!"),
+              actions: <Widget>[
+                PlatformDialogAction(
+                  child: PlatformText("Unfollow"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _userRef.child("loyalty").child(widget.vendor.key).child("redemptions").remove();
+                    _userRef.child("following").child(widget.vendor.key).remove();
+                    _vendorRef.child("followers").child(user.uid).remove();
+                    OneSignal.shared.deleteTag(widget.vendor.key);
+                  },
+                ),
+                PlatformDialogAction(
+                  child: PlatformText("Cancel", style: TextStyle(color: Colors.red),),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          }, context: context,
+        );
+      }else{
+        //no loyalty program for thsi vendor, just unsubscribe
+        _userRef.child("loyalty").child(widget.vendor.key).child("redemptions").remove();
+        _userRef.child("following").child(widget.vendor.key).remove();
+        _vendorRef.child("followers").child(user.uid).remove();
+        OneSignal.shared.deleteTag(widget.vendor.key);
+      }
     }else{
       //user is not following, follow this vendor
-      _userRef.child("following").child(widget.vendorID).set(true);
-      OneSignal.shared.sendTag(widget.vendorID, true);
+      _userRef.child("following").child(widget.vendor.key).set(true);
+      OneSignal.shared.sendTag(widget.vendor.key, true);
       OneSignal.shared.getPermissionSubscriptionState().then((status){
         if (status.subscriptionStatus.subscribed){
           _vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
@@ -625,13 +657,13 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
         Column(
           children: (pointPercent < 1.0)? 
             <Widget>[
-              Text("Today: +" + widget.vendor.loyalty.todaysPoints().toString(), style: TextStyle(fontSize: 18),),
+              Text("Today: +" + widget.vendor.loyalty.todaysPoints().toString(), style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),),
               Container(height: 5),
-              Text("Reach your points goal and recieve:", style: TextStyle(fontSize: 18),),
-              Text(widget.vendor.loyalty.deal, style: TextStyle(fontSize: 18),),
+              Text("Reach your points goal and recieve:", style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),),
+              Text(widget.vendor.loyalty.deal, style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),),
             ]:
             <Widget>[
-              Text("You're ready to redeem your " + widget.vendor.loyalty.deal, style: TextStyle(fontSize: 18),),
+              Text("You're ready to redeem your " + widget.vendor.loyalty.deal, style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),),
             ],
         ),
         Container(height: 5,),
@@ -660,8 +692,11 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
               height: 35.0,
               padding: EdgeInsets.all(7.5),
               width: progressWidth,
-              child: Text("$userPoints/$pointsGoal", 
+              child: AutoSizeText("$userPoints/$pointsGoal", 
                 style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
+                minFontSize: 15,
+                maxFontSize: 25,
+                maxLines: 1,
                 textAlign: TextAlign.center,
               ),
             ),

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
@@ -16,6 +17,8 @@ import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import '../../utils.dart';
 
 class DealPageWidget extends StatefulWidget {
   final Deal deal;
@@ -105,12 +108,15 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
             ListTile(
               title: Text(
                 widget.deal.vendor.name, 
+                style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal*4),
                 textAlign: TextAlign.center,
+                maxLines: 2,
               ),
               subtitle: Text(
                 widget.deal.description, 
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22.0), 
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeConfig.safeBlockHorizontal*6), 
                 textAlign: TextAlign.center,
+                maxLines: 2,
               ),
             ),
             Stack(
@@ -382,8 +388,11 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   Widget getDetailsText(){
-    return Text("For dine in and carry out only. Not redeemable with any other promotions unless otherwise mentioned. This deal is only valid for one person. BOGO free items are for equal or lesser value. This deal has no cash value. You must be 21+ to redeem any alcohol deals",
+    return AutoSizeText("For dine in and carry out only. Not redeemable with any other promotions unless otherwise mentioned. This deal is only valid for one person. BOGO free items are for equal or lesser value. This deal has no cash value. You must be 21+ to redeem any alcohol deals",
       style: TextStyle(fontSize: 12.0),
+      minFontSize: 10.0,
+      maxFontSize: 20.0,
+      maxLines: 3,
       textAlign: TextAlign.center,
     );
   }

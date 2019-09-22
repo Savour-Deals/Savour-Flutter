@@ -18,21 +18,30 @@ class Deal {
   String code;
   List<bool> activeDays = []; // mon - sun => 0 - 6
   int value;
+  bool active;
+  bool live;
   List<String> filters = [];
   
   
   Deal(this.key, this.description, this.photo, this.vendor, this.start, this.end, this.favorited, this.activeDays, this.code, this.redeemed, this.redeemedTime, this.type, this.value, this.filters, this.vendorName);
 
   // Live is whether or not the deal is between the start and end date
-  bool isLive(){
+  void refreshLive(){
     var now = new DateTime.now();
     var startOfToday = new DateTime(now.year, now.month, now.day);
     //begin showing deal at midnight, the day of and end showing it when it expires
-    return startOfToday.millisecondsSinceEpoch >= start && now.millisecondsSinceEpoch <= end;
+    live = startOfToday.millisecondsSinceEpoch >= start && now.millisecondsSinceEpoch <= end;
+  }
+
+  bool isLive(){
+    if (live == null){
+      refreshLive();
+    }
+    return live;
   }
 
   // Active is if the deal is redeemable at the current time of the day
-  bool isActive(){
+  void refreshActive(){
     final now = DateTime.now();
     final startDateTime = DateTime.fromMillisecondsSinceEpoch(start);
     final endDateTime = DateTime.fromMillisecondsSinceEpoch(end);
@@ -51,15 +60,22 @@ class Deal {
     }
     if (activeDays[startTime.weekday-1]){//Active today
       if (now.compareTo(startTime) >= 0 && now.compareTo(endTime) <= 0){
-        return true;
+        active = true;
       }else if (startTime.compareTo(endTime) == 0){
-          return true;//"active all day!"
+          active = true;//"active all day!"
       }else{
-        return false;
+        active = false;
       }
     }else{//Not Active today
-      return false;
+      active = false;
     }
+  }
+
+  bool isActive(){
+    if (active == null){
+      refreshActive();
+    }
+    return active;
   }
 
   bool isPreferred(){

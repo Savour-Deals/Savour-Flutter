@@ -14,6 +14,8 @@ import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
+
+import '../utils.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -136,6 +138,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   }
 
   Widget buildTabWidget(){
+    SizeConfig().init(context);
     appState = Provider.of<AppState>(context);
     theme = Theme.of(context);
     if (locationStatus == PermissionStatus.unknown){

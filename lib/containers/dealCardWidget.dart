@@ -2,6 +2,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:savour_deals_flutter/utils.dart';
 // import 'package:location/location.dart';
 import 'package:savour_deals_flutter/containers/likeButtonWidget.dart';
 import 'package:savour_deals_flutter/icons/savour_icons_icons.dart';
@@ -95,20 +96,21 @@ class _DealCardState extends State<DealCard> {
                   fontSize: 18.0,
                   fontWeight: FontWeight.bold,
                 ),
-                minFontSize: 5,
+                minFontSize: 5.0,
                 maxFontSize: 18.0,
                 maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10.0, top: 5.0),
-            child: Text(widget.deal.vendor.name + " - " + widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude).toStringAsFixed(1), style: TextStyle(fontSize: 12),),
+            child: Text(widget.deal.vendor.name + " - " + widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude).toStringAsFixed(1), 
+              style: TextStyle(fontSize: 14),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10.0, top: 5.0),
-            child: daysWidget(),
-          ),
+          Container(height: 5.0,),
           Row(
             children: <Widget>[
               Padding(
@@ -130,55 +132,74 @@ class _DealCardState extends State<DealCard> {
     );
   }
 
-  Widget daysWidget(){
-    List<String> days= ["Su. ", "Mo. ", "Tu. ", "We. ", "Th. ", "Fr. ", "Sa. "];
-    List<Widget> list = new List<Widget>();
-    for(var day in days){
-      list.add(
-        Container(
-          width: 25.0,
-          height: 15.0,
-          child: new AutoSizeText(
-            day, 
-            style: TextStyle(
-              //Color it red when deal is not active
-              color: widget.deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red,
-              fontSize: 150.0,
-              fontWeight: FontWeight.bold,
-            ),
-            minFontSize: 10,
-            maxFontSize: 150.0,
-            maxLines: 1,
-          ),
-        ),
-      );
-    }
-    return new Row(children: list);
-  }
+  // Widget daysWidget(){
+  //   List<Widget> list = List<Widget>();
+  //   for(var day in days){
+  //     list.add(
+  //       Container(
+  //         // width: 25.0,
+  //         height: 15.0,
+  //         child: Text(
+  //           day, 
+  //           textAlign: TextAlign.left,
+  //           style: TextStyle(
+  //             //Color it red when deal is not active
+  //             color: widget.deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red,
+  //             fontSize: 11,
+  //             fontWeight: FontWeight.bold,
+  //           ),
+  //           // minFontSize: 10,
+  //           // maxFontSize: 150.0,
+  //           maxLines: 1,
+  //         ),
+  //       ),
+  //     );
+  //   }
+  //   return Row(children: list);
+  // }
 
   Widget getActiveBubbles(){
+    List<String> days= [" Mo.", " Tu.", " We.", " Th.", " Fr.", " Sa.", " Su."];
     var daysIdxs = [6,0,1,2,3,4,5];
-    List<Widget> list = new List<Widget>();
+    List<Widget> list = List<Widget>();
     for(var day in daysIdxs){
       list.add(
         Container(
-          width: 25.0,
+          padding: EdgeInsets.fromLTRB(0.0, 10.0, 1.0, 10.0),
           alignment: Alignment.topCenter,
           transform: Matrix4.translationValues(-0.0, -10.0, 0.0),
-          child: widget.deal.activeDays[day] ? 
-            Icon(SavourIcons.circle,
-            //Color it red when deal is not active
-              color: widget.deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red, 
-              size: 10.0,
-            ):
-            Icon(SavourIcons.circle_thin,
-              color: widget.deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red,
-              size: 10.0,
-            ),
+          child: Column(
+            children: <Widget>[
+              Text(
+                days[day], 
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  //Color it red when deal is not active
+                  color: widget.deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 1,
+              ),
+              Container(height: 5.0,),
+              widget.deal.activeDays[day] ? 
+              Icon(SavourIcons.circle,
+              //Color it red when deal is not active
+                color: widget.deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red, 
+                size: 12.0,
+              ):
+              Icon(SavourIcons.circle_thin,
+                color: widget.deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red,
+                size: 12.0,
+              ),
+            ],
+          )
+          
+          
         ),
       );
     }
-    return new Row(
+    return Row(
       children: list
     );
   }

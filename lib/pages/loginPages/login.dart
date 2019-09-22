@@ -148,13 +148,13 @@ class _LoginPageState extends State<LoginPage> {
     if (emailController.text.isEmpty || passwordController.text.isEmpty){
       displayError("Missing email or password","Please provide both an email and password", "OK");
     } else {
-        _auth.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error){
-          displayError("Login Failed!","Please check that your email and password are correct and try again.", "OK");
-        }).then((user){
-          if (!user.isEmailVerified){
-            promptUnverified(user: user);
-          }
-        });
+      _auth.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error){
+        displayError("Login Failed!","Please check that your email and password are correct and try again.", "OK");
+      }).then((user){
+        if (!user.isEmailVerified){
+          promptUnverified(user: user);
+        }
+      });
     }
   }
 

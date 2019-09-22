@@ -153,7 +153,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
             itemCount: vendors.length,
           ),
           Align(
-            alignment: Alignment(0.90, 0.85),
+            alignment: Alignment(-0.90, 0.90),
             child: FloatingActionButton(
               heroTag: null,
               backgroundColor: SavourColorsMaterial.savourGreen,
