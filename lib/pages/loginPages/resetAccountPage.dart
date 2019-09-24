@@ -8,9 +8,6 @@ import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/themes/decoration.dart';
 
 class ResetAccountPage extends StatefulWidget {
-  final FirebaseAuth auth;
-
-  ResetAccountPage(this.auth);
 
   @override
   _ResetAccountPageState createState() => _ResetAccountPageState();
@@ -72,7 +69,11 @@ class _ResetAccountPageState extends State<ResetAccountPage> {
   }
 
   void _resetAccount() {
-    this.widget.auth.sendPasswordResetEmail(email: emailController.text).then((user) {
+    _onLoading();
+    FirebaseAuth.instance.sendPasswordResetEmail(email: emailController.text).then((user) {
+      // pop loading wheel
+      Navigator.pop(context);
+      // send user back
       Navigator.pop(context);
     }).catchError((error) {
       displayError("Invalid Email Account", "Please enter a valid email account.", "OK");
@@ -100,6 +101,19 @@ class _ResetAccountPageState extends State<ResetAccountPage> {
           ],
         );
       },
+    );
+  }
+
+  void _onLoading() {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        child: new Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            new PlatformCircularProgressIndicator(),
+          ],
+        )
     );
   }
 }

@@ -124,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
                       print("create account pressed");
                       await Navigator.push(context, platformPageRoute(maintainState: false,
                             builder: (BuildContext context) {
-                        return new CreateAccountPage(_auth);
+                        return new CreateAccountPage();
                       },
                           fullscreenDialog: true
                       ),
@@ -138,7 +138,7 @@ class _LoginPageState extends State<LoginPage> {
                     onTap: () async {
                       await Navigator.push(context, platformPageRoute(maintainState: false,
                           builder: (BuildContext context) {
-                            return new ResetAccountPage(_auth);
+                            return new ResetAccountPage();
                           },
                           fullscreenDialog: true
                       ),
@@ -279,6 +279,18 @@ class _LoginPageState extends State<LoginPage> {
           ],
         );
       },
+    );
+  }
+  void _onLoading() {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        child: new Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            new PlatformCircularProgressIndicator(),
+          ],
+        )
     );
   }
 

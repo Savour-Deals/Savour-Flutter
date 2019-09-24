@@ -8,9 +8,6 @@ import 'package:savour_deals_flutter/themes/decoration.dart';
 
 class CreateAccountPage extends StatefulWidget {
 
-  final FirebaseAuth auth;
-
-  CreateAccountPage(this.auth);
 
   @override
   _CreateAccountPageState createState() => _CreateAccountPageState();
@@ -57,19 +54,19 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       controller: passwordController,
                       keyboard: TextInputType.text,
                       obscureTxt: _passwordObscured,
-                      suffixIcon: IconButton(
-                        color: Colors.black,
-                        icon: Icon(
-                          _passwordObscured
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _passwordObscured = !_passwordObscured;
-                          });
-                        },
-                      ),
+//                      suffixIcon: IconButton(
+//                        color: Colors.black,
+//                        icon: Icon(
+//                          _passwordObscured
+//                              ? Icons.visibility
+//                              : Icons.visibility_off,
+//                        ),
+//                        onPressed: () {
+//                          setState(() {
+//                            _passwordObscured = !_passwordObscured;
+//                          });
+//                        },
+//                      ),
                     ),
 
                     Container(padding: EdgeInsets.all(5)),
@@ -112,7 +109,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       } else if (emailController.text.isEmpty || passwordController.text.isEmpty || passwordConfirmController.text.isEmpty){
         displayError("Missing email or password","Please provide both an email and password", "OK");
       } else {
-       await this.widget.auth.createUserWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error) {
+
+       await FirebaseAuth.instance.createUserWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error) {
+
          displayError("Account Creation Failed!","Sorry, the account could not be created.", "OK");
 
        }).then((user)  {
@@ -142,7 +141,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
           content: new Text(message),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
-            new FlatButton(
+            new PlatformDialogAction(
               child: new Text(buttonText),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -161,7 +160,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       child: new Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          new CircularProgressIndicator(),
+          new PlatformCircularProgressIndicator(),
         ],
       )
     );
