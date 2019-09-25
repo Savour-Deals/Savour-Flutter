@@ -32,13 +32,10 @@ class WalletPageWidget extends StatefulWidget {
   _WalletPageWidgetState createState() => _WalletPageWidgetState();
 }
 
-class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin{
+class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerProviderStateMixin{
   //Location variables
   final _locationService = Geolocator();
   Position currentLocation;
-
-  @override
-  bool get wantKeepAlive => true;
   
   int tabIndex = 0;
   TabController _tabController;
@@ -65,8 +62,19 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
         if (this.mounted){
           setState(() {
             tabs.clear();
-            tabs.add(FavoritesPageWidget(widget.deals, currentLocation));
-            tabs.add(RedeemedWidget(widget.deals,widget.vendors, currentLocation));
+            tabs.add(
+              FavoritesPageWidget(
+                favorites: widget.deals.getFavorites(), 
+                location: currentLocation,
+              )
+            );
+            tabs.add(
+              RedeemedWidget(
+                widget.deals,
+                widget.vendors, 
+                currentLocation
+              )
+            );
           });
         }
         _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
@@ -97,7 +105,6 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     appState = Provider.of<AppState>(context);
     theme = Theme.of(context);
     return Scaffold(
@@ -168,35 +175,27 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
 }
 
 class FavoritesPageWidget extends StatefulWidget {
-  final Deals deals;
+  final List<Deal> favorites;
   final Position location;
 
-  FavoritesPageWidget(this.deals, this.location);
+  const FavoritesPageWidget({Key key, @required this.favorites, @required this.location}) : super(key: key);
 
   @override
   _FavoritesPageWidgetState createState() => _FavoritesPageWidgetState();
 }
 
 class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
-  Deals deals;
-  Map<String,Vendor> vendors = Map();
-  FirebaseUser user;
+  List<Deal> favorites;
 
   @override
   void initState() {
     super.initState();
-    deals = widget.deals;
-    // initPlatform();
+    favorites = widget.favorites;
   }
 
   @override
   Widget build(BuildContext context) {
-    return bodyWidget();
-  }
-
-  Widget bodyWidget(){
-    if (deals.getFavorites().length > 0){
-      List<Deal> favorites = deals.getFavorites();
+    if (favorites.length > 0){
       return ListView.builder(
         padding: EdgeInsets.all(0.0),
         physics: const AlwaysScrollableScrollPhysics (),
@@ -215,16 +214,30 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
         },
         itemCount: favorites.length,
       );
-    }else {
-        return Center(child: Text("No favorites to show!"));
     }
+    return Center(child: Text("No favorites to show!"));
   }
 
   Widget getCard(Deal deal){
     if (deal.isLive()){
-      return DealCard(deal, widget.location, true);
+      return DealCard(
+        deal: deal, 
+        location: widget.location, 
+        type: DealCardType.large,
+        onFavoriteChanged: removeFavoriteAndRefresh,
+      );
     }
     return Container();
+  }
+
+  void removeFavoriteAndRefresh(String dealID, bool favorited){
+    // TODO: This should be changed when we redo the data handling of the app
+    debugPrint("HERE $dealID ::: $favorited");
+    if(favorited == false){
+      setState(() {
+        favorites.removeWhere((deal) => deal.key == dealID);
+      });
+    }
   }
 }
 

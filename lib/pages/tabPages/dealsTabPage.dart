@@ -330,7 +330,11 @@ class _DealsPageState extends State<DealsPageWidget> {
                     ),
                   );
                 },
-                child: DealCard(carouselDeals[item], currentLocation, false),
+                child: DealCard(
+                  deal: carouselDeals[item], 
+                  location: currentLocation, 
+                  type: DealCardType.medium,
+                ),
               );
             },
             itemCount: carouselDeals.length,  

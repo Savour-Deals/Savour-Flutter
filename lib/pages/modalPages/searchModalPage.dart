@@ -158,7 +158,11 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 ),
               );
             },
-            child: DealCard(_filteredDeals[index], currentLocation, true),
+            child: DealCard(
+              deal: _filteredDeals[index], 
+              location: currentLocation, 
+              type: DealCardType.large
+            ),
           );
         },
       ):

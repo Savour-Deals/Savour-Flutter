@@ -146,18 +146,14 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
               ),
             ] 
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: VendorButtonRow(
-              address: widget.vendor.address,
-              menuURL: widget.vendor.menu,
-              vendor: widget.vendor,
-            ),
+          VendorButtonRow(
+            address: widget.vendor.address,
+            menuURL: widget.vendor.menu,
+            vendor: widget.vendor,
           ),
-          Container(height: 20,),
           AboutWidget(vendor: widget.vendor,),
-          Container(height: 20,),
           (widget.vendor.loyalty.count > -1) ? LoyaltyWidget(vendor: widget.vendor, currentLocation: currentLocation): Container(),
+
         ],
       ),
     );
@@ -185,114 +181,117 @@ class _AboutWidgetState extends State<AboutWidget> {
   @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
-    return Stack(
-      children: <Widget>[
-        Container(
-          padding: EdgeInsets.fromLTRB(30.0, 20.0, 30.0, 0.0),
-          child: Column(
-            children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Container(
-                    width:  MediaQuery.of(context).size.width*0.4,
-                    child: AutoSizeText("Address", 
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                      minFontSize: 10.0,
-                      maxFontSize: 22.0,
-                      maxLines: 1,
-                      group: myGroup,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20.0),
+      child: Stack(
+        children: <Widget>[
+          Container(
+            padding: EdgeInsets.fromLTRB(30.0, 20.0, 30.0, 0.0),
+            child: Column(
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      width:  MediaQuery.of(context).size.width*0.4,
+                      child: AutoSizeText("Address", 
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        minFontSize: 10.0,
+                        maxFontSize: 22.0,
+                        maxLines: 1,
+                        group: myGroup,
+                      ),
                     ),
-                  ),
-                  Container(
-                    width:  MediaQuery.of(context).size.width*0.4,
-                    child: AutoSizeText("Today's Hours", 
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                      minFontSize: 10.0,
-                      maxFontSize: 22.0,
-                      maxLines: 1,
-                      group: myGroup,
+                    Container(
+                      width:  MediaQuery.of(context).size.width*0.4,
+                      child: AutoSizeText("Today's Hours", 
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        minFontSize: 10.0,
+                        maxFontSize: 22.0,
+                        maxLines: 1,
+                        group: myGroup,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              Container(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Container(
-                    width:  MediaQuery.of(context).size.width*0.4,
-                    child: AutoSizeText(widget.vendor.address, 
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 15),
-                      minFontSize: 10.0,
-                      maxFontSize: 15.0,
-                      maxLines: 2,
-                      group: myGroup1,
+                  ],
+                ),
+                Container(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      width:  MediaQuery.of(context).size.width*0.4,
+                      child: AutoSizeText(widget.vendor.address, 
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 15),
+                        minFontSize: 10.0,
+                        maxFontSize: 15.0,
+                        maxLines: 2,
+                        group: myGroup1,
+                      ),
                     ),
-                  ),
-                  Container(
-                    width:  MediaQuery.of(context).size.width*0.4,
-                    child: AutoSizeText(
-                      (widget.vendor.todaysHours() == null) ? "Hours not available":widget.vendor.todaysHours(), 
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 15),
-                      minFontSize: 10.0,
-                      maxFontSize: 15.0,
-                      maxLines: 2,
-                      group: myGroup1,
+                    Container(
+                      width:  MediaQuery.of(context).size.width*0.4,
+                      child: AutoSizeText(
+                        (widget.vendor.todaysHours() == null) ? "Hours not available":widget.vendor.todaysHours(), 
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 15),
+                        minFontSize: 10.0,
+                        maxFontSize: 15.0,
+                        maxLines: 2,
+                        group: myGroup1,
+                      ),
                     ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0,15.0,0.0,0.0),
+                  child: GestureDetector(
+                    child: Text(
+                      widget.vendor.description, 
+                      maxLines: (_showMore) ? 100000 : 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),
+                    ),
+                    onTap: (){
+                      setState(() {
+                        _showMore = !_showMore;
+                      });
+                    },
                   ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0,15.0,0.0,0.0),
-                child: GestureDetector(
-                  child: Text(
-                    widget.vendor.description, 
-                    maxLines: (_showMore) ? 100000 : 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),
-                  ),
-                  onTap: (){
+                ),
+                FlatButton(
+                  child: (_showMore) ? Text("show less"): Text("show more"), 
+                  onPressed: () {
                     setState(() {
                       _showMore = !_showMore;
                     });
                   },
                 ),
+              ],
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                width: 1.0, color: Color(0xFFFFDFDFDF),
               ),
-              FlatButton(
-                child: (_showMore) ? Text("show less"): Text("show more"), 
-                onPressed: () {
-                  setState(() {
-                    _showMore = !_showMore;
-                  });
-                },
-              ),
-            ],
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(
-              width: 1.0, color: Color(0xFFFFDFDFDF),
             ),
           ),
-        ),
-        FractionalTranslation(
-          translation: Offset(.5, -0.5), 
-          child:Container(
-            padding: EdgeInsets.all(2.0),
-            child: Text(
-              "About",
-              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 25.0),
+          FractionalTranslation(
+            translation: Offset(.5, -0.5), 
+            child:Container(
+              padding: EdgeInsets.all(2.0),
+              child: Text(
+                "About",
+                style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 25.0),
+              ),
+              color: theme.scaffoldBackgroundColor,
             ),
-            color: theme.scaffoldBackgroundColor,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -341,73 +340,76 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        ButtonTheme(
-          minWidth: MediaQuery.of(context).size.width*0.3,
-          height: 80,
-          child: FlatButton(
-            child: Column(
-              children: <Widget>[
-                Icon(Icons.map, color: Colors.white),
-                Container(height: 4.0),
-                Text("Directions", style: TextStyle(color: Colors.white)),
-              ],
-            ), 
-            shape:  RoundedRectangleBorder(borderRadius: new BorderRadius.circular(12.0)),
-            onPressed: () {
-              openMap();
-            },
-            color: SavourColorsMaterial.savourGreen,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 28.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          ButtonTheme(
+            minWidth: MediaQuery.of(context).size.width*0.3,
+            height: 80,
+            child: FlatButton(
+              child: Column(
+                children: <Widget>[
+                  Icon(Icons.map, color: Colors.white),
+                  Container(height: 4.0),
+                  Text("Directions", style: TextStyle(color: Colors.white)),
+                ],
+              ), 
+              shape:  RoundedRectangleBorder(borderRadius: new BorderRadius.circular(12.0)),
+              onPressed: () {
+                openMap();
+              },
+              color: SavourColorsMaterial.savourGreen,
+            ),
           ),
-        ),
-        ButtonTheme(
-          minWidth: MediaQuery.of(context).size.width*0.3,
-          height: 80,
-          child: FlatButton(
-            child: Column(
-              children: <Widget>[
-                Icon(
-                  (_following) ? Icons.notifications:Icons.notifications_none, 
-                  color: Colors.white
-                ),
-                Container(height: 4.0),
-                Text(
-                  (_following) ? "Following": "Follow", 
-                  style: TextStyle(color: Colors.white)
-                ),
-              ],
-            ), 
-            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(12.0)),
-            onPressed: () {
-              _toggleFollow();
-            },
-            color: (_following) ? SavourColorsMaterial.savourGreen : Colors.grey,
+          ButtonTheme(
+            minWidth: MediaQuery.of(context).size.width*0.3,
+            height: 80,
+            child: FlatButton(
+              child: Column(
+                children: <Widget>[
+                  Icon(
+                    (_following) ? Icons.notifications:Icons.notifications_none, 
+                    color: Colors.white
+                  ),
+                  Container(height: 4.0),
+                  Text(
+                    (_following) ? "Following": "Follow", 
+                    style: TextStyle(color: Colors.white)
+                  ),
+                ],
+              ), 
+              shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(12.0)),
+              onPressed: () {
+                _toggleFollow();
+              },
+              color: (_following) ? SavourColorsMaterial.savourGreen : Colors.grey,
+            ),
           ),
-        ),
-        ButtonTheme(
-          minWidth: MediaQuery.of(context).size.width*0.3,
-          height: 80,
-          child: FlatButton(
-            child: Column(
-              children: <Widget>[
-                Icon(Icons.fastfood, color: Colors.white),
-                Container(height: 4.0),
-                Text("Menu", 
-                  style: TextStyle(color: Colors.white)
-                ),
-              ],
-            ), 
-            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(12.0)),
-            onPressed: () {
-              _launchURL(widget.menuURL);
-            },
-            color: SavourColorsMaterial.savourGreen,
+          ButtonTheme(
+            minWidth: MediaQuery.of(context).size.width*0.3,
+            height: 80,
+            child: FlatButton(
+              child: Column(
+                children: <Widget>[
+                  Icon(Icons.fastfood, color: Colors.white),
+                  Container(height: 4.0),
+                  Text("Menu", 
+                    style: TextStyle(color: Colors.white)
+                  ),
+                ],
+              ), 
+              shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(12.0)),
+              onPressed: () {
+                _launchURL(widget.menuURL);
+              },
+              color: SavourColorsMaterial.savourGreen,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -643,75 +645,78 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
       //wait until we know how many points they have
       return Container();
     }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        SizedBox(
-          width: MediaQuery.of(context).size.width*0.75,
-          height: 50.0,
-          child: FlatButton(
-            child: (pointPercent < 1.0)? Text("Loyalty Check-in", style: TextStyle(color: Colors.white)):
-              Text("Redeem", style: TextStyle(color: Colors.white)),
-            shape:  RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25)),
-            onPressed: () {
-              _handleLoyaltyPressed();
-            },
-            color: SavourColorsMaterial.savourGreen,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          SizedBox(
+            width: MediaQuery.of(context).size.width*0.75,
+            height: 50.0,
+            child: FlatButton(
+              child: (pointPercent < 1.0)? Text("Loyalty Check-in", style: TextStyle(color: Colors.white)):
+                Text("Redeem", style: TextStyle(color: Colors.white)),
+              shape:  RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25)),
+              onPressed: () {
+                _handleLoyaltyPressed();
+              },
+              color: SavourColorsMaterial.savourGreen,
+            ),
           ),
-        ),
-        Container(height: 5),
-        Column(
-          children: (pointPercent < 1.0)? 
-            <Widget>[
-              Text("Today: +" + widget.vendor.loyalty.todaysPoints().toString(), style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),),
-              Container(height: 5),
-              Text("Reach your points goal and recieve:", style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),),
-              Text(widget.vendor.loyalty.deal, style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),),
-            ]:
-            <Widget>[
-              Text("You're ready to redeem your " + widget.vendor.loyalty.deal, style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),),
+          Container(height: 5),
+          Column(
+            children: (pointPercent < 1.0)? 
+              <Widget>[
+                Text("Today: +" + widget.vendor.loyalty.todaysPoints().toString(), style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),),
+                Container(height: 5),
+                Text("Reach your points goal and recieve:", style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),),
+                Text(widget.vendor.loyalty.deal, style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),),
+              ]:
+              <Widget>[
+                Text("You're ready to redeem your " + widget.vendor.loyalty.deal, style: TextStyle(fontSize: SizeConfig.safeBlockVertical*2.2),),
+              ],
+          ),
+          Container(height: 5,),
+          Stack(
+            children: <Widget>[
+              Container(
+                //Border for progress
+                height: 35.0,
+                width: progressWidth,
+                decoration: new BoxDecoration(
+                  color: Color.fromARGB(255, 200, 232, 202),
+                  borderRadius: BorderRadius.all(Radius.circular(17.5)),
+                  border: Border.all(width: 2.0, color: Color.fromARGB(255, 89, 204, 93)),
+                ),
+              ),
+              Container(
+                //Container visually indicating progress
+                height: 35.0,
+                width: progressWidth*pointPercent,
+                decoration: new BoxDecoration(
+                  color: Color.fromARGB(255, 89, 204, 93),
+                  borderRadius: BorderRadius.all(Radius.circular(17.5)),
+                ),
+              ),
+              Container(
+                height: 35.0,
+                padding: EdgeInsets.all(7.5),
+                width: progressWidth,
+                child: AutoSizeText("$userPoints/$pointsGoal", 
+                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
+                  minFontSize: 15,
+                  maxFontSize: 25,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              
             ],
-        ),
-        Container(height: 5,),
-        Stack(
-          children: <Widget>[
-            Container(
-              //Border for progress
-              height: 35.0,
-              width: progressWidth,
-              decoration: new BoxDecoration(
-                color: Color.fromARGB(255, 200, 232, 202),
-                borderRadius: BorderRadius.all(Radius.circular(17.5)),
-                border: Border.all(width: 2.0, color: Color.fromARGB(255, 89, 204, 93)),
-              ),
-            ),
-            Container(
-              //Container visually indicating progress
-              height: 35.0,
-              width: progressWidth*pointPercent,
-              decoration: new BoxDecoration(
-                color: Color.fromARGB(255, 89, 204, 93),
-                borderRadius: BorderRadius.all(Radius.circular(17.5)),
-              ),
-            ),
-            Container(
-              height: 35.0,
-              padding: EdgeInsets.all(7.5),
-              width: progressWidth,
-              child: AutoSizeText("$userPoints/$pointsGoal", 
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
-                minFontSize: 15,
-                maxFontSize: 25,
-                maxLines: 1,
-                textAlign: TextAlign.center,
-              ),
-            ),
-            
-          ],
-        ),
-        Container(height: 10,),
-      ],
+          ),
+          Container(height: 10,),
+        ],
+      ),
     );
   }
 
