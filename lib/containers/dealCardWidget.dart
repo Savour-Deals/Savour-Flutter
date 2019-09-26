@@ -226,26 +226,35 @@ class DealCardSmall extends StatelessWidget {
                 height: whSize,
                 color: Colors.black.withOpacity(0.5),
               ),
-              CountdownWidget(
-                deal: deal,
-                scalar: 1.0,
-              ),
               Padding(
                 padding: const EdgeInsets.only(left: 10.0, top: 5.0, right: 10.0),
-                child: Container(
-                  width: whSize,
-                  child: new AutoSizeText(
-                    deal.description,
-                    style: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      width: whSize,
+                      child: new AutoSizeText(
+                        deal.description,
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        minFontSize: 10.0,
+                        maxFontSize: 22.0,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    minFontSize: 10.0,
-                    maxFontSize: 22.0,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  ],
+                ),
+              ),
+              Positioned(
+                bottom: 5.0,
+                left: 10.0,
+                right: 10.0,
+                child: CountdownWidget(
+                  deal: deal,
+                  scalar: 1.0,
                 ),
               ),
             ]
