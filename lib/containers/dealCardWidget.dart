@@ -24,6 +24,7 @@ class DealCard extends StatelessWidget {
   final Position location;
   final DealCardType type;
   final Function(String, bool) onFavoriteChanged;
+  final double whSize;
 
 
   const DealCard({
@@ -31,7 +32,8 @@ class DealCard extends StatelessWidget {
     @required this.deal, 
     @required this.location, 
     @required this.type, 
-    this.onFavoriteChanged = _dummyFunction,
+    this.onFavoriteChanged = _dummyFunction, 
+    this.whSize,
   }) : super(key: key);
 
   static void _dummyFunction(String dummyID, bool dummyFavorite) {}
@@ -56,8 +58,8 @@ class DealCard extends StatelessWidget {
       case DealCardType.small:
         return DealCardSmall(
           deal: deal,
-          location: location,
-          // onFavoriteChanged: onFavoriteChanged,
+          onFavoriteChanged: onFavoriteChanged,
+          whSize: whSize,
         );
       default:
         //should not get here
@@ -183,15 +185,75 @@ class DealCardFull extends StatelessWidget {
 
 class DealCardSmall extends StatelessWidget {
   final Deal deal;
-  final Position location;
+  final Function(String, bool) onFavoriteChanged;
+  final double whSize;
 
-  const DealCardSmall({Key key, @required this.deal, @required this.location}) : super(key: key);
+  const DealCardSmall({Key key, @required this.deal, this.onFavoriteChanged, this.whSize}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      
+    return SizedBox(
+      width: whSize,
+      height: whSize,
+      child: Card(
+        // margin: EdgeInsets.all(10.0),
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: Stack(
+            children: <Widget>[
+              Container(
+                height: whSize,
+                width: whSize,
+                child: Image(
+                  image: AdvancedNetworkImage(
+                    deal.photo,
+                    useDiskCache: true,
+                    cacheRule: CacheRule(maxAge: const Duration(days: 1)),
+                    printError: true,
+                  ),
+                  fit: BoxFit.cover,               
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                ),
+              ),
+              Container(
+                width: whSize,
+                height: whSize,
+                color: Colors.black.withOpacity(0.5),
+              ),
+              CountdownWidget(
+                deal: deal,
+                scalar: 1.0,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 10.0, top: 5.0, right: 10.0),
+                child: Container(
+                  width: whSize,
+                  child: new AutoSizeText(
+                    deal.description,
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    minFontSize: 10.0,
+                    maxFontSize: 22.0,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ]
+          ),
+        ),
+      ),
     );
+    //Add favorite button after rework of handling data
   }
 }
 

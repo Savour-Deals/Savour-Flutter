@@ -169,7 +169,10 @@ class _DealsPageState extends State<DealsPageWidget> {
       Navigator.push(
         context,
         platformPageRoute(
-          builder: (context) => DealPageWidget(notiDeal,currentLocation),
+          builder: (context) => DealPageWidget(
+            deal: notiDeal,
+            location: currentLocation
+          ),
         ),
       );
     }else{
@@ -326,7 +329,10 @@ class _DealsPageState extends State<DealsPageWidget> {
                   Navigator.push(
                     context,
                     platformPageRoute(
-                      builder: (context) => DealPageWidget(carouselDeals[item], currentLocation),
+                      builder: (context) => DealPageWidget(
+                        deal: carouselDeals[item], 
+                        location: currentLocation
+                      ),
                     ),
                   );
                 },

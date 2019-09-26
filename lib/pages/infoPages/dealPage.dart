@@ -23,8 +23,9 @@ import '../../utils.dart';
 class DealPageWidget extends StatefulWidget {
   final Deal deal;
   final Position location;
+  final bool displayMore;
 
-  DealPageWidget(this.deal, this.location);
+  DealPageWidget({@required this.deal, @required this.location, this.displayMore = true});
 
   @override
   _DealPageWidgetState createState() => _DealPageWidgetState();
@@ -155,28 +156,31 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
                 child: (widget.deal.redeemed) ? getTimer() : getDetailsText(),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: double.infinity, // match_parent
-                height: MediaQuery.of(context).size.height*0.05,
-                child: FlatButton(
-                  shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-                  color: SavourColorsMaterial.savourGreen,
-                  child: Text("See More from " + widget.deal.vendor.name,
-                    style: whiteText,
-                  ), 
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => VendorPageWidget(widget.deal.vendor, widget.location)
-                      ),
-                    );
-                  },
+            (widget.displayMore)? 
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  width: double.infinity, // match_parent
+                  height: MediaQuery.of(context).size.height*0.05,
+                  child: FlatButton(
+                    shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
+                    color: SavourColorsMaterial.savourGreen,
+                    child: Text("See More from " + widget.deal.vendor.name,
+                      style: whiteText,
+                    ), 
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VendorPageWidget(widget.deal.vendor, widget.location)
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ),
+              )
+              : 
+              Container(height: MediaQuery.of(context).size.height*0.05,),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: SizedBox(

@@ -206,7 +206,11 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
               Navigator.push(
                 context,
                 platformPageRoute(
-                  builder: (context) => DealPageWidget(favorites[position], widget.location)),
+                  builder: (context) => DealPageWidget(
+                    deal: favorites[position], 
+                    location: widget.location
+                  ),
+                ),
               );
             },
             child: getCard(favorites[position])
@@ -232,7 +236,6 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
 
   void removeFavoriteAndRefresh(String dealID, bool favorited){
     // TODO: This should be changed when we redo the data handling of the app
-    debugPrint("HERE $dealID ::: $favorited");
     if(favorited == false){
       setState(() {
         favorites.removeWhere((deal) => deal.key == dealID);
@@ -371,7 +374,10 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
                   Navigator.push(context,
                     platformPageRoute(
                       builder: (BuildContext context) {
-                        return DealPageWidget(redemptions[position-1].deal, widget.location);
+                        return DealPageWidget(
+                          deal: redemptions[position-1].deal, 
+                          location: widget.location
+                        );
                       },
                     )
                   );

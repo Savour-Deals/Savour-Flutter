@@ -12,11 +12,16 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
+import 'package:savour_deals_flutter/stores/deal_model.dart';
+import 'package:savour_deals_flutter/stores/deals_model.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'dealPage.dart';
 
 class VendorPageWidget extends StatefulWidget {
   final Vendor vendor;
@@ -43,6 +48,9 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
 
   bool following = false;
 
+  Deals deals = Deals();
+  DatabaseReference _dealsRef;
+
   @override
   void initState() {
     super.initState();
@@ -53,6 +61,7 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
   void initialize() async {
     user = await _auth.currentUser();
     _userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
+    _dealsRef = FirebaseDatabase().reference().child("Deals");
     _userRef.child("following").onValue.listen((data){
       if (data.snapshot != null){
         setState(() {
@@ -74,6 +83,18 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
     } on PlatformException catch (e) {
       print(e.message);
     }
+    _dealsRef.orderByChild("vendor_id").equalTo(widget.vendor.key).onValue.listen((dealEvent) {
+      if (this.mounted && dealEvent.snapshot != null){
+        Map<String, dynamic> dealDataMap = new Map<String, dynamic>.from(dealEvent.snapshot.value);
+        setState(() {
+          dealDataMap.forEach((key,data){
+            Deal newDeal = new Deal.fromMap(key, data, widget.vendor, user.uid);
+            // newDeal.favorited = favorites.containsKey(newDeal.key);
+            deals.addDeal(newDeal);
+          });
+        });
+      }
+    });
   }
 
   @override
@@ -153,9 +174,75 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
           ),
           AboutWidget(vendor: widget.vendor,),
           (widget.vendor.loyalty.count > -1) ? LoyaltyWidget(vendor: widget.vendor, currentLocation: currentLocation): Container(),
-
+          _buildCarousel(context, deals.getAllDeals())
         ],
       ),
+    );
+  }
+
+  Widget _buildCarousel(BuildContext context, List<Deal> carouselDeals) {
+    if(carouselDeals.length <= 0){
+      return Container(
+        padding: EdgeInsets.only(left: 15.0),
+        width: MediaQuery.of(context).size.width,
+        child: Text("No Current Offers", 
+          textAlign: TextAlign.left, 
+          style: TextStyle(
+            fontSize: 25.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+    var carouselWidth = MediaQuery.of(context).size.width;
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      children: <Widget>[
+        Container(
+          padding: EdgeInsets.only(left: 15.0),
+          width: carouselWidth,
+          child: Text("Current Offers", 
+            textAlign: TextAlign.left, 
+            style: TextStyle(
+              fontSize: 25.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: carouselWidth/2.5,
+          child: (carouselDeals.length <= 0)? Container():ListView.builder(
+            physics: AlwaysScrollableScrollPhysics(),
+            scrollDirection: Axis.horizontal,
+            // store this controller in a State to save the carousel scroll position
+            controller: PageController(),
+            itemBuilder: (BuildContext context, int item) {
+              return GestureDetector(
+                onTap: () {
+                  print(carouselDeals[item].key + " clicked");
+                  Navigator.push(
+                    context,
+                    platformPageRoute(
+                      builder: (context) => DealPageWidget(
+                        deal: carouselDeals[item], 
+                        location: currentLocation,
+                        displayMore: false,
+                      ),
+                    ),
+                  );
+                },
+                child: DealCard(
+                  deal: carouselDeals[item], 
+                  location: currentLocation, 
+                  type: DealCardType.small,
+                  whSize: carouselWidth/2.5,
+                ),
+              );
+            },
+            itemCount: carouselDeals.length,  
+          ),
+        )
+      ],
     );
   }
 }
