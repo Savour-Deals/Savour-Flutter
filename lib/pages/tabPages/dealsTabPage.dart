@@ -23,12 +23,14 @@ class _DealsPageState extends State<DealsPageWidget> {
   DatabaseReference vendorRef = FirebaseDatabase().reference().child("Vendors");
   DatabaseReference dealRef = FirebaseDatabase().reference().child("Deals");
   final geo = Geofire();
-  bool loaded = false;
   FirebaseUser user;
 
   List<Vendor> vendors = [];
   Deals deals = Deals();
   Map<String,String> favorites = Map();
+  
+  bool geoFireReady = false;
+  int keyEnteredCounter = 0;
 
   @override
   void initState() {
@@ -37,6 +39,8 @@ class _DealsPageState extends State<DealsPageWidget> {
   }
 
   void initPlatform() async {
+    //start loading timer :: 10s, if not done loading by then, display toast
+    _startLoadingTimer();
     //Intializing geoFire
     geo.initialize("Vendors_Location");
     user = await FirebaseAuth.instance.currentUser();
@@ -46,7 +50,15 @@ class _DealsPageState extends State<DealsPageWidget> {
         currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium); //this may be null! Thats ok!
         deals.setLocation(currentLocation);
         geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+        geo.onObserveReady.listen((ready){
+          setState(() {
+            geoFireReady = true;
+          });
+        });
         geo.onKeyEntered.listen((data){
+          setState(() {
+            keyEnteredCounter++;
+          });
           keyEntered(data);
         });
         geo.onKeyExited.listen((data){
@@ -81,10 +93,6 @@ class _DealsPageState extends State<DealsPageWidget> {
                   deals.setFavoriteByKey(deal.key, favorites.containsKey(deal.key));
                 }
               });
-            }else{
-              setState(() {
-                loaded = true;
-              });
             }
           }
         });
@@ -92,6 +100,28 @@ class _DealsPageState extends State<DealsPageWidget> {
     } on PlatformException catch (e) {
       print(e.message);
     }
+  }
+
+  _startLoadingTimer(){
+    //If we have waited for +10s and geofire has not loaded, tell user to check their interet!
+    const tenSec = const Duration(seconds: 10);
+    Timer.periodic(
+      tenSec,
+      (Timer timer) => setState(
+        () {
+          timer.cancel();
+          if(!geoFireReady){
+            Fluttertoast.showToast(
+              msg: "We seem to be taking a while to load. Check your internet connection to make sure you're online.",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIos: 8,
+              backgroundColor: Colors.black.withOpacity(0.5),
+            );
+          }
+        },
+      ),
+    );
   }
 
   void keyEntered(dynamic data){
@@ -133,8 +163,6 @@ class _DealsPageState extends State<DealsPageWidget> {
       });
     }
   }
-
-
 
   Future<Deal> getDeal(String dealID) async {
     if(!deals.containsDeal(dealID)){
@@ -241,6 +269,7 @@ class _DealsPageState extends State<DealsPageWidget> {
   
   Widget bodyWidget(){
     if (deals.getAllDeals().length > 0){
+      Fluttertoast.cancel();
       return Stack(
         children: <Widget>[
           ListView.builder(
@@ -291,11 +320,43 @@ class _DealsPageState extends State<DealsPageWidget> {
         ],
       );
     } else {
-      if (loaded){
-        return Center(child: Text("No deals nearby!"));
+      if (geoFireReady && keyEnteredCounter == 0){
+        //If geofire has loaded but we got no deals, tell user no deals
+        return Padding(
+          padding: const EdgeInsets.all(15),
+          child: Center(
+            child: AutoSizeText(
+              "No deals nearby!", 
+              minFontSize: 15,
+              maxFontSize: 22,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            )
+          ),
+        );
       }else{
+        //Geofire not ready, show loading
         return Center (
-          child: PlatformCircularProgressIndicator()
+          child:  ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Container(
+              color: Colors.black.withOpacity(0.5),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  PlatformCircularProgressIndicator(),
+                  Container(height: 10),
+                  AutoSizeText(
+                    "Loading Deals...",
+                    maxFontSize: 22,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+              width: MediaQuery.of(context).size.width*0.5,
+              height: MediaQuery.of(context).size.width*0.4,
+            ),
+          )
         );
       }
     }
