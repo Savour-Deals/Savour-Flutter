@@ -227,6 +227,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   PlatformCircularProgressIndicator(),
+                  Container(height: 10),
                   AutoSizeText(
                     "Loading Vendors...",
                     maxFontSize: 22,
@@ -235,7 +236,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
                 ],
               ),
               width: MediaQuery.of(context).size.width*0.5,
-              height: MediaQuery.of(context).size.width*0.5,
+              height: MediaQuery.of(context).size.width*0.4,
             ),
           )
         );
