@@ -59,9 +59,19 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
   }
 
   void initialize() async {
-    user = await _auth.currentUser();
+    var serviceStatus;
+    try {
+      serviceStatus = await _locationService.checkGeolocationPermissionStatus();
+      user = await _auth.currentUser();
+    } on PlatformException catch (e) {
+      print(e.message);
+    }
+
+    //setup query paths
     _userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
     _dealsRef = FirebaseDatabase().reference().child("Deals");
+
+    //Check if the user following this vendor
     _userRef.child("following").onValue.listen((data){
       if (data.snapshot != null){
         setState(() {
@@ -69,20 +79,19 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
         });        
       }
     });
-    try {
-      var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
-      if (serviceStatus == GeolocationStatus.granted) {//we should have permission but maybe they turned it off since they got here
-        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.best)).listen((Position result) async {
-          if (this.mounted){
-            setState(() {
-              currentLocation = result;
-            });
-          }
-        });
-      }
-    } on PlatformException catch (e) {
-      print(e.message);
+
+    // get location updates
+    if (serviceStatus == GeolocationStatus.granted) {//we should have permission but maybe they turned it off since they got here
+      _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.best)).listen((Position result) async {
+        if (this.mounted){
+          setState(() {
+            currentLocation = result;
+          });
+        }
+      });
     }
+
+    // Get all deals from this vendor
     _dealsRef.orderByChild("vendor_id").equalTo(widget.vendor.key).onValue.listen((dealEvent) {
       if (this.mounted && dealEvent.snapshot != null){
         Map<String, dynamic> dealDataMap = new Map<String, dynamic>.from(dealEvent.snapshot.value);
