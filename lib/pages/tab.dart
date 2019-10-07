@@ -7,14 +7,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
-// import 'package:geolocator/geolocator.dart';
 import 'package:location_permissions/location_permissions.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:savour_deals_flutter/pages/loginPages/onboardingPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
+import '../utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 // import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class SavourTabPage extends StatefulWidget {
@@ -34,7 +36,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   final geo = Geofire();
   int vendorsNearby = 0;
 
-  // SharedPreferences prefs;
+  SharedPreferences prefs;
   // int lastNearbyNotificationTime;
   // FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
@@ -56,6 +58,22 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
+    //check if user has used this app before
+    prefs = await SharedPreferences.getInstance();
+    var hasOnboarded = prefs.getBool('hasOnboarded') ?? false;
+    if (!hasOnboarded){
+      //TODO: Uncomment this when testing of onboarding is done
+      // prefs.setBool('hasOnboarded', true);
+      Navigator.push(context,
+        platformPageRoute(
+          builder: (BuildContext context) {
+            return new OnboardingPage();
+          },
+          fullscreenDialog: true
+        )
+      );
+    }
+    
     WidgetsBinding.instance.addObserver(this);
     var newState = await LocationPermissions().checkPermissionStatus();
     if (!mounted) return;
@@ -136,6 +154,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   }
 
   Widget buildTabWidget(){
+    SizeConfig().init(context);
     appState = Provider.of<AppState>(context);
     theme = Theme.of(context);
     if (locationStatus == PermissionStatus.unknown){

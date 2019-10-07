@@ -52,21 +52,27 @@ class _SavourDealsState extends State<SavourApp> {
   }
 
   Widget _handleCurrentScreen() {
-    return new StreamBuilder<FirebaseUser>(
+    return StreamBuilder<FirebaseUser>(
       stream: FirebaseAuth.instance.onAuthStateChanged,
       builder: (BuildContext context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return new Scaffold();
+          return Scaffold();
         } else {
           //check if user data present
           if (snapshot.hasData) {
             var user = snapshot.data;
             //Either their email is verified or they logged in with fb
             if (verifyUser(user)){
-              return new SavourTabPage(uid: snapshot.data.uid);
+              return MediaQuery(
+                child: SavourTabPage(uid: snapshot.data.uid),
+                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+              ); 
             }
           }
-          return new LoginPage();
+          return MediaQuery(
+            child: LoginPage(),
+            data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+          );
         }
       }
     );

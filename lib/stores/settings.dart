@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AppState with ChangeNotifier {
   bool _darkModeEnabled = false;  
-  SharedPreferences prefs ;
+  SharedPreferences prefs;
 
   AppState() {
     initAppState();

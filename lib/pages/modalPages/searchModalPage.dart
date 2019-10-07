@@ -42,6 +42,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   final _locationService = Geolocator();
   Position currentLocation;
 
+  bool isDealSearch(){
+    return (widget.deals != null);
+  }
 
   void initState() {
     super.initState();
@@ -55,32 +58,11 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     currentLocation = widget.location;
     initPlatform();
   }
-  
-  // @override 
-  // void deactivate(){
-  //   super.deactivate();
-  //   _controller.dispose();
-  //   _focusNode.dispose();
-  // }
-
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  //   _controller.dispose();
-  //   _focusNode.dispose();
-  // }
-
-  bool isDealSearch(){
-    return (widget.deals != null);
-  }
 
   void initPlatform() async {
     try {
-      // FocusScope.of(context).requestFocus(_focusNode);
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
-      print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
-        currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
         _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
           if (this.mounted){
             setState(() {
@@ -88,21 +70,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             });
           }
         });
-      } else {
-        // bool serviceStatusResult = await _locationService.requestService();
-        // print("Service status activated after request: $serviceStatusResult");
-        // if(serviceStatusResult){
-        //   initPlatform();
-        // }
       }
     } on PlatformException catch (e) {
-      print(e);
-      if (e.code == 'PERMISSION_DENIED') {
-        print(e.message);
-      } else if (e.code == 'SERVICE_STATUS_ERROR') {
-        print(e.message);
-      }
-      currentLocation = null;
+      print(e.message);
     }
 
     _focusNode.addListener(() {
@@ -183,12 +153,19 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               FocusScope.of(context).requestFocus(new FocusNode());
               Navigator.push(
                 context,
-                platformPageRoute(maintainState: false,
-                  builder: (context) => DealPageWidget(_filteredDeals[index], currentLocation),
+                platformPageRoute(
+                  builder: (context) => DealPageWidget(
+                    deal: _filteredDeals[index], 
+                    location: currentLocation
+                  ),
                 ),
               );
             },
-            child: DealCard(_filteredDeals[index], currentLocation, true),
+            child: DealCard(
+              deal: _filteredDeals[index], 
+              location: currentLocation, 
+              type: DealCardType.large
+            ),
           );
         },
       ):
@@ -206,8 +183,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               FocusScope.of(context).requestFocus(new FocusNode());
               Navigator.push(
                 context,
-                platformPageRoute(maintainState: false,
-                  builder: (context) => VendorPageWidget(_filteredVendors[index]),
+                platformPageRoute(
+                  builder: (context) => VendorPageWidget(_filteredVendors[index], currentLocation),
                 ),
               );
             },
