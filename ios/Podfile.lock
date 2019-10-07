@@ -1,6 +1,9 @@
 PODS:
   - "app_settings (1.0.6+2)":
     - Flutter
+  - barcode_scan (0.0.1):
+    - Flutter
+    - MTBBarcodeScanner
   - Bolts (1.9.0):
     - Bolts/AppLinks (= 1.9.0)
     - Bolts/Tasks (= 1.9.0)
@@ -70,6 +73,8 @@ PODS:
     - Firebase/Database
     - Flutter
     - GeoFire
+  - fluttertoast (0.0.2):
+    - Flutter
   - GeoFire (3.0.0):
     - Firebase/Database (~> 5.0)
   - geolocator (5.1.3):
@@ -112,6 +117,7 @@ PODS:
   - leveldb-library (1.22)
   - location_permissions (2.0.2):
     - Flutter
+  - MTBBarcodeScanner (5.0.11)
   - nanopb (0.3.901):
     - nanopb/decode (= 0.3.901)
     - nanopb/encode (= 0.3.901)
@@ -132,12 +138,14 @@ PODS:
 
 DEPENDENCIES:
   - app_settings (from `.symlinks/plugins/app_settings/ios`)
+  - barcode_scan (from `.symlinks/plugins/barcode_scan/ios`)
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_database (from `.symlinks/plugins/firebase_database/ios`)
   - Flutter (from `.symlinks/flutter/ios-release`)
   - flutter_facebook_login (from `.symlinks/plugins/flutter_facebook_login/ios`)
   - flutter_geofire (from `.symlinks/plugins/flutter_geofire/ios`)
+  - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - geolocator (from `.symlinks/plugins/geolocator/ios`)
   - google_api_availability (from `.symlinks/plugins/google_api_availability/ios`)
   - google_maps_flutter (from `.symlinks/plugins/google_maps_flutter/ios`)
@@ -167,12 +175,15 @@ SPEC REPOS:
     - GoogleUtilities
     - GTMSessionFetcher
     - leveldb-library
+    - MTBBarcodeScanner
     - nanopb
     - OneSignal
 
 EXTERNAL SOURCES:
   app_settings:
     :path: ".symlinks/plugins/app_settings/ios"
+  barcode_scan:
+    :path: ".symlinks/plugins/barcode_scan/ios"
   firebase_auth:
     :path: ".symlinks/plugins/firebase_auth/ios"
   firebase_core:
@@ -185,6 +196,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_facebook_login/ios"
   flutter_geofire:
     :path: ".symlinks/plugins/flutter_geofire/ios"
+  fluttertoast:
+    :path: ".symlinks/plugins/fluttertoast/ios"
   geolocator:
     :path: ".symlinks/plugins/geolocator/ios"
   google_api_availability:
@@ -206,6 +219,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   app_settings: 27651d311385d34d91afa163c0e4539cfd0c4c5d
+  barcode_scan: 33f586d02270046fc6559135038b34b5754eaa4f
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
   FBSDKCoreKit: f442aa96179cc9b382bb4abeb7e340a47cca8f91
   FBSDKLoginKit: c3079d9a4db27c492287b1eed7a4272b28cf8a59
@@ -222,6 +236,7 @@ SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   flutter_facebook_login: be61e24a4b7d621515353c6b4583d1981bdaa3d6
   flutter_geofire: afdb697674098a0de9971583aaadd196337ca7bc
+  fluttertoast: b644586ef3b16f67fae9a1f8754cef6b2d6b634b
   GeoFire: e3ae6f4be3f2466c3467ef6c1c203db3af935c59
   geolocator: 2d5da6891d865c0f1b4f851683eed890dd9c8bc1
   google_api_availability: 163b30f802e6148c67f092aa4501c90ddd8eec8d
@@ -232,6 +247,7 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 61bb0f61a4cb560030f1222021178008a5727a23
   leveldb-library: 55d93ee664b4007aac644a782d11da33fba316f7
   location_permissions: 67cfaff583afbb027a9f9248196f4b79c40f3cdc
+  MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
   nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
   OneSignal: 8fb749fa07f88006403c9b659a570fb7fb74519a
   onesignal_flutter: f0eab25765dd95978c19dc64a87a8a33387909fa

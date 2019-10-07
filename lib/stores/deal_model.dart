@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:savour_deals_flutter/utils.dart';
 
+int _oneWeekInMS = 60*60*24*7*1000;
+
 class Deal {
   String key;
   String photo;
@@ -18,22 +20,30 @@ class Deal {
   String code;
   List<bool> activeDays = []; // mon - sun => 0 - 6
   int value;
+  bool active;
+  bool live;
   List<String> filters = [];
   
   
   Deal(this.key, this.description, this.photo, this.vendor, this.start, this.end, this.favorited, this.activeDays, this.code, this.redeemed, this.redeemedTime, this.type, this.value, this.filters, this.vendorName);
 
   // Live is whether or not the deal is between the start and end date
-  bool isLive(){
+  void refreshLive(){
     var now = new DateTime.now();
     var startOfToday = new DateTime(now.year, now.month, now.day);
     //begin showing deal at midnight, the day of and end showing it when it expires
-    //TODO: Move deal to expired deals node when we see its done
-    return startOfToday.millisecondsSinceEpoch >= start && now.millisecondsSinceEpoch <= end;
+    live = startOfToday.millisecondsSinceEpoch >= start && now.millisecondsSinceEpoch <= end;
+  }
+
+  bool isLive(){
+    if (live == null){
+      refreshLive();
+    }
+    return live;
   }
 
   // Active is if the deal is redeemable at the current time of the day
-  bool isActive(){
+  void refreshActive(){
     final now = DateTime.now();
     final startDateTime = DateTime.fromMillisecondsSinceEpoch(start);
     final endDateTime = DateTime.fromMillisecondsSinceEpoch(end);
@@ -52,15 +62,22 @@ class Deal {
     }
     if (activeDays[startTime.weekday-1]){//Active today
       if (now.compareTo(startTime) >= 0 && now.compareTo(endTime) <= 0){
-        return true;
+        active = true;
       }else if (startTime.compareTo(endTime) == 0){
-          return true;//"active all day!"
+          active = true;//"active all day!"
       }else{
-        return false;
+        active = false;
       }
     }else{//Not Active today
-      return false;
+      active = false;
     }
+  }
+
+  bool isActive(){
+    if (active == null){
+      refreshActive();
+    }
+    return active;
   }
 
   bool isPreferred(){
@@ -123,10 +140,10 @@ class Deal {
     if (snapshot.value["redeemed"] != null){
       var val = snapshot.value["redeemed"];
       if (val[uid] != null){//if there is a redemption time
-        var now = DateTime.now().millisecondsSinceEpoch;
-        var rTime = snapshot.value["redeemed"][uid].toInt()*1000;//database may contain doubles from old code so round 
-        if (now-rTime > 60*60*24*7*2*1000) {
-            //If redeemed 2 weeks ago, allow user to use deal again - Should be changed in the future
+        int now = DateTime.now().millisecondsSinceEpoch;
+        int rTime = snapshot.value["redeemed"][uid].toInt()*1000;//database may contain doubles from old code so round 
+        if (now-rTime > _oneWeekInMS) {
+            //If redeemed 1 weeks ago, allow user to use deal again - Should be changed in the future
             final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
             final ref = FirebaseDatabase().reference().child("Deals").child(snapshot.key).child("redeemed");
             ref.child(uid).remove();
@@ -168,8 +185,8 @@ class Deal {
       if (data["redeemed"][uid] != null){//if there is a redemption time
         var now = DateTime.now().millisecondsSinceEpoch;
         var rTime = data["redeemed"][uid].toInt()*1000;//database may contain doubles from old code so round 
-        if (now-rTime > 60*60*24*7*2*1000) {
-          //If redeemed 2 weeks ago, allow user to use deal again - Should be changed in the future
+        if (now-rTime > _oneWeekInMS) {
+          //If redeemed 1 weeks ago, allow user to use deal again - Should be changed in the future
           final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
           final ref = FirebaseDatabase().reference().child("Deals").child(_key).child("redeemed");
           ref.child(uid).remove();

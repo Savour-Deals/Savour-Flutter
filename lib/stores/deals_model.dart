@@ -50,7 +50,7 @@ class Deals {
   List<Deal> getAllDeals(){
     var now = DateTime.now().millisecondsSinceEpoch~/1000;
     var halfhour = 1800*3;
-    return this._deals.where((deal)=> (!deal.redeemed || (now-deal.redeemedTime~/1000 > halfhour) )&& deal.isLive()).toList();
+    return this._deals.where((deal)=> (!deal.redeemed || (now-deal.redeemedTime~/1000 < halfhour) )&& deal.isLive()).toList();
   }
 
   List<Deal> getDealsByValue(){

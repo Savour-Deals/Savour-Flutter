@@ -28,6 +28,9 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   bool loaded = false;
 
   List<Vendor> vendors = [];
+
+  bool geoFireReady = false;
+  int keyEnteredCounter = 0;
   
   @override
   void initState() {
@@ -36,38 +39,72 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   }
 
   void initPlatform() async {
+    //start loading timer :: 10s, if not done loading by then, display toast
+    _startLoadingTimer();
     //Intializing geoFire
     geo.initialize("Vendors_Location");
     try {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
-      print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
-          currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium);
-          geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-          geo.onKeyEntered.listen((data){
-            keyEntered(data);
-          });
-          geo.onKeyExited.listen((data){
-            keyExited(data);
-          });
-          _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
-            if (this.mounted){
-              setState(() {
-                currentLocation = result;
-              });
-              geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-            }
-          });
+        currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium); //this may be null! Thats ok!
       }
     } on PlatformException catch (e) {
-      print(e);
-      if (e.code == 'PERMISSION_DENIED') {
-        print(e.message);
-      } else if (e.code == 'SERVICE_STATUS_ERROR') {
-        print(e.message);
-      }
-      currentLocation = null;
+      print(e.message);
     }
+
+    if (currentLocation != null){
+      //If we have the location, fire off the query, otherwise we will have to wait for the stream
+      geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+    }
+    geo.onObserveReady.listen((ready){
+      setState(() {
+        geoFireReady = true;
+      });
+    });
+    geo.onKeyEntered.listen((data){
+      setState(() {
+        keyEnteredCounter++;
+      });          keyEntered(data);
+    });
+    geo.onKeyExited.listen((data){
+      keyExited(data);
+    });
+    _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
+      if (this.mounted){
+        setState(() {
+          currentLocation = result;
+        });
+        if (geo.geoQueryActive){
+          //Query already running, update location
+          geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+        }else{
+          // this is our first location update. Fire off the geoquery
+          geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+        }
+      }
+    });
+  }
+
+  _startLoadingTimer(){
+    //If we have waited for +10s and geofire has not loaded, tell user to check their interet!
+    const tenSec = const Duration(seconds: 10);
+    Timer.periodic(
+      tenSec,
+      (Timer timer) => setState(
+        () {
+          timer.cancel();
+          if(!geoFireReady){
+            Fluttertoast.showToast(
+              msg: "We seem to be taking a while to load. Check your internet connection to make sure you're online.",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIos: 8,
+              backgroundColor: Colors.black.withOpacity(0.5),
+            );
+          }
+        },
+      ),
+    );
   }
 
   void keyEntered(dynamic data) {
@@ -119,7 +156,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           ),
           onPressed: () async {
             var page = await buildPageAsync(PageType.searchPage);
-            var route = MaterialPageRoute(builder: (_) => page, maintainState: false, fullscreenDialog: true);
+            var route = MaterialPageRoute(builder: (_) => page, fullscreenDialog: true);
             Navigator.push(context,route);
           },
         ),
@@ -151,7 +188,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
                 onTap: () async {
                   print(vendors[position].name + " clicked");
                   var page = await buildPageAsync(PageType.vendorPage, position: position);
-                  var route = MaterialPageRoute(builder: (_) => page, maintainState: false);
+                  var route = MaterialPageRoute(builder: (_) => page);
                   Navigator.push(context,route);
                 },
                 child: VendorCard(vendors[position], currentLocation)
@@ -160,14 +197,14 @@ class _VendorsPageState extends State<VendorsPageWidget> {
             itemCount: vendors.length,
           ),
           Align(
-            alignment: Alignment(0.90, 0.85),
+            alignment: Alignment(-0.90, 0.90),
             child: FloatingActionButton(
               heroTag: null,
               backgroundColor: SavourColorsMaterial.savourGreen,
               child: Icon(Icons.pin_drop, color: Colors.white,),
               onPressed: () async {
                 var page = await buildPageAsync(PageType.mapPage);
-                var route = MaterialPageRoute(builder: (_) => page, maintainState: false, fullscreenDialog: true);
+                var route = MaterialPageRoute(builder: (_) => page, fullscreenDialog: true);
                 Navigator.push(context,route);
               },
             ),
@@ -175,11 +212,43 @@ class _VendorsPageState extends State<VendorsPageWidget> {
         ],
       );
     }else {
-      if (loaded){
-        return Center(child: Text("No vendors nearby!"));
+      if (geoFireReady && keyEnteredCounter == 0){
+        //If geofire has loaded but we got no deals, tell user no deals
+        return Padding(
+          padding: const EdgeInsets.all(15),
+          child: Center(
+            child: AutoSizeText(
+              "No vendors nearby!", 
+              minFontSize: 15,
+              maxFontSize: 22,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            )
+          ),
+        );
       }else{
+        //Geofire not ready, show loading
         return Center (
-          child: PlatformCircularProgressIndicator()
+          child:  ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Container(
+              color: Colors.black.withOpacity(0.5),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  PlatformCircularProgressIndicator(),
+                  Container(height: 10),
+                  AutoSizeText(
+                    "Loading Vendors...",
+                    maxFontSize: 22,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+              width: MediaQuery.of(context).size.width*0.5,
+              height: MediaQuery.of(context).size.width*0.4,
+            ),
+          )
         );
       }
     }
@@ -189,14 +258,16 @@ class _VendorsPageState extends State<VendorsPageWidget> {
     return Future.microtask(() async {
       switch (pageType) {
         case PageType.mapPage:
-          return MapPageWidget("Map Page", this.vendors);
+          return MapPageWidget("Map Page", this.vendors, currentLocation);
           break;
         case PageType.searchPage:
-          return SearchPageWidget(vendors: vendors,location: currentLocation,);
+          return SearchPageWidget(vendors: vendors,location: currentLocation);
           break;
         case PageType.vendorPage:
-          return VendorPageWidget(vendors[position]);
+          return VendorPageWidget(vendors[position], currentLocation);
           break;
+        default:
+          return null;
       }
     });
 }
