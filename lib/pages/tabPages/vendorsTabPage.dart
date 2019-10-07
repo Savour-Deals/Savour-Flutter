@@ -47,32 +47,42 @@ class _VendorsPageState extends State<VendorsPageWidget> {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       if (serviceStatus == GeolocationStatus.granted) {
         currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium); //this may be null! Thats ok!
-        geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-        geo.onObserveReady.listen((ready){
-          setState(() {
-            geoFireReady = true;
-          });
-        });
-        geo.onKeyEntered.listen((data){
-          setState(() {
-            keyEnteredCounter++;
-          });          keyEntered(data);
-        });
-        geo.onKeyExited.listen((data){
-          keyExited(data);
-        });
-        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
-          if (this.mounted){
-            setState(() {
-              currentLocation = result;
-            });
-            geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-          }
-        });
       }
     } on PlatformException catch (e) {
       print(e.message);
     }
+
+    if (currentLocation != null){
+      //If we have the location, fire off the query, otherwise we will have to wait for the stream
+      geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+    }
+    geo.onObserveReady.listen((ready){
+      setState(() {
+        geoFireReady = true;
+      });
+    });
+    geo.onKeyEntered.listen((data){
+      setState(() {
+        keyEnteredCounter++;
+      });          keyEntered(data);
+    });
+    geo.onKeyExited.listen((data){
+      keyExited(data);
+    });
+    _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
+      if (this.mounted){
+        setState(() {
+          currentLocation = result;
+        });
+        if (geo.geoQueryActive){
+          //Query already running, update location
+          geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+        }else{
+          // this is our first location update. Fire off the geoquery
+          geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+        }
+      }
+    });
   }
 
   _startLoadingTimer(){

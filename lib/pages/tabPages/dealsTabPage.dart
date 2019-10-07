@@ -48,58 +48,72 @@ class _DealsPageState extends State<DealsPageWidget> {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       if (serviceStatus == GeolocationStatus.granted) {
         currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium); //this may be null! Thats ok!
-        deals.setLocation(currentLocation);
-        geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-        geo.onObserveReady.listen((ready){
-          setState(() {
-            geoFireReady = true;
-          });
-        });
-        geo.onKeyEntered.listen((data){
-          setState(() {
-            keyEnteredCounter++;
-          });
-          keyEntered(data);
-        });
-        geo.onKeyExited.listen((data){
-          keyExited(data);
-        });
-        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
-          if (this.mounted){
-            setState(() {
-              currentLocation = result;
-              deals.setLocation(currentLocation);
-            });
-            geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-          }
-        });
-        FirebaseDatabase().reference().child("appData").child("filters").onValue.listen((datasnapshot) {
-          if (this.mounted){
-            if (datasnapshot.snapshot.value != null) {
-              for (var filter in datasnapshot.snapshot.value){
-                setState(() {
-                  deals.addFilter(filter);
-                });
-              }
-            }
-          }
-        });
-        FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").onValue.listen((datasnapshot) {
-          if (this.mounted){
-            if (datasnapshot.snapshot.value != null) {
-              setState(() {
-                favorites = new Map<String, String>.from(datasnapshot.snapshot.value);
-                for (var deal in deals.getAllDeals()){
-                  deals.setFavoriteByKey(deal.key, favorites.containsKey(deal.key));
-                }
-              });
-            }
-          }
-        });
+        if(currentLocation != null){
+          deals.setLocation(currentLocation);
+        }
       }
     } on PlatformException catch (e) {
       print(e.message);
     }
+
+    if (currentLocation != null){
+      //If we have the location, fire off the query, otherwise we will have to wait for the stream
+      geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+    }
+    geo.onObserveReady.listen((ready){
+      setState(() {
+        geoFireReady = true;
+      });
+    });
+    geo.onKeyEntered.listen((data){
+      setState(() {
+        keyEnteredCounter++;
+      });
+      keyEntered(data);
+    });
+    geo.onKeyExited.listen((data){
+      keyExited(data);
+    });
+    _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
+      if (this.mounted){
+        setState(() {
+          currentLocation = result;
+          deals.setLocation(currentLocation);
+        });
+        if (geo.geoQueryActive){
+          //Query already running, update location
+          geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+        }else{
+          // this is our first location update. Fire off the geoquery
+          geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+        }      
+      }
+    });
+
+    FirebaseDatabase().reference().child("appData").child("filters").onValue.listen((datasnapshot) {
+      if (this.mounted){
+        if (datasnapshot.snapshot.value != null) {
+          for (var filter in datasnapshot.snapshot.value){
+            setState(() {
+              deals.addFilter(filter);
+            });
+          }
+        }
+      }
+    });
+
+    FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").onValue.listen((datasnapshot) {
+      if (this.mounted){
+        if (datasnapshot.snapshot.value != null) {
+          setState(() {
+            favorites = new Map<String, String>.from(datasnapshot.snapshot.value);
+            for (var deal in deals.getAllDeals()){
+              deals.setFavoriteByKey(deal.key, favorites.containsKey(deal.key));
+            }
+          });
+        }
+      }
+    });
   }
 
   _startLoadingTimer(){

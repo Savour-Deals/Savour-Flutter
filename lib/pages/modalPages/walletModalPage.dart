@@ -59,31 +59,6 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
         currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
-        if (this.mounted){
-          setState(() {
-            tabs.clear();
-            tabs.add(
-              FavoritesPageWidget(
-                favorites: widget.deals.getFavorites(), 
-                location: currentLocation,
-              )
-            );
-            tabs.add(
-              RedeemedWidget(
-                widget.deals,
-                widget.vendors, 
-                currentLocation
-              )
-            );
-          });
-        }
-        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
-          if (this.mounted){
-            setState(() {
-              currentLocation = result;
-            });
-          }
-        });
       }
     } on PlatformException catch (e) {
       print(e);
@@ -94,13 +69,45 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
       }
       currentLocation = null;
     }
+    if (this.mounted && currentLocation != null){
+      _createTabs();
+    }
+    _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
+      if (this.mounted){
+        setState(() {
+          currentLocation = result;
+        });
+        if(tabs.length  < 1){
+          //tabs have not been initialized yet, call the setup function
+          _createTabs();
+        }
+      }
+    });
   }
-
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _createTabs(){
+    setState(() {
+      tabs.clear();
+      tabs.add(
+        FavoritesPageWidget(
+          favorites: widget.deals.getFavorites(), 
+          location: currentLocation,
+        )
+      );
+      tabs.add(
+        RedeemedWidget(
+          widget.deals,
+          widget.vendors, 
+          currentLocation
+        )
+      );
+    });
   }
 
   @override
@@ -236,7 +243,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
 
   void removeFavoriteAndRefresh(String dealID, bool favorited){
     // TODO: This should be changed when we redo the data handling of the app
-    if(favorited == false){
+    if(!favorited){
       setState(() {
         favorites.removeWhere((deal) => deal.key == dealID);
       });

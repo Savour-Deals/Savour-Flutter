@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:savour_deals_flutter/utils.dart';
 
+int _oneWeekInMS = 60*60*24*7*1000;
+
 class Deal {
   String key;
   String photo;
@@ -138,9 +140,9 @@ class Deal {
     if (snapshot.value["redeemed"] != null){
       var val = snapshot.value["redeemed"];
       if (val[uid] != null){//if there is a redemption time
-        var now = DateTime.now().millisecondsSinceEpoch;
-        var rTime = snapshot.value["redeemed"][uid].toInt()*1000;//database may contain doubles from old code so round 
-        if (now-rTime > 60*60*24*7*1000) {
+        int now = DateTime.now().millisecondsSinceEpoch;
+        int rTime = snapshot.value["redeemed"][uid].toInt()*1000;//database may contain doubles from old code so round 
+        if (now-rTime > _oneWeekInMS) {
             //If redeemed 1 weeks ago, allow user to use deal again - Should be changed in the future
             final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
             final ref = FirebaseDatabase().reference().child("Deals").child(snapshot.key).child("redeemed");
@@ -183,7 +185,7 @@ class Deal {
       if (data["redeemed"][uid] != null){//if there is a redemption time
         var now = DateTime.now().millisecondsSinceEpoch;
         var rTime = data["redeemed"][uid].toInt()*1000;//database may contain doubles from old code so round 
-        if (now-rTime > 60*60*24*7*1000) {
+        if (now-rTime > _oneWeekInMS) {
           //If redeemed 1 weeks ago, allow user to use deal again - Should be changed in the future
           final randStr = Utils.createCryptoRandomString(10);//create a random string to use for changing redemption id
           final ref = FirebaseDatabase().reference().child("Deals").child(_key).child("redeemed");

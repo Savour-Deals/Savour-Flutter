@@ -418,10 +418,10 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
   @override
   void initState() {
     super.initState();
-    initialize();
+    _initialize();
   }
 
-  void initialize() async {
+  void _initialize() async {
     user = await _auth.currentUser();
     _userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
     _vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.vendor.key);
@@ -455,7 +455,7 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
               ), 
               shape:  RoundedRectangleBorder(borderRadius: new BorderRadius.circular(12.0)),
               onPressed: () {
-                openMap();
+                _openMap();
               },
               color: SavourColorsMaterial.savourGreen,
             ),
@@ -509,7 +509,7 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
     );
   }
 
-  _toggleFollow(){
+  void _toggleFollow(){
     if (_following){
       //user is following, unfollow if they are fine losing loyalty points
       if (widget.vendor.loyalty.count > -1){
@@ -561,7 +561,7 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
     }
   }
 
-  _launchURL(String url) async {
+  void _launchURL(String url) async {
     if (url != null && url != ""){
       if (await canLaunch(url)) {
         await launch(url);
@@ -590,7 +590,7 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
     }
   }
 
-  openMap() async {
+  void _openMap() async {
     print("Navigation to " + widget.address + " initiated!");
     Map<String,String> mapURLs = {};
     if(Platform.isIOS){
@@ -703,14 +703,14 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    initialize();
+    _initialize();
     pointsGoal = widget.vendor.loyalty.count;
     if (pointsGoal == 0){
       pointsGoal = 1; //avoid a divide by zero!
     }
   }
 
-  void initialize() async {
+  void _initialize() async {
     user = await _auth.currentUser();
     _userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
     _vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.vendor.key);
@@ -816,7 +816,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
     );
   }
 
-  _handleLoyaltyPressed(){
+  void _handleLoyaltyPressed(){
     if (widget.vendor.distanceMilesFrom(widget.currentLocation.latitude, widget.currentLocation.longitude) < 0.2){
       //close enough to continue. Check duration since last checkin.
       if(pointPercent < 1.0){
@@ -828,11 +828,11 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
       }
     }else{
       //vendor too far away
-      displayMessage("Too far away!","Go to location to use their loyalty program!","Okay");
+      _displayMessage("Too far away!","Go to location to use their loyalty program!","Okay");
     }
   }
 
-  _loyaltyCheckin() async {
+  void _loyaltyCheckin() async {
     var now = DateTime.now().millisecondsSinceEpoch~/1000; //convert to seconds
     if ((redemptionTime + 10800) < now){//three hours
       //We are ready to checkin! Prompt user with next steps
@@ -860,7 +860,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
             _userRef.child("loyalty").child(widget.vendor.key).child("redemptions").update({'count': userPoints,'time': DateTime.now().millisecondsSinceEpoch~/1000});
           });
         }else{
-          displayMessage("Incorrect code!", "The QR code is incorrect. Contact us if you think this is a mistake.", "Okay");
+          _displayMessage("Incorrect code!", "The QR code is incorrect. Contact us if you think this is a mistake.", "Okay");
         }
       } on PlatformException catch (e) {
         if (e.code == BarcodeScanner.CameraAccessDenied) {
@@ -869,24 +869,24 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
       } on FormatException{
         // setState(() => this.barcode = 'null (User returned using the "back"-button before scanning anything. Result)');
       } catch (e) {
-        displayMessage("An error occured", "Please try again later.", "Okay");
+        _displayMessage("An error occured", "Please try again later.", "Okay");
       }
     }else{
-      displayMessage("Too Soon!", "Come back tomorrow to check-in!", "Okay");
+      _displayMessage("Too Soon!", "Come back tomorrow to check-in!", "Okay");
     }
   }
 
-  _loyaltyRedeem(){
+  void _loyaltyRedeem(){
     var now = DateTime.now().millisecondsSinceEpoch~/1000; //convert to seconds
     if ((redemptionTime + 10800) < now){//three hours
       //We are ready to redeem! Prompt user with next steps
-      promptRedeem(); 
+      _promptRedeem(); 
     }else{
-      displayMessage("Too Soon!", "Come back tomorrow to redeem your points!", "Okay");
+      _displayMessage("Too Soon!", "Come back tomorrow to redeem your points!", "Okay");
     }
   }
 
-  void displayMessage(String title, String message, String buttonText){
+  void _displayMessage(String title, String message, String buttonText){
     showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
@@ -906,7 +906,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
     );
   }
 
-  void promptRedeem(){
+  void _promptRedeem(){
     showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
