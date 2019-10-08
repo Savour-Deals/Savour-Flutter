@@ -122,12 +122,15 @@ class _LoginPageState extends State<LoginPage> {
                   GestureDetector(
                     onTap: () {
                       print("create account pressed");
-                      Navigator.push(context, platformPageRoute(maintainState: false,
+                      Navigator.push(context, 
+                        platformPageRoute(
+                          context: context,
+                          maintainState: false,
                           builder: (BuildContext context) {
                             return new CreateAccountPage();
                           },
                           fullscreenDialog: true
-                      ),
+                        ),
                       );
                     },
                     child: Text("Create Account", style: TextStyle(color: Colors.white),),

@@ -211,6 +211,7 @@ class _DealsPageState extends State<DealsPageWidget> {
       Navigator.push(
         context,
         platformPageRoute(
+          context: context,
           builder: (context) => DealPageWidget(
             deal: notiDeal,
             location: currentLocation
@@ -237,6 +238,7 @@ class _DealsPageState extends State<DealsPageWidget> {
           onPressed: (){
             Navigator.push(context,
               platformPageRoute(
+                context: context,
                 builder: (BuildContext context) {
                   return SearchPageWidget(deals: deals, location: currentLocation,);
                 },
@@ -257,6 +259,7 @@ class _DealsPageState extends State<DealsPageWidget> {
             onPressed: (){
               Navigator.push(context,
                 platformPageRoute(
+                  context: context,
                   builder: (BuildContext context) {
                     return WalletPageWidget(deals,vendors);
                   },
@@ -322,6 +325,7 @@ class _DealsPageState extends State<DealsPageWidget> {
               onPressed: (){
                 Navigator.push(context,
                   platformPageRoute(
+                    context: context,
                     builder: (BuildContext context) {
                       return new MapPageWidget("Map Page", this.vendors, currentLocation);
                     },
@@ -404,6 +408,7 @@ class _DealsPageState extends State<DealsPageWidget> {
                   Navigator.push(
                     context,
                     platformPageRoute(
+                      context: context,
                       builder: (context) => DealPageWidget(
                         deal: carouselDeals[item], 
                         location: currentLocation

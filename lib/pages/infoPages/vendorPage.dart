@@ -232,6 +232,7 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
                   Navigator.push(
                     context,
                     platformPageRoute(
+                      context: context,
                       builder: (context) => DealPageWidget(
                         deal: carouselDeals[item], 
                         location: currentLocation,

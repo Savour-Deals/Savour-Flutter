@@ -155,10 +155,10 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "592671f8a7a06927f5eeded8d9a00d72f318b2fe"
+      resolved-ref: "3f6e298e4a58173fcd98941fda8acaa3976b8ea0"
       url: "https://github.com/Savour-Deals/flutter_platform_widgets.git"
     source: git
-    version: "0.11.5"
+    version: "0.20.1"
   flutter_svg:
     dependency: transitive
     description:
@@ -437,4 +437,4 @@ packages:
     version: "3.5.0"
 sdks:
   dart: ">=2.4.0 <3.0.0"
-  flutter: ">=1.8.0 <2.0.0"
+  flutter: ">=1.9.1 <2.0.0"

@@ -120,6 +120,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
         Navigator.push(
           context,
           platformPageRoute(
+            context: context,
             builder: (context) => new VendorPageWidget(vendor, widget.location),
           ),
         );

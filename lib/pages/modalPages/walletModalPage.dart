@@ -213,6 +213,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
               Navigator.push(
                 context,
                 platformPageRoute(
+                  context: context,
                   builder: (context) => DealPageWidget(
                     deal: favorites[position], 
                     location: widget.location
@@ -380,6 +381,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
                 if(redemptions[position-1].isDealRedemption()){
                   Navigator.push(context,
                     platformPageRoute(
+                      context: context,
                       builder: (BuildContext context) {
                         return DealPageWidget(
                           deal: redemptions[position-1].deal, 
@@ -391,6 +393,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
                 }else{
                   Navigator.push(context,
                     platformPageRoute(
+                      context: context,
                       builder: (BuildContext context) {
                         return VendorPageWidget(redemptions[position-1].vendor, widget.location);
                       },
