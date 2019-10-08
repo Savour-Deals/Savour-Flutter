@@ -59,20 +59,20 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     //check if user has used this app before
-    prefs = await SharedPreferences.getInstance();
-    var hasOnboarded = prefs.getBool('hasOnboarded') ?? false;
-    if (!hasOnboarded){
-      //TODO: Uncomment this when testing of onboarding is done
-      // prefs.setBool('hasOnboarded', true);
-      Navigator.push(context,
-        platformPageRoute(
-          builder: (BuildContext context) {
-            return new OnboardingPage();
-          },
-          fullscreenDialog: true
-        )
-      );
-    }
+    // prefs = await SharedPreferences.getInstance();
+    // var hasOnboarded = prefs.getBool('hasOnboarded') ?? false;
+    // if (!hasOnboarded){
+    //   //TODO: Uncomment this when testing of onboarding is done
+    //   // prefs.setBool('hasOnboarded', true);
+    //   Navigator.push(context,
+    //     platformPageRoute(
+    //       builder: (BuildContext context) {
+    //         return new OnboardingPage();
+    //       },
+    //       fullscreenDialog: true
+    //     )
+    //   );
+    // }
     
     WidgetsBinding.instance.addObserver(this);
     var newState = await LocationPermissions().checkPermissionStatus();
