@@ -1,5 +1,4 @@
 buildscript {
-    apply plugin: 'kotlin-android'
 
 
     repositories {
@@ -10,7 +9,6 @@ buildscript {
         // ...
         // OneSignal-Gradle-Plugin
         classpath 'gradle.plugin.com.onesignal:onesignal-gradle-plugin:[0.12.3, 0.99.99]'
-        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     }
 }
 
