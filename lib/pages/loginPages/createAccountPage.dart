@@ -19,7 +19,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   TextEditingController emailController = new TextEditingController();
   TextEditingController passwordController = new TextEditingController();
   TextEditingController passwordConfirmController = new TextEditingController();
-
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
@@ -92,6 +92,22 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                         _createAccount();
                       },
                     ),
+                    Container(padding: EdgeInsets.all(5)),
+                    PlatformButton(
+                      ios: (_) => CupertinoButtonData(
+                        pressedOpacity: 0.7,
+                      ),
+                      android: (_) => MaterialRaisedButtonData(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      color: SavourColorsMaterial.savourGreen,
+                      child: Text("Back", style: whiteText),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -105,31 +121,81 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       _onLoading();
 
       if (passwordConfirmController.text != passwordController.text) {
-        displayError("The passwords do not match", "Re-enter passwords", "OK");
+        _displayError("The passwords do not match", "Re-enter passwords", "OK");
       } else if (emailController.text.isEmpty || passwordController.text.isEmpty || passwordConfirmController.text.isEmpty){
-        displayError("Missing email or password","Please provide both an email and password", "OK");
+        _displayError("Missing email or password","Please provide both an email and password", "OK");
       } else {
+        FirebaseUser user;
+       try {
+         user = await _auth.createUserWithEmailAndPassword(email: emailController.text, password: passwordController.text);
+       } catch (error) {
+        PlatformException exception = error;
+        if (exception.code == "ERROR_WEAK_PASSWORD") {
+          _displayError("Account Creation Failed!",exception.message, "OK");
+        } else {
+          _displayError("Account Creation Failed!","Sorry, the account could not be created.", "OK");
+        }
 
-       await FirebaseAuth.instance.createUserWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error) {
+        return;
+      }
+       print("USERHERE");
+       print(user);
+       // this removes the loading bar
+       Navigator.pop(context);
 
-         displayError("Account Creation Failed!","Sorry, the account could not be created.", "OK");
-
-       }).then((user)  {
-          //TODO: Handle account creation with a re-route to the login page, and a message to confirm email
-         print("USERHERE");
-         print(user.email);
-         // this removes the loading bar
-         Navigator.pop(context);
-
-         // this removes the create account page and takes the user back to the login page
-         Navigator.pop(context);
-
-         user.sendEmailVerification();
-       });
+       user.sendEmailVerification();
+//
+//       await _auth.createUserWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error) {
+//         PlatformException exception = error;
+//         print(exception);
+//         if (exception.code == "ERROR_WEAK_PASSWORD") {
+//           displayError("Account Creation Failed!","Please create a stronger password.", "OK");
+//         }
+//         displayError("Account Creation Failed!","Sorry, the account could not be created.", "OK");
+//
+//       }).then((user)  {
+//          //TODO: Handle account creation with a re-route to the login page, and a message to confirm email
+//         print("USERHERE");
+//         print(user);
+//         // this removes the loading bar
+//         Navigator.pop(context);
+//
+//         // this removes the create account page and takes the user back to the login page
+//         Navigator.pop(context);
+//
+//         user.sendEmailVerification();
+//       });
       }
     }
 
-  void displayError(title, message, buttonText){
+  void _displayResetAccountSuccess() async {
+    var currentUser = await _auth.currentUser();
+    print("CURRENT USER");
+    print(currentUser.email);
+    showPlatformDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return PlatformAlertDialog(
+          title: new Text("Account Reset!"),
+          content: new Text("Please check your email to reset your password"),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text("Close"),
+              onPressed: () {
+                // pops message
+                Navigator.of(context).pop();
+                // pops back to login page!!
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  void _displayError(title, message, buttonText){
 
     Navigator.pop(context);
     showPlatformDialog(

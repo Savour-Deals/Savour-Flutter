@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
 import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
@@ -39,6 +40,10 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
   int tabIndex = 0;
   TabController _tabController;
 
+  //Declare contextual variables
+  AppState appState;
+  ThemeData theme;
+
   List<Widget> tabs = [Container(),Container()];
 
   @override
@@ -53,26 +58,7 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
-        _locationService.forceAndroidLocationManager = true;
-        currentLocation = await _locationService.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-        setState(() {
-          tabs.clear();
-          tabs.add(FavoritesPageWidget(widget.deals, currentLocation));
-          tabs.add(RedeemedWidget(widget.deals,widget.vendors, currentLocation));
-        });
-        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
-          if (this.mounted){
-            setState(() {
-              currentLocation = result;
-            });
-          }
-        });
-      } else {
-        // bool serviceStatusResult = await _locationService.requestService();
-        // print("Service status activated after request: $serviceStatusResult");
-        // if(serviceStatusResult){
-        //   initPlatform();
-        // }
+        currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
       }
     } on PlatformException catch (e) {
       print(e);
@@ -83,8 +69,21 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
       }
       currentLocation = null;
     }
+    if (this.mounted && currentLocation != null){
+      _createTabs();
+    }
+    _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
+      if (this.mounted){
+        setState(() {
+          currentLocation = result;
+        });
+        if(tabs.length  < 1){
+          //tabs have not been initialized yet, call the setup function
+          _createTabs();
+        }
+      }
+    });
   }
-
 
   @override
   void dispose() {
@@ -92,14 +91,35 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
     super.dispose();
   }
 
+  void _createTabs(){
+    setState(() {
+      tabs.clear();
+      tabs.add(
+        FavoritesPageWidget(
+          favorites: widget.deals.getFavorites(), 
+          location: currentLocation,
+        )
+      );
+      tabs.add(
+        RedeemedWidget(
+          widget.deals,
+          widget.vendors, 
+          currentLocation
+        )
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    appState = Provider.of<AppState>(context);
+    theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Image.asset("images/Savour_White.png"),
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
+        backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
         brightness: Brightness.dark,
         bottom: Platform.isAndroid? 
         TabBar(
@@ -130,9 +150,9 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
                     child: CupertinoSegmentedControl(
                       borderColor: Colors.white,
                       pressedColor: Colors.white.withOpacity(0.5),
-                      unselectedColor: (Theme.of(context).brightness == Brightness.light) ? 
-                        Theme.of(context).primaryColor: 
-                          Theme.of(context).bottomAppBarColor,
+                      unselectedColor: (theme.brightness == Brightness.light) ? 
+                        theme.primaryColor: 
+                          theme.bottomAppBarColor,
                       selectedColor: Colors.white,
                       groupValue: tabIndex,
                       onValueChanged: (value){
@@ -162,35 +182,27 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
 }
 
 class FavoritesPageWidget extends StatefulWidget {
-  final Deals deals;
+  final List<Deal> favorites;
   final Position location;
 
-  FavoritesPageWidget(this.deals, this.location);
+  const FavoritesPageWidget({Key key, @required this.favorites, @required this.location}) : super(key: key);
 
   @override
   _FavoritesPageWidgetState createState() => _FavoritesPageWidgetState();
 }
 
 class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
-  Deals deals;
-  Map<String,Vendor> vendors = Map();
-  FirebaseUser user;
+  List<Deal> favorites;
 
   @override
   void initState() {
     super.initState();
-    deals = widget.deals;
-    // initPlatform();
+    favorites = widget.favorites;
   }
 
   @override
   Widget build(BuildContext context) {
-    return bodyWidget();
-  }
-
-  Widget bodyWidget(){
-    if (deals.getFavorites().length > 0){
-      List<Deal> favorites = deals.getFavorites();
+    if (favorites.length > 0){
       return ListView.builder(
         padding: EdgeInsets.all(0.0),
         physics: const AlwaysScrollableScrollPhysics (),
@@ -200,8 +212,13 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
               print(favorites[position].key + " clicked");
               Navigator.push(
                 context,
-                platformPageRoute(maintainState: false,
-                  builder: (context) => DealPageWidget(favorites[position], widget.location)),
+                platformPageRoute(
+                  context: context,
+                  builder: (context) => DealPageWidget(
+                    deal: favorites[position], 
+                    location: widget.location
+                  ),
+                ),
               );
             },
             child: getCard(favorites[position])
@@ -209,16 +226,29 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
         },
         itemCount: favorites.length,
       );
-    }else {
-        return Center(child: Text("No favorites to show!"));
     }
+    return Center(child: Text("No favorites to show!"));
   }
 
   Widget getCard(Deal deal){
     if (deal.isLive()){
-      return DealCard(deal, widget.location, true);
+      return DealCard(
+        deal: deal, 
+        location: widget.location, 
+        type: DealCardType.large,
+        onFavoriteChanged: removeFavoriteAndRefresh,
+      );
     }
     return Container();
+  }
+
+  void removeFavoriteAndRefresh(String dealID, bool favorited){
+    // TODO: This should be changed when we redo the data handling of the app
+    if(!favorited){
+      setState(() {
+        favorites.removeWhere((deal) => deal.key == dealID);
+      });
+    }
   }
 }
 
@@ -239,6 +269,9 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
   List<Redemption> redemptions = [];
   bool loaded = false;
 
+  //Declare contextual variables
+  ThemeData theme;
+
   Deals deals;
   List<Vendor> vendors = [];
 
@@ -253,28 +286,26 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
   void init() async {
     user = await FirebaseAuth.instance.currentUser();
     redemptionRef.orderByChild("user_id").equalTo(user.uid).onValue.listen((datasnapshot) {
-      if (this.mounted){
-        if (datasnapshot.snapshot.value != null) {
-          Map<String, dynamic> redemptionData = new Map<String, dynamic>.from(datasnapshot.snapshot.value);
-          redemptionData.forEach((key,data) async {
-            var newRedemption = Redemption.fromMap(key,data);
-            if (newRedemption.type == "deal"){
-              var rdeal = await getDeal(newRedemption.dealID);
-              newRedemption.setDeal(rdeal);
-              setState(() {
-                redemptions.add(newRedemption);
-                redemptions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-              });
-            }else{
-              var rvendor = await getVendor(newRedemption.vendorID);
-              newRedemption.setVendor(rvendor);
-              setState(() {
-                redemptions.add(newRedemption);
-                redemptions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-              });
-            }
-          });
-        }
+      if (this.mounted && datasnapshot.snapshot.value != null) {
+        Map<String, dynamic> redemptionData = new Map<String, dynamic>.from(datasnapshot.snapshot.value);
+        redemptionData.forEach((key,data) async {
+          var newRedemption = Redemption.fromMap(key,data);
+          if (newRedemption.type == "deal"){
+            var rdeal = await getDeal(newRedemption.dealID);
+            newRedemption.setDeal(rdeal);
+            setState(() {
+              redemptions.add(newRedemption);
+              redemptions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+            });
+          }else{
+            var rvendor = await getVendor(newRedemption.vendorID);
+            newRedemption.setVendor(rvendor);
+            setState(() {
+              redemptions.add(newRedemption);
+              redemptions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+            });
+          }
+        });
       }
     });
   }
@@ -309,6 +340,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
 
   @override
   Widget build(BuildContext context) {
+    theme = Theme.of(context);
     if (redemptions.length > 0){
       return ListView.builder(
         physics: const AlwaysScrollableScrollPhysics (),
@@ -332,7 +364,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
             child: ListTile(
               contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
               leading: CircleAvatar(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: theme.primaryColor,
                 backgroundImage: AdvancedNetworkImage(
                   redemptions[position-1].redemptionPhoto,
                   retryDuration: Duration(milliseconds: 1),
@@ -348,17 +380,22 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
               onTap: (){
                 if(redemptions[position-1].isDealRedemption()){
                   Navigator.push(context,
-                    platformPageRoute(maintainState: false,
+                    platformPageRoute(
+                      context: context,
                       builder: (BuildContext context) {
-                        return DealPageWidget(redemptions[position-1].deal, widget.location);
+                        return DealPageWidget(
+                          deal: redemptions[position-1].deal, 
+                          location: widget.location
+                        );
                       },
                     )
                   );
                 }else{
                   Navigator.push(context,
-                    platformPageRoute(maintainState: false,
+                    platformPageRoute(
+                      context: context,
                       builder: (BuildContext context) {
-                        return VendorPageWidget(redemptions[position-1].vendor);
+                        return VendorPageWidget(redemptions[position-1].vendor, widget.location);
                       },
                     )
                   );

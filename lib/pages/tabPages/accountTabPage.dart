@@ -15,6 +15,11 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
   String userPhoto;
   SharedPreferences prefs;
 
+  //Declare contextual variables
+  AppState appState;
+  NotificationSettings notificationSettings;
+  ThemeData theme;
+
   @override
   void initState() { 
     super.initState();
@@ -22,7 +27,6 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
   }
 
   void initialize() async {
-    prefs = await SharedPreferences.getInstance();
     _auth.currentUser().then((_userData) {
       setState(() {
         user = _userData;
@@ -32,19 +36,22 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
 
   @override
   Widget build(BuildContext context) {
+    appState = Provider.of<AppState>(context);
+    notificationSettings = Provider.of<NotificationSettings>(context);
+    theme = Theme.of(context);
     return PlatformScaffold(
       appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          brightness: Theme.of(context).brightness,
-          heroTag: "accountTab",
+          brightness: Brightness.dark,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          heroTag: "dealTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: MyInheritedWidget.of(context).data.isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
           elevation: 0.0,
-          brightness: Theme.of(context).brightness,
+          brightness: Brightness.dark,
+          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
         ),
         trailingActions: <Widget>[
           FlatButton(
@@ -88,7 +95,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 style: TextStyle(fontWeight: 
                   FontWeight.bold, 
                   fontSize: 20.0,
-                  color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black,
+                  color: appState.isDark? Colors.white:Colors.black,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -98,12 +105,12 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.people,
-                    color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black,
+                    color: appState.isDark? Colors.white:Colors.black,
                   ),
                 ),
                 title: Text(
                   "Click to invite more friends!",
-                  style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
+                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                 ),
                 contentPadding: EdgeInsets.all(4.0),
                 onTap: () =>{
@@ -119,12 +126,12 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.mail,
-                    color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black,
+                    color: appState.isDark? Colors.white:Colors.black,
                   ),
                 ),
                 title: Text(
                   "Contact Us",
-                  style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
+                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                 ),
                 contentPadding: EdgeInsets.all(4.0),
                 onTap: ()=> _launchURL('https://www.savourdeals.com/contact/'),
@@ -138,17 +145,23 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.notifications_active,
-                    color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black,
+                    color: appState.isDark? Colors.white:Colors.black,
                   ),
                 ),
                 title: Text(
                   "Notifications",
-                  style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
+                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                 ),
+                trailing: PlatformSwitch(
+                  value: notificationSettings.isNotificationsEnabled,
+                  onChanged: (value) {
+                    _toggleNotifications();
+                  },
+                  // activeTrackColor: theme.primaryColor, 
+                  activeColor: theme.primaryColor,
+                ),
+                // onTap: () => _toggleNotifications(),
                 contentPadding: EdgeInsets.all(4.0),
-                // trailing: Slider(
-                //   activeColor: SavourColorsMaterial.savourGreen,
-                // ),
               ),
               decoration: BoxDecoration(
                 border: Border(top: BorderSide(width: 0.1))
@@ -159,12 +172,12 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.people,
-                    color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black,
+                    color: appState.isDark? Colors.white:Colors.black,
                   ),
                 ),
                 title: Text(
                   "Learn more about becoming a vendor!",
-                  style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
+                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                 ),
                 contentPadding: EdgeInsets.all(4.0),
                 onTap: ()=> _launchURL('https://www.savourdeals.com/vendorsinfo'),
@@ -178,22 +191,17 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.lightbulb_outline,
-                    color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black,
+                    color: appState.isDark? Colors.white:Colors.black,
                   ),
                 ),
                 title: Text(
-                  "Switch to " + (MyInheritedWidget.of(context).data.isDark? "light":"dark") + " mode",
-                  style: TextStyle(color: MyInheritedWidget.of(context).data.isDark? Colors.white:Colors.black),
+                  "Switch to " + (appState.isDark? "light":"dark") + " mode",
+                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                 ),
                 contentPadding: EdgeInsets.all(4.0),
                 onTap: () {
                   setState(() {
-                    MyInheritedWidget.of(context).data.setDarkMode(!MyInheritedWidget.of(context).data.isDark);
-
-                    // settings.isDark = !settings.isDark;
-                    prefs.setBool('isDark', MyInheritedWidget.of(context).data.isDark);
-                    // AppSettings.of(context).updateShouldNotify(AppSettings.of(context));
-                    print("Dark : " + MyInheritedWidget.of(context).data.isDark.toString());
+                    appState.setDarkMode(!appState.isDark);
                   });
                 },
               ),
@@ -201,7 +209,6 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1)),
               ),
             ),
-
           ],
         ),
       )
@@ -226,5 +233,79 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
       );
     }
     return AssetImage("images/Savour_Deals_FullColor-white-back.png");
+  }
+
+  _toggleNotifications() async {
+    if(notificationSettings.isNotificationsEnabled){
+      _notificationPermissionHandler(false);
+    }else{
+      if(Platform.isIOS){
+        OneSignal.shared.getPermissionSubscriptionState().then((subscriptionState){
+          switch (subscriptionState.permissionStatus.status) {
+            case OSNotificationPermission.authorized:
+              //we have iOS permissions, resubscribe with onesignal
+              _notificationPermissionHandler(true);
+              break;
+            case OSNotificationPermission.denied:
+              // User denied previously, prompt them to go to settings
+              // Accept/deny handled in tab.dart::didChangeAppLifecycleState
+              _showSettingsDialog();
+              break;
+            default:
+            // User was never prompted. WTH man!
+              OneSignal.shared.promptUserForPushNotificationPermission().then((accepted){
+                print("Accepted permission: $accepted");
+                _notificationPermissionHandler(accepted);
+              });
+          }
+        });
+      }else{
+        print("Accepted permission: Not needed for android");
+        _notificationPermissionHandler(true);
+      }
+    }
+  }
+
+  Future _notificationPermissionHandler(bool accepted) async {
+    if (accepted){
+      print("Notifications turned on!");
+      var user = await FirebaseAuth.instance.currentUser();
+      Provider.of<NotificationSettings>(context).setNotificationsSetting(true);
+      OneSignal.shared.setSubscription(true);
+      if (user.email != null){
+        OneSignal.shared.setEmail(email: user.email);
+      }
+    }else{
+      print("Notifications turned off!");
+      OneSignal.shared.setSubscription(false);
+      notificationSettings.setNotificationsSetting(false);
+    }
+  }
+
+  void _showSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return PlatformAlertDialog(
+          title: Text("Notification Permission Needed"),
+          content: Text("Please turn on notifications in settings."),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("Go to Settings"),
+              onPressed: () {
+                AppSettings.openAppSettings();
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: new Text("Not Now", style: TextStyle(color: Colors.red),),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

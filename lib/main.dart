@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/pages/loginPages/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
@@ -8,7 +9,22 @@ import 'stores/settings.dart';
 
 
 void main() async { 
-  runApp(InheritedStateWidget()); 
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AppState>(
+          builder: (_) => AppState(),
+        ),
+        ChangeNotifierProvider<NotificationData>(
+          builder: (_) => NotificationData(),
+        ),
+        ChangeNotifierProvider<NotificationSettings>(
+          builder: (_) => NotificationSettings(),
+        ),
+      ],
+      child: SavourApp(),
+    )
+  ); 
 }
 
 class SavourApp extends StatefulWidget {
@@ -23,41 +39,40 @@ class _SavourDealsState extends State<SavourApp> {
   @override
   initState() {
     super.initState();
-    initPlatformState();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  initPlatformState() async {
-    prefs = await SharedPreferences.getInstance();
-    print("Dark : " + prefs.getBool('isDark').toString());
-    MyInheritedWidget.of(context).data.setDarkMode(prefs.getBool('isDark') ?? false);
-  }
-    @override
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Savour Deals',
-      theme: MyInheritedWidget.of(context).data.isDark? savourMaterialDarkThemeData: savourMaterialLightThemeData,
+      theme: Provider.of<AppState>(context).isDark? savourMaterialDarkThemeData: savourMaterialLightThemeData,
       debugShowCheckedModeBanner: false,
       home: _handleCurrentScreen(),
     );
   }
 
   Widget _handleCurrentScreen() {
-    return new StreamBuilder<FirebaseUser>(
+    return StreamBuilder<FirebaseUser>(
       stream: FirebaseAuth.instance.onAuthStateChanged,
       builder: (BuildContext context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return new Scaffold();
+          return Scaffold();
         } else {
           //check if user data present
           if (snapshot.hasData) {
             var user = snapshot.data;
             //Either their email is verified or they logged in with fb
             if (verifyUser(user)){
-              return new SavourTabPage(uid: snapshot.data.uid);
+              return MediaQuery(
+                child: SavourTabPage(uid: snapshot.data.uid),
+                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+              ); 
             }
           }
-          return new LoginPage();
+          return MediaQuery(
+            child: LoginPage(),
+            data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+          );
         }
       }
     );

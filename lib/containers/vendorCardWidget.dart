@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:geolocator/geolocator.dart';
-// import 'package:image/image.dart' as prefix0;
+import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
-// import 'package:location/location.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 
@@ -20,6 +19,7 @@ class _VendorCardState extends State<VendorCard> {
 
   @override
   Widget build(BuildContext context) {
+    var appState = Provider.of<AppState>(context);
     return SizedBox(
       height: 225.0,
       child: Card(
@@ -46,7 +46,7 @@ class _VendorCardState extends State<VendorCard> {
               ),
             ),
             Container(
-              color:(MyInheritedWidget.of(context).data.isDark)? Colors.black.withOpacity(0.4):Colors.black.withOpacity(0.6),
+              color:(appState.isDark)? Colors.black.withOpacity(0.4):Colors.black.withOpacity(0.6),
             ),
             Center(
               child: ListTile(

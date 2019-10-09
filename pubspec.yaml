@@ -1,6 +1,5 @@
 name: savour_deals_flutter
-description: A new Flutter project.
-
+description: Savour Deals
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
 # followed by an optional build number separated by a +.
@@ -46,9 +45,14 @@ dependencies:
   shared_preferences: ^0.5.3+1
   google_maps_flutter: ^0.5.19
   timeago: ^2.0.17
-  # onesignal: ^1.1.0
-  # onesignalflutter:
-  #     git: git://github.com/jmrobles/OneSignal-Flutter-SDK.git
+  onesignal_flutter: ^2.0.2
+  provider: ^2.0.1
+  app_settings: 1.0.6+2
+  barcode_scan: any
+  fluttertoast: ^3.1.3
+
+  # flutter_local_notifications: ^0.8.2
+
 
 dev_dependencies:
   flutter_test:
