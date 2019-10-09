@@ -59,7 +59,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   void initialization() async{
     user = await FirebaseAuth.instance.currentUser();
     redemptionRef = FirebaseDatabase().reference().child("Deals").child(widget.deal.key).child("redeemed").child(user.uid);
-    userRef = FirebaseDatabase().reference().child("Users");
+    userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
     vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.deal.vendor.key);
   }
 
@@ -296,7 +296,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         ),
         onPressed: () {
           if (!widget.deal.redeemed){
-            if(inRange()){
+            if(true){//inRange()){
               promptRedemption();
             }else{
               openMap();

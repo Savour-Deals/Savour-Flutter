@@ -194,34 +194,55 @@ class FavoritesPageWidget extends StatefulWidget {
 class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
   List<Deal> favorites;
 
+  int totalSavings = 0;
+
   @override
   void initState() {
     super.initState();
     favorites = widget.favorites;
+    init();
+  }
+
+  void init() async {
+    var user = await FirebaseAuth.instance.currentUser();
+    FirebaseDatabase().reference().child("Users").child(user.uid).child("total_savings").onValue.listen((datasnapshot) {
+      if (this.mounted){
+        setState(() {
+          totalSavings = datasnapshot.snapshot.value ?? 0; 
+        });
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     if (favorites.length > 0){
       return ListView.builder(
-        padding: EdgeInsets.all(0.0),
+        padding: EdgeInsets.only(top: 10.0),
         physics: const AlwaysScrollableScrollPhysics (),
         itemBuilder: (context, position) {
+          if(position == 0){
+            return Text(
+              "Total Estimated Savings: \$" + totalSavings.toString(), 
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+            );
+          }
           return GestureDetector(
             onTap: () {
-              print(favorites[position].key + " clicked");
+              print(favorites[position-1].key + " clicked");
               Navigator.push(
                 context,
                 platformPageRoute(
                   context: context,
                   builder: (context) => DealPageWidget(
-                    deal: favorites[position], 
+                    deal: favorites[position-1], 
                     location: widget.location
                   ),
                 ),
               );
             },
-            child: getCard(favorites[position])
+            child: getCard(favorites[position-1])
           );
         },
         itemCount: favorites.length,
@@ -268,6 +289,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
   FirebaseUser user;
   List<Redemption> redemptions = [];
   bool loaded = false;
+  int totalSavings = 0;
 
   //Declare contextual variables
   ThemeData theme;
@@ -285,9 +307,17 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
 
   void init() async {
     user = await FirebaseAuth.instance.currentUser();
+    FirebaseDatabase().reference().child("Users").child(user.uid).child("total_savings").onValue.listen((datasnapshot) {
+      if (this.mounted){
+        setState(() {
+          totalSavings = datasnapshot.snapshot.value ?? 0; 
+        });
+      }
+    });
     redemptionRef.orderByChild("user_id").equalTo(user.uid).onValue.listen((datasnapshot) {
-      if (this.mounted && datasnapshot.snapshot.value != null) {
-        Map<String, dynamic> redemptionData = new Map<String, dynamic>.from(datasnapshot.snapshot.value);
+      var userData = datasnapshot.snapshot.value;
+      if (this.mounted && userData!= null) {
+        Map<String, dynamic> redemptionData = new Map<String, dynamic>.from(userData);
         redemptionData.forEach((key,data) async {
           var newRedemption = Redemption.fromMap(key,data);
           if (newRedemption.type == "deal"){
@@ -347,14 +377,8 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
         padding: EdgeInsets.only(top: 10.0),
         itemBuilder: (context, position) {
           if(position == 0){
-            int total = 0;
-            redemptions.forEach((r)=>{
-              if (r.isDealRedemption()){
-                total += r.deal.value
-              }
-            });
             return Text(
-              "Total Estimated Savings: \$" + total.toString(), 
+              "Total Estimated Savings: \$" + totalSavings.toString(), 
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             );
@@ -372,13 +396,15 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
                 ),
               ),
               title: Text(
-                redemptions[position-1].isDealRedemption()?
-                  "You redeemed a deal from " + redemptions[position-1].deal.vendorName : 
-                    "You checked in at " + redemptions[position-1].vendor.name
+                redemptions[position-1].redemptionType == RedemptionType.loyaltyRedeem?
+                  "You redeemed a loyalty reward at " + redemptions[position-1].vendor.name: 
+                    redemptions[position-1].redemptionType == RedemptionType.loyaltyCheckin? 
+                      "You checked in at " + redemptions[position-1].vendor.name:
+                      "You redeemed a deal from " + redemptions[position-1].deal.vendorName 
               ),
               trailing: Text(timeago.format(DateTime.fromMillisecondsSinceEpoch(-1*redemptions[position-1].timestamp*1000), allowFromNow: true)),
               onTap: (){
-                if(redemptions[position-1].isDealRedemption()){
+                if(redemptions[position-1].redemptionType == RedemptionType.deal){
                   Navigator.push(context,
                     platformPageRoute(
                       context: context,
