@@ -296,7 +296,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         ),
         onPressed: () {
           if (!widget.deal.redeemed){
-            if(true){//inRange()){
+            if (inRange()){
               promptRedemption();
             }else{
               openMap();

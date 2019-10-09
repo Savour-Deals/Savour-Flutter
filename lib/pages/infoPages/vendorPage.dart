@@ -818,7 +818,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
   }
 
   void _handleLoyaltyPressed(){
-    if (true){//widget.vendor.distanceMilesFrom(widget.currentLocation.latitude, widget.currentLocation.longitude) < 0.2){
+    if (widget.vendor.distanceMilesFrom(widget.currentLocation.latitude, widget.currentLocation.longitude) < 0.2){
       //close enough to continue. Check duration since last checkin.
       if(pointPercent < 1.0){
         //not enough points to redeem, send them to checkin
@@ -835,11 +835,11 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
 
   void _loyaltyCheckin() async {
     var now = DateTime.now().millisecondsSinceEpoch~/1000; //convert to seconds
-    if (true){//(redemptionTime + 10800) < now){//three hours
+    if ((redemptionTime + 10800) < now){//three hours
       //We are ready to checkin! Prompt user with next steps
       try {
-        // String barcode = await BarcodeScanner.scan();
-        if (true){//barcode == widget.vendor.loyalty.code){
+        String barcode = await BarcodeScanner.scan();
+        if (barcode == widget.vendor.loyalty.code){
           //Code was correct!
           //subscribe to notifications
           _userRef.child("following").child(widget.vendor.key).set(true);
@@ -879,7 +879,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
 
   void _loyaltyRedeem(){
     var now = DateTime.now().millisecondsSinceEpoch~/1000; //convert to seconds
-    if (true){//(redemptionTime + 10800) < now){//three hours
+    if ((redemptionTime + 10800) < now){//three hours
       //We are ready to redeem! Prompt user with next steps
       _promptRedeem(); 
     }else{
