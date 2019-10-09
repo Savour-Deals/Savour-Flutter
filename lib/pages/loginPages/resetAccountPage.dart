@@ -59,6 +59,22 @@ class _ResetAccountPageState extends State<ResetAccountPage> {
                       _resetAccount();
                     },
                   ),
+                  Container(padding: EdgeInsets.all(5)),
+                  PlatformButton(
+                    ios: (_) => CupertinoButtonData(
+                      pressedOpacity: 0.7,
+                    ),
+                    android: (_) => MaterialRaisedButtonData(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    color: SavourColorsMaterial.savourGreen,
+                    child: Text("Back", style: whiteText),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
                 ],
               ),
             ),

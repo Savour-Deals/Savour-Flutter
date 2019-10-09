@@ -144,27 +144,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
        Navigator.pop(context);
 
        user.sendEmailVerification();
-//
-//       await _auth.createUserWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error) {
-//         PlatformException exception = error;
-//         print(exception);
-//         if (exception.code == "ERROR_WEAK_PASSWORD") {
-//           displayError("Account Creation Failed!","Please create a stronger password.", "OK");
-//         }
-//         displayError("Account Creation Failed!","Sorry, the account could not be created.", "OK");
-//
-//       }).then((user)  {
-//          //TODO: Handle account creation with a re-route to the login page, and a message to confirm email
-//         print("USERHERE");
-//         print(user);
-//         // this removes the loading bar
-//         Navigator.pop(context);
-//
-//         // this removes the create account page and takes the user back to the login page
-//         Navigator.pop(context);
-//
-//         user.sendEmailVerification();
-//       });
+
+        _displayResetAccountSuccess();
       }
     }
 
