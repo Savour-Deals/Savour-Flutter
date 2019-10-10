@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/pages/loginPages/login.dart';
@@ -63,12 +64,14 @@ class _SavourDealsState extends State<SavourApp> {
             var user = snapshot.data;
             //Either their email is verified or they logged in with fb
             if (verifyUser(user)){
+              FirebaseDatabase.instance.goOnline(); //Re-enable connection to database when logged in
               return MediaQuery(
                 child: SavourTabPage(uid: snapshot.data.uid),
                 data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
               ); 
             }
           }
+          FirebaseDatabase.instance.goOffline(); //If logged out, disbale db connection
           return MediaQuery(
             child: LoginPage(),
             data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),

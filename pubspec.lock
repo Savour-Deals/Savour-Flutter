@@ -140,7 +140,7 @@ packages:
       name: flutter_facebook_login
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.1"
+    version: "3.0.0"
   flutter_geofire:
     dependency: "direct main"
     description:
@@ -155,7 +155,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "3f6e298e4a58173fcd98941fda8acaa3976b8ea0"
+      resolved-ref: e129ca2aed8a950ce639c889485e7b059c17e599
       url: "https://github.com/Savour-Deals/flutter_platform_widgets.git"
     source: git
     version: "0.20.1"
@@ -165,7 +165,7 @@ packages:
       name: flutter_svg
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.14.1"
+    version: "0.14.2"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -184,7 +184,7 @@ packages:
       name: geolocator
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "5.1.3"
+    version: "5.1.4+1"
   google_api_availability:
     dependency: transitive
     description:
@@ -198,7 +198,7 @@ packages:
       name: google_maps_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.21+3"
+    version: "0.5.21+7"
   http:
     dependency: "direct main"
     description:
@@ -240,7 +240,7 @@ packages:
       name: location_permissions
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.2"
+    version: "2.0.3"
   logging:
     dependency: transitive
     description:
@@ -268,7 +268,7 @@ packages:
       name: onesignal_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.2"
+    version: "2.1.0"
   path:
     dependency: transitive
     description:
@@ -338,7 +338,7 @@ packages:
       name: share
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.2+1"
+    version: "0.6.2+3"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -399,7 +399,7 @@ packages:
       name: timeago
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.19"
+    version: "2.0.20"
   typed_data:
     dependency: transitive
     description:
@@ -413,7 +413,7 @@ packages:
       name: url_launcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "5.1.3"
+    version: "5.1.4"
   validate:
     dependency: transitive
     description:

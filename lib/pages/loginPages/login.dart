@@ -163,10 +163,10 @@ class _LoginPageState extends State<LoginPage> {
 
   void facebookLogin() async {
     var facebook = new FacebookLogin();
-    facebook.loginBehavior = FacebookLoginBehavior.webViewOnly;
+    facebook.loginBehavior = FacebookLoginBehavior.nativeWithFallback;
 
     var result =
-        await facebook.logInWithReadPermissions(['email', 'public_profile']);
+        await facebook.logIn(['email', 'public_profile']);
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
         _auth.signInWithCredential(FacebookAuthProvider.getCredential(
