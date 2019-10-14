@@ -13,6 +13,20 @@ class Utils {
     }
 }
 
+class ColorWithFakeLuminance extends Color {
+  //This class is used to spoof app bar color on ios so that we always have white status bar text
+  final bool withLightLuminance;
+
+  ColorWithFakeLuminance (Color color, {@required this.withLightLuminance})
+  :super(color.value);
+
+  double get luminance{
+    return withLightLuminance ? 0 : 1;
+  }
+
+  double computeLuminance() => luminance;
+}
+
 class SizeConfig {
   static MediaQueryData _mediaQueryData;
   static double screenWidth;

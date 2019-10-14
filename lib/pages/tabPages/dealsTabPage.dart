@@ -278,8 +278,7 @@ class _DealsPageState extends State<DealsPageWidget> {
           )
         ],
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          // brightness: Brightness.dark,
+          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
           heroTag: "dealTab",
           transitionBetweenRoutes: false,
         ),

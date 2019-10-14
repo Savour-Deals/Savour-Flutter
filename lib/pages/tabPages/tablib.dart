@@ -32,6 +32,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:share/share.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../utils.dart';
 
 part "dealsTabPage.dart";
 part "vendorsTabPage.dart";

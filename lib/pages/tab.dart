@@ -14,8 +14,7 @@ import 'package:savour_deals_flutter/pages/loginPages/onboardingPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
-import '../utils.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:savour_deals_flutter/utils.dart';
 
 class SavourTabPage extends StatefulWidget {
   SavourTabPage({Key key, this.uid}) : super(key: key);
@@ -167,8 +166,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         appBar: PlatformAppBar(
           title: Image.asset("images/Savour_White.png"),
           ios: (_) => CupertinoNavigationBarData(
-            // brightness: Brightness.dark,
-            backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
+            backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
             heroTag: "dealTab",
             transitionBetweenRoutes: false,
           ),
@@ -262,8 +260,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         appBar: PlatformAppBar(
           title: Image.asset("images/Savour_White.png"),
           ios: (_) => CupertinoNavigationBarData(
-            // brightness: Brightness.dark,
-            backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
+            backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
             heroTag: "dealTab",
             transitionBetweenRoutes: false,
           ),

@@ -17,8 +17,7 @@ import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-import '../../utils.dart';
+import 'package:savour_deals_flutter/utils.dart';
 
 class DealPageWidget extends StatefulWidget {
   final Deal deal;
@@ -89,8 +88,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
           leading: CupertinoNavigationBarBackButton(color: Colors.white,),
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          // brightness: Brightness.dark,
+          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
           heroTag: "dealPage",
           transitionBetweenRoutes: false,
         ),
@@ -420,4 +418,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
     }
   }
   
+}
+
+class _ColorWithFakeLuminance {
 }
