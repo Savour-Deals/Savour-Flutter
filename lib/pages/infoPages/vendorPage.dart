@@ -116,7 +116,7 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
         ios: (_) => CupertinoNavigationBarData(
           backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           leading: CupertinoNavigationBarBackButton(color: Colors.white,),
-          brightness: Brightness.dark,
+          // brightness: Brightness.dark,
           heroTag: "vendorPage",
           transitionBetweenRoutes: false,
         ),

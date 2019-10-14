@@ -89,7 +89,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
         ios: (_) => CupertinoNavigationBarData(
           actionsForegroundColor: Colors.white,
           backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          brightness: Brightness.dark,
+          // brightness: Brightness.dark,
           heroTag: "favTab",
           transitionBetweenRoutes: false,
         ),

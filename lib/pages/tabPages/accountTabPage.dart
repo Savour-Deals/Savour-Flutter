@@ -43,7 +43,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
       appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
-          brightness: Brightness.dark,
+          // brightness: Brightness.dark,
           backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           heroTag: "dealTab",
           transitionBetweenRoutes: false,

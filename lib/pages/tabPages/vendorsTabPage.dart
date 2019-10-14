@@ -171,7 +171,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
         ),
         ios: (_) => CupertinoNavigationBarData(
           backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          brightness: Brightness.dark,
+          // brightness: Brightness.dark,
           heroTag: "vendorTab",
           transitionBetweenRoutes: false,
         ),

@@ -67,6 +67,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     if (locationStatus == PermissionStatus.unknown){
       await Navigator.push(context,
         platformPageRoute(
+          context: context,
           builder: (BuildContext context) {
             return new OnboardingPage();
           },
@@ -166,7 +167,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         appBar: PlatformAppBar(
           title: Image.asset("images/Savour_White.png"),
           ios: (_) => CupertinoNavigationBarData(
-            brightness: Brightness.dark,
+            // brightness: Brightness.dark,
             backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
             heroTag: "dealTab",
             transitionBetweenRoutes: false,
@@ -261,7 +262,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         appBar: PlatformAppBar(
           title: Image.asset("images/Savour_White.png"),
           ios: (_) => CupertinoNavigationBarData(
-            brightness: Brightness.dark,
+            // brightness: Brightness.dark,
             backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
             heroTag: "dealTab",
             transitionBetweenRoutes: false,

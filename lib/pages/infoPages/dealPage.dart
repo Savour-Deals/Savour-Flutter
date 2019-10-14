@@ -90,7 +90,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         ios: (_) => CupertinoNavigationBarData(
           leading: CupertinoNavigationBarBackButton(color: Colors.white,),
           backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          brightness: Brightness.dark,
+          // brightness: Brightness.dark,
           heroTag: "dealPage",
           transitionBetweenRoutes: false,
         ),

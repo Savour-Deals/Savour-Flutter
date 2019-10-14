@@ -106,7 +106,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     });
   }
 
-   void _requestNotificationPermission(){
+  void _requestNotificationPermission(){
     if(Platform.isIOS){
       OneSignal().promptUserForPushNotificationPermission();
     }

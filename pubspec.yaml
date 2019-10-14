@@ -36,9 +36,9 @@ dependencies:
   flutter_advanced_networkimage:
     git:
       url: https://github.com/mchome/flutter_advanced_networkimage.git
-  flutter_platform_widgets: #^0.9.5
-    git:
-      url: https://github.com/Savour-Deals/flutter_platform_widgets.git
+  flutter_platform_widgets: ^0.20.2
+    # git:
+    #   url: https://github.com/Savour-Deals/flutter_platform_widgets.git
     # path: "../flutter_platform_widgets"
   http: ^0.12.0+2
   share: ^0.6.1
