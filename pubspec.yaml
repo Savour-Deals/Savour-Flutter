@@ -77,6 +77,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - images/login_background.jpg
+    - images/permissions.jpg
     - images/Savour_Deals_White.png
     - images/Savour_Deals_FullColor-white-back.png
     - images/Savour_White.png
