@@ -14,7 +14,8 @@ import 'package:savour_deals_flutter/pages/loginPages/onboardingPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import '../utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SavourTabPage extends StatefulWidget {
   SavourTabPage({Key key, this.uid}) : super(key: key);
@@ -61,7 +62,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     setState(() {
       locationStatus = newState;
     });
-
+    
     //check if user has used this app before and they have not been prompted for location
     if (locationStatus == PermissionStatus.unknown){
       await Navigator.push(context,
@@ -157,6 +158,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   }
 
   Widget buildTabWidget(){
+    SizeConfig().init(context);
     appState = Provider.of<AppState>(context);
     theme = Theme.of(context);
     if (locationStatus == PermissionStatus.unknown){

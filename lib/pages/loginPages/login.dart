@@ -5,6 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/themes/decoration.dart';
@@ -103,17 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                     },
                   ),
                   Container(padding: EdgeInsets.all(5)),
-                  PlatformButton(
-                    ios: (_) => CupertinoButtonData(
-                      pressedOpacity: 0.7,
-                    ),
-                    android: (_) => MaterialRaisedButtonData(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    color: Colors.blueAccent,
-                    child: Text("Facebook Login", style: whiteText),
+                  FacebookSignInButton(
                     onPressed: () {
                       facebookLogin();
                     },
@@ -122,12 +113,15 @@ class _LoginPageState extends State<LoginPage> {
                   GestureDetector(
                     onTap: () {
                       print("create account pressed");
-                      Navigator.push(context, platformPageRoute(maintainState: false,
+                      Navigator.push(context, 
+                        platformPageRoute(
+                          context: context,
+                          maintainState: false,
                           builder: (BuildContext context) {
                             return new CreateAccountPage();
                           },
                           fullscreenDialog: true
-                      ),
+                        ),
                       );
                     },
                     child: Text("Create Account", style: TextStyle(color: Colors.white),),
@@ -148,22 +142,22 @@ class _LoginPageState extends State<LoginPage> {
     if (emailController.text.isEmpty || passwordController.text.isEmpty){
       displayError("Missing email or password","Please provide both an email and password", "OK");
     } else {
-        _auth.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error){
-          displayError("Login Failed!","Please check that your email and password are correct and try again.", "OK");
-        }).then((user){
-          if (!user.isEmailVerified){
-            promptUnverified(user: user);
-          }
-        });
+      _auth.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error){
+        displayError("Login Failed!","Please check that your email and password are correct and try again.", "OK");
+      }).then((user){
+        if (!user.isEmailVerified){
+          promptUnverified(user: user);
+        }
+      });
     }
   }
 
   void facebookLogin() async {
     var facebook = new FacebookLogin();
-    facebook.loginBehavior = FacebookLoginBehavior.webViewOnly;
+    facebook.loginBehavior = FacebookLoginBehavior.nativeWithFallback;
 
     var result =
-        await facebook.logInWithReadPermissions(['email', 'public_profile']);
+        await facebook.logIn(['email', 'public_profile']);
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
         _auth.signInWithCredential(FacebookAuthProvider.getCredential(

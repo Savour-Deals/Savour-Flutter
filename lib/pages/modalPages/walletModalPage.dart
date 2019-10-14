@@ -59,20 +59,6 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
       print("Service status: $serviceStatus");
       if (serviceStatus == GeolocationStatus.granted) {
         currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
-        if (this.mounted){
-          setState(() {
-            tabs.clear();
-            tabs.add(FavoritesPageWidget(widget.deals, currentLocation));
-            tabs.add(RedeemedWidget(widget.deals,widget.vendors, currentLocation));
-          });
-        }
-        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
-          if (this.mounted){
-            setState(() {
-              currentLocation = result;
-            });
-          }
-        });
       }
     } on PlatformException catch (e) {
       print(e);
@@ -83,13 +69,45 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
       }
       currentLocation = null;
     }
+    if (this.mounted && currentLocation != null){
+      _createTabs();
+    }
+    _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
+      if (this.mounted){
+        setState(() {
+          currentLocation = result;
+        });
+        if(tabs.length  < 1){
+          //tabs have not been initialized yet, call the setup function
+          _createTabs();
+        }
+      }
+    });
   }
-
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _createTabs(){
+    setState(() {
+      tabs.clear();
+      tabs.add(
+        FavoritesPageWidget(
+          favorites: widget.deals.getFavorites(), 
+          location: currentLocation,
+        )
+      );
+      tabs.add(
+        RedeemedWidget(
+          widget.deals,
+          widget.vendors, 
+          currentLocation
+        )
+      );
+    });
   }
 
   @override
@@ -164,63 +182,94 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
 }
 
 class FavoritesPageWidget extends StatefulWidget {
-  final Deals deals;
+  final List<Deal> favorites;
   final Position location;
 
-  FavoritesPageWidget(this.deals, this.location);
+  const FavoritesPageWidget({Key key, @required this.favorites, @required this.location}) : super(key: key);
 
   @override
   _FavoritesPageWidgetState createState() => _FavoritesPageWidgetState();
 }
 
 class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
-  Deals deals;
-  Map<String,Vendor> vendors = Map();
-  FirebaseUser user;
+  List<Deal> favorites;
+
+  int totalSavings = 0;
 
   @override
   void initState() {
     super.initState();
-    deals = widget.deals;
-    // initPlatform();
+    favorites = widget.favorites;
+    init();
+  }
+
+  void init() async {
+    var user = await FirebaseAuth.instance.currentUser();
+    FirebaseDatabase().reference().child("Users").child(user.uid).child("total_savings").onValue.listen((datasnapshot) {
+      if (this.mounted){
+        setState(() {
+          totalSavings = datasnapshot.snapshot.value ?? 0; 
+        });
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return bodyWidget();
-  }
-
-  Widget bodyWidget(){
-    if (deals.getFavorites().length > 0){
-      List<Deal> favorites = deals.getFavorites();
+    if (favorites.length > 0){
       return ListView.builder(
-        padding: EdgeInsets.all(0.0),
+        padding: EdgeInsets.only(top: 10.0),
         physics: const AlwaysScrollableScrollPhysics (),
         itemBuilder: (context, position) {
+          if(position == 0){
+            return Text(
+              "Total Estimated Savings: \$" + totalSavings.toString(), 
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+            );
+          }
           return GestureDetector(
             onTap: () {
-              print(favorites[position].key + " clicked");
+              print(favorites[position-1].key + " clicked");
               Navigator.push(
                 context,
-                platformPageRoute(maintainState: false,
-                  builder: (context) => DealPageWidget(favorites[position], widget.location)),
+                platformPageRoute(
+                  context: context,
+                  builder: (context) => DealPageWidget(
+                    deal: favorites[position-1], 
+                    location: widget.location
+                  ),
+                ),
               );
             },
-            child: getCard(favorites[position])
+            child: getCard(favorites[position-1])
           );
         },
         itemCount: favorites.length,
       );
-    }else {
-        return Center(child: Text("No favorites to show!"));
     }
+    return Center(child: Text("No favorites to show!"));
   }
 
   Widget getCard(Deal deal){
     if (deal.isLive()){
-      return DealCard(deal, widget.location, true);
+      return DealCard(
+        deal: deal, 
+        location: widget.location, 
+        type: DealCardType.large,
+        onFavoriteChanged: removeFavoriteAndRefresh,
+      );
     }
     return Container();
+  }
+
+  void removeFavoriteAndRefresh(String dealID, bool favorited){
+    // TODO: This should be changed when we redo the data handling of the app
+    if(!favorited){
+      setState(() {
+        favorites.removeWhere((deal) => deal.key == dealID);
+      });
+    }
   }
 }
 
@@ -240,6 +289,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
   FirebaseUser user;
   List<Redemption> redemptions = [];
   bool loaded = false;
+  int totalSavings = 0;
 
   //Declare contextual variables
   ThemeData theme;
@@ -257,29 +307,35 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
 
   void init() async {
     user = await FirebaseAuth.instance.currentUser();
-    redemptionRef.orderByChild("user_id").equalTo(user.uid).onValue.listen((datasnapshot) {
+    FirebaseDatabase().reference().child("Users").child(user.uid).child("total_savings").onValue.listen((datasnapshot) {
       if (this.mounted){
-        if (datasnapshot.snapshot.value != null) {
-          Map<String, dynamic> redemptionData = new Map<String, dynamic>.from(datasnapshot.snapshot.value);
-          redemptionData.forEach((key,data) async {
-            var newRedemption = Redemption.fromMap(key,data);
-            if (newRedemption.type == "deal"){
-              var rdeal = await getDeal(newRedemption.dealID);
-              newRedemption.setDeal(rdeal);
-              setState(() {
-                redemptions.add(newRedemption);
-                redemptions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-              });
-            }else{
-              var rvendor = await getVendor(newRedemption.vendorID);
-              newRedemption.setVendor(rvendor);
-              setState(() {
-                redemptions.add(newRedemption);
-                redemptions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-              });
-            }
-          });
-        }
+        setState(() {
+          totalSavings = datasnapshot.snapshot.value ?? 0; 
+        });
+      }
+    });
+    redemptionRef.orderByChild("user_id").equalTo(user.uid).onValue.listen((datasnapshot) {
+      var userData = datasnapshot.snapshot.value;
+      if (this.mounted && userData!= null) {
+        Map<String, dynamic> redemptionData = new Map<String, dynamic>.from(userData);
+        redemptionData.forEach((key,data) async {
+          var newRedemption = Redemption.fromMap(key,data);
+          if (newRedemption.type == "deal"){
+            var rdeal = await getDeal(newRedemption.dealID);
+            newRedemption.setDeal(rdeal);
+            setState(() {
+              redemptions.add(newRedemption);
+              redemptions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+            });
+          }else{
+            var rvendor = await getVendor(newRedemption.vendorID);
+            newRedemption.setVendor(rvendor);
+            setState(() {
+              redemptions.add(newRedemption);
+              redemptions.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+            });
+          }
+        });
       }
     });
   }
@@ -321,14 +377,8 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
         padding: EdgeInsets.only(top: 10.0),
         itemBuilder: (context, position) {
           if(position == 0){
-            int total = 0;
-            redemptions.forEach((r)=>{
-              if (r.isDealRedemption()){
-                total += r.deal.value
-              }
-            });
             return Text(
-              "Total Estimated Savings: \$" + total.toString(), 
+              "Total Estimated Savings: \$" + totalSavings.toString(), 
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             );
@@ -346,25 +396,32 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
                 ),
               ),
               title: Text(
-                redemptions[position-1].isDealRedemption()?
-                  "You redeemed a deal from " + redemptions[position-1].deal.vendorName : 
-                    "You checked in at " + redemptions[position-1].vendor.name
+                redemptions[position-1].redemptionType == RedemptionType.loyaltyRedeem?
+                  "You redeemed a loyalty reward at " + redemptions[position-1].vendor.name: 
+                    redemptions[position-1].redemptionType == RedemptionType.loyaltyCheckin? 
+                      "You checked in at " + redemptions[position-1].vendor.name:
+                      "You redeemed a deal from " + redemptions[position-1].deal.vendorName 
               ),
               trailing: Text(timeago.format(DateTime.fromMillisecondsSinceEpoch(-1*redemptions[position-1].timestamp*1000), allowFromNow: true)),
               onTap: (){
-                if(redemptions[position-1].isDealRedemption()){
+                if(redemptions[position-1].redemptionType == RedemptionType.deal){
                   Navigator.push(context,
                     platformPageRoute(
+                      context: context,
                       builder: (BuildContext context) {
-                        return DealPageWidget(redemptions[position-1].deal, widget.location);
+                        return DealPageWidget(
+                          deal: redemptions[position-1].deal, 
+                          location: widget.location
+                        );
                       },
                     )
                   );
                 }else{
                   Navigator.push(context,
                     platformPageRoute(
+                      context: context,
                       builder: (BuildContext context) {
-                        return VendorPageWidget(redemptions[position-1].vendor);
+                        return VendorPageWidget(redemptions[position-1].vendor, widget.location);
                       },
                     )
                   );

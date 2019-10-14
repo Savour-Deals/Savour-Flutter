@@ -4,6 +4,12 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'deal_model.dart';
 
+enum RedemptionType{
+  deal,
+  loyaltyCheckin,
+  loyaltyRedeem
+}
+
 class Redemption {
   String key;
   String dealID;
@@ -24,13 +30,7 @@ class Redemption {
     description = snapshot.value["description"]?? "";
     timestamp = snapshot.value["timestamp"]?? 0;
     type = snapshot.value["type"]?? "";
-    redemptionPhoto = (isDealRedemption()? snapshot.value["deal_photo"]: snapshot.value["vendor_photo"])?? "";
-    
-    // if(savings<0 && isDealRedemption()){
-    //   savings = 5;
-    // }else{
-    //   savings = 0;
-    // }
+    redemptionPhoto = (redemptionType == RedemptionType.deal? snapshot.value["deal_photo"]: snapshot.value["vendor_photo"])?? "";
   }
 
   Redemption.fromMap(String _key, dynamic data) {
@@ -40,13 +40,7 @@ class Redemption {
     description = data["description"]?? "";
     timestamp = data["timestamp"]?? 0;
     type = data["type"]?? "";
-    redemptionPhoto = (isDealRedemption()? data["deal_photo"]: data["vendor_photo"])?? "";
-
-    // if(savings<0 && isDealRedemption()){
-    //   savings = 5;
-    // }else{
-    //   savings = 0;
-    // }
+    redemptionPhoto = (redemptionType == RedemptionType.deal? data["deal_photo"]: data["vendor_photo"])?? "";
   }
 
   void setDeal(Deal _deal){
@@ -57,18 +51,16 @@ class Redemption {
     vendor = _vendor;
   }
 
-  int getSavings(){
-    if (isDealRedemption()){
-      return deal.value;
-    }//else{
-    //   if (vendor.loyalty.value !)
-    // }
-    return 0;
-  }
-
-  bool isDealRedemption(){
-    return type == "deal";
-  }
+  RedemptionType get redemptionType {
+    switch (type) {
+      case "loyalty":
+        return RedemptionType.loyaltyRedeem;
+      case "loyalty_checkin":
+        return RedemptionType.loyaltyCheckin;
+      default:
+        return RedemptionType.deal;
+    }
+  } 
 
   bool isCheckin(){
     return type == "loyalty";

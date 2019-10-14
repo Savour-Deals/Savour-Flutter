@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
@@ -16,11 +18,14 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../utils.dart';
+
 class DealPageWidget extends StatefulWidget {
   final Deal deal;
   final Position location;
+  final bool displayMore;
 
-  DealPageWidget(this.deal, this.location);
+  DealPageWidget({@required this.deal, @required this.location, this.displayMore = true});
 
   @override
   _DealPageWidgetState createState() => _DealPageWidgetState();
@@ -32,10 +37,14 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   int _start = 0;
   String timerString= "";
   DatabaseReference redemptionRef;
+  DatabaseReference userRef;
+  DatabaseReference vendorRef;
 
   //Declare contextual variables
   AppState appState;
   ThemeData theme;
+
+  FirebaseUser user;
 
   @override
   void initState() {
@@ -48,8 +57,10 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   void initialization() async{
-    var user = await FirebaseAuth.instance.currentUser();
+    user = await FirebaseAuth.instance.currentUser();
     redemptionRef = FirebaseDatabase().reference().child("Deals").child(widget.deal.key).child("redeemed").child(user.uid);
+    userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
+    vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.deal.vendor.key);
   }
 
   @override
@@ -98,23 +109,26 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
             ListTile(
               title: Text(
                 widget.deal.vendor.name, 
+                style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal*4),
                 textAlign: TextAlign.center,
+                maxLines: 2,
               ),
               subtitle: Text(
                 widget.deal.description, 
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22.0), 
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeConfig.safeBlockHorizontal*6), 
                 textAlign: TextAlign.center,
+                maxLines: 2,
               ),
             ),
             Stack(
               overflow: Overflow.visible,
               alignment: AlignmentDirectional.center,
               children: <Widget>[ 
-                new CustomPaint(
-                  painter: new SpritePainter(_controller, 
-                    (!widget.deal.isActive()) ? Colors.red : (widget.deal.redeemed && ((DateTime.now().millisecondsSinceEpoch~/1000) - widget.deal.redeemedTime~/1000 >= 1800)) ? Colors.red : SavourColorsMaterial.savourGreen,
+                CustomPaint(
+                  painter: SpritePainter(_controller, 
+                    _pulsatorColor(),
                   ),
-                  child: new SizedBox(
+                  child: SizedBox(
                     width: MediaQuery.of(context).size.height*0.45,
                     height: MediaQuery.of(context).size.height*0.45,
                   ),
@@ -142,28 +156,31 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
                 child: (widget.deal.redeemed) ? getTimer() : getDetailsText(),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: double.infinity, // match_parent
-                height: MediaQuery.of(context).size.height*0.05,
-                child: FlatButton(
-                  shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-                  color: SavourColorsMaterial.savourGreen,
-                  child: Text("See More from " + widget.deal.vendor.name,
-                    style: whiteText,
-                  ), 
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => VendorPageWidget(widget.deal.vendor)
-                      ),
-                    );
-                  },
+            (widget.displayMore)? 
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  width: double.infinity, // match_parent
+                  height: MediaQuery.of(context).size.height*0.05,
+                  child: FlatButton(
+                    shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
+                    color: SavourColorsMaterial.savourGreen,
+                    child: Text("See More from " + widget.deal.vendor.name,
+                      style: whiteText,
+                    ), 
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VendorPageWidget(widget.deal.vendor, widget.location)
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ),
+              )
+              : 
+              Container(height: MediaQuery.of(context).size.height*0.05,),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: SizedBox(
@@ -180,28 +197,92 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
 
   openMap() async {
     print("Navigation to " + widget.deal.vendor.address + " initiated!");
-    // Android
-    var url =  Uri.encodeFull('geo:'+widget.deal.vendor.address);
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      // iOS
-      var url = Uri.encodeFull('comgooglemaps://?daddr='+widget.deal.vendor.address);
-      if (await canLaunch(url)) {
-        await launch(url);
-      } else {
-        var url =  Uri.encodeFull('http://maps.apple.com/?q='+widget.deal.vendor.address);
-        if (await canLaunch(url)) {
-          await launch(url);
-        } else {
-          throw 'Could not launch $url';
-        }
+    Map<String,String> mapURLs = {};
+    if(Platform.isIOS){
+      var gURL = Uri.encodeFull('comgooglemaps://?daddr='+widget.deal.vendor.address);
+      if (await canLaunch(gURL)) {
+        mapURLs["Google Maps"] =  gURL;
       }
+      var aURl =  Uri.encodeFull('http://maps.apple.com/?q='+widget.deal.vendor.address);
+      if (await canLaunch(aURl)) {
+        mapURLs["Apple Maps"] =  aURl;
+      }
+    }else if (Platform.isAndroid){
+      // Android
+      var gURL =  Uri.encodeFull('geo:'+widget.deal.vendor.address);
+      if (await canLaunch(gURL)) {
+        mapURLs["Google Maps"] =  gURL;
+      }
+    }
+    var wURL = Uri.encodeFull('https://waze.com/ul?q='+widget.deal.vendor.address);
+    if (await canLaunch(wURL)) {
+      mapURLs["Waze"] =  wURL;
+    }
+    List<Widget> mapApps = [];
+    if(Platform.isIOS){
+      mapURLs.forEach((appName, url) {
+        mapApps.add(
+          CupertinoActionSheetAction(
+            child: Text(appName),
+            onPressed: () async {
+              await launch(url);
+              Navigator.of(context).pop();
+            },
+          )
+        );
+      });
+      showCupertinoModalPopup(
+        context: context,
+        builder: (BuildContext context) => CupertinoActionSheet(
+          title: const Text('Navigate with:'),
+          actions: mapApps,
+          cancelButton: CupertinoActionSheetAction(            
+            child: Text("Cancel", style: TextStyle(color: Colors.red),),
+            onPressed: () async {
+              Navigator.of(context).pop();
+            },          
+          ),
+        ),
+      );
+    }else if (Platform.isAndroid){
+      mapApps.add(
+        ListTile(
+          title: new Text("Navigate with:", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),)
+        ),
+      );
+      mapURLs.forEach((appName, url) {
+        mapApps.add(
+          ListTile(
+            title: new Text(appName),
+            onTap: () async {
+              await launch(url);
+            },          
+          ),
+        );
+      });
+      mapApps.add(
+        ListTile(
+          title: Text("Cancel", style: TextStyle(color: Colors.red),),
+          onTap: () async {
+            Navigator.of(context).pop();
+          },
+        )
+      );
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc){
+          return Container(
+            child: new Wrap(
+              children: mapApps,
+            ),
+          );
+        }
+      );
     }
   }
 
   bool inRange(){
-    return (widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude) < 0.1); //100.1); //Chnage to large radius for testing
+    return (widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude) < 0.1);//100.1); //Chnage to large radius for testing
   }
 
   Widget redemptionButton(){
@@ -215,7 +296,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         ),
         onPressed: () {
           if (!widget.deal.redeemed){
-            if(inRange()){
+            if (inRange()){
               promptRedemption();
             }else{
               openMap();
@@ -241,28 +322,37 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
     showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
-        // return object of type Dialog
         return PlatformAlertDialog(
-          title: new Text("Vendor Approval"),
-          content: new Text("This deal is intended for one person only.\n\nShow this message to the vendor to redeem your coupon.\n\nThe deal is not guaranteed if the vendor does not see this message."),
+          title: Text("Vendor Approval"),
+          content: Text("This deal is intended for one person only.\n\nShow this message to the vendor to redeem your coupon.\n\nThe deal is not guaranteed if the vendor does not see this message."),
           actions: <Widget>[
-            // usually buttons at the bottom of the dialog
-            new FlatButton(
-              child: new Text("Approve", style: TextStyle(color: Colors.green),),
+            new PlatformDialogAction(
+              child: PlatformText("Approve", style: TextStyle(color: Color.fromARGB(255, 0, 255, 0)),),
               onPressed: () {
                 Navigator.of(context).pop();
                 print("Deal " + widget.deal.key + " redeemed!");
                 var redemptionTime = widget.deal.redeemedTime = DateTime.now().millisecondsSinceEpoch~/1000;
-                OneSignal.shared.sendTag(widget.deal.vendor.key, true);
                 redemptionRef.set(redemptionTime);
+
+                //notification subscriptions
+                userRef.child("following").child(widget.deal.vendor.key).set(true);
+                OneSignal.shared.sendTag(widget.deal.vendor.key, true);
+                OneSignal.shared.getPermissionSubscriptionState().then((status){
+                  if (status.subscriptionStatus.subscribed){
+                    vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
+                  }else{
+                    // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
+                    vendorRef.child("followers").child(user.uid).set(user.uid);
+                  }
+                });
                 setState(() {
                   widget.deal.redeemed = true;
                   widget.deal.redeemedTime = redemptionTime*1000;
                 });
               },
             ),
-            new FlatButton(
-              child: new Text("Not Now", style: TextStyle(color: Colors.red),),
+            PlatformDialogAction(
+              child: PlatformText("Not Now", style: TextStyle(color: Colors.red),),
               onPressed: () {
                 print("Deal " + widget.deal.key + " redemption canceled.");
                 Navigator.of(context).pop();
@@ -285,7 +375,6 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
           timer.cancel();
         } else {
           _start = _start + 1;
-          // print(_start);
           var minutes = (_start) ~/ 60 % 60;
           var seconds = (_start) % 60;
           timerString = "Redeemed "+minutes.toString() +" minutes "+ seconds.toString() + " seconds ago";
@@ -303,9 +392,32 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   Widget getDetailsText(){
-    return Text("For dine in and carry out only. Not redeemable with any other promotions unless otherwise mentioned. This deal is only valid for one person. BOGO free items are for equal or lesser value. This deal has no cash value. You must be 21+ to redeem any alcohol deals",
+    return AutoSizeText("For dine in and carry out only. Not redeemable with any other promotions unless otherwise mentioned. This deal is only valid for one person. BOGO free items are for equal or lesser value. This deal has no cash value. You must be 21+ to redeem any alcohol deals",
       style: TextStyle(fontSize: 12.0),
+      minFontSize: 10.0,
+      maxFontSize: 20.0,
+      maxLines: 3,
       textAlign: TextAlign.center,
     );
   }
+
+  Color _pulsatorColor(){
+    if (widget.deal.isActive()){
+      if (widget.deal.redeemed){
+        if (_start > 1800){
+          //deal redeemed over half hour ago
+          return Colors.red;
+        }else{
+          //deal was redeemed less than half hour ago
+          return Color.fromARGB(255, 0, 255, 0);
+        }
+      }else{
+        return SavourColorsMaterial.savourGreen;
+      }
+
+    }else{
+      return Colors.red;
+    }
+  }
+  
 }
