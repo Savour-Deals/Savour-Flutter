@@ -150,7 +150,7 @@ DEPENDENCIES:
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - Bolts
     - FBSDKCoreKit
     - FBSDKLoginKit
@@ -242,4 +242,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 9f693e448d0dbdeb7d26e0a7eb3ddafa35267444
 
-COCOAPODS: 1.7.1
+COCOAPODS: 1.8.3

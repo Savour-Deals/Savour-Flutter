@@ -1,6 +1,11 @@
+import 'dart:io';
+
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:location_permissions/location_permissions.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -14,9 +19,7 @@ class OnboardingPage extends StatefulWidget {
 class _OnboardingPageState extends State<OnboardingPage> {
 
   final List<Widget> introWidgetsList = <Widget>[
-    Screen1(),
-    Screen2(),
-    Screen3(),
+    PermissionsPage(),
   ];
 
   PageController controller = PageController();
@@ -40,6 +43,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               return introWidgetsList[index];
             },
           ),
+          (introWidgetsList.length > 1)?
           Stack(
             alignment: AlignmentDirectional.topStart,
             children: <Widget>[
@@ -55,7 +59,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 ),
               )
             ],
-          ),
+          )
+          :
+          Container(),
           Container(
             alignment: AlignmentDirectional.bottomEnd,
             margin: EdgeInsets.only(bottom: 35, right: 15),
@@ -64,6 +70,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
               child: FloatingActionButton(
                 backgroundColor: SavourColorsMaterial.savourGreen,
                 onPressed: (){
+                  //request permissions here incase they didn't press the buttons
+                  _requestNotificationPermission();
+                  _requestLocationPermission();
                   Navigator.pop(context);
                 },
                 shape: BeveledRectangleBorder(
@@ -96,40 +105,107 @@ class _OnboardingPageState extends State<OnboardingPage> {
       currentPage = page;
     });
   }
-}
 
-class Screen1 extends StatelessWidget {
-  const Screen1({Key key}) : super(key: key);
+   void _requestNotificationPermission(){
+    if(Platform.isIOS){
+      OneSignal().promptUserForPushNotificationPermission();
+    }
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.orange,
-      // child: child,
-    );
+  void _requestLocationPermission(){
+    LocationPermissions().requestPermissions(permissionLevel: LocationPermissionLevel.locationAlways);
   }
 }
 
-class Screen2 extends StatelessWidget {
-  const Screen2({Key key}) : super(key: key);
-
+class PermissionsPage extends StatelessWidget {
+  const PermissionsPage({Key key}) : super(key: key);
+  
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.blue,
-      // child: child,
+    var notiWidgetList = _notificationPermissionsWidget();
+    return PlatformScaffold(
+      backgroundColor: Colors.black,
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("images/permissions.jpg"),
+            fit: BoxFit.cover,
+            colorFilter: new ColorFilter.mode(
+              Colors.black.withOpacity(0.45), BlendMode.srcATop
+            ),
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(18.0),
+            child: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  Text("Permissions",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 45,color:Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  Container(padding: EdgeInsets.all(10)),
+                  AutoSizeText('We need location services to find all the deals nearby. Click below to give us location access!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 25, color:Colors.white),
+                  ),
+                  Container(padding: EdgeInsets.all(10)),
+                  PlatformButton(
+                    ios: (_) => CupertinoButtonData(
+                      pressedOpacity: 0.7,
+                    ),
+                    android: (_) => MaterialRaisedButtonData(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    color: SavourColorsMaterial.savourGreen,
+                    child: Text("Location Permissions", style: whiteText),
+                    onPressed: () {
+                      LocationPermissions().requestPermissions(permissionLevel: LocationPermissionLevel.locationAlways);
+                    },
+                  ),
+                  for (int i = 0; i < notiWidgetList.length; i++)
+                    notiWidgetList[i],
+                ]
+              ),
+            ),
+          ),
+        ),
+      )
     );
   }
-}
 
-class Screen3 extends StatelessWidget {
-  const Screen3({Key key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.purple,
-      // child: child,
-    );
+  List<Widget> _notificationPermissionsWidget(){
+    List<Widget> notiWidgets = [];
+    if(Platform.isIOS){
+      notiWidgets = [
+        Container(padding: EdgeInsets.all(15)),
+        AutoSizeText('We can send you notifications when your favorite restaurants post a new deal. Click below to allow notifications!',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 25, color:Colors.white),
+        ),
+        Container(padding: EdgeInsets.all(10)),
+        PlatformButton(
+          ios: (_) => CupertinoButtonData(
+            pressedOpacity: 0.7,
+          ),
+          android: (_) => MaterialRaisedButtonData(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+          color: SavourColorsMaterial.savourGreen,
+          child: Text("Notification Permissions", style: whiteText),
+          onPressed: () {
+            OneSignal().promptUserForPushNotificationPermission();
+          },
+        )
+      ];
+    }else{
+      notiWidgets = [Container()];
+    }
+    return notiWidgets;
   }
 }
