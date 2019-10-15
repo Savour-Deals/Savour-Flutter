@@ -55,6 +55,18 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
+    //Init app rating 
+    RateMyApp rateMyApp = RateMyApp(
+      preferencesPrefix: 'rateMyApp_',
+      minDays: 0,
+      minLaunches: 0,
+      remindDays: 7,
+      remindLaunches: 10,
+      googlePlayIdentifier: 'com.CP.Savour',
+      appStoreIdentifier: '1294994353'
+    );
+    rateMyApp.init();
+
     WidgetsBinding.instance.addObserver(this);
     var newState = await LocationPermissions().checkPermissionStatus();
     if (!mounted) return;
