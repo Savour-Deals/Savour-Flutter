@@ -58,6 +58,7 @@
 		<string>comgooglemaps</string>
 		<string>fbauth2</string>
 		<string>fbshareextension</string>
+		<string>itms</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>

@@ -359,7 +359,12 @@ class _AboutWidgetState extends State<AboutWidget> {
                   ),
                 ),
                 FlatButton(
-                  child: (_showMore) ? Text("show less"): Text("show more"), 
+                  child: (_showMore) ? 
+                  Text("show less", 
+                    style:  TextStyle(color: Theme.of(context).accentColor),
+                  ): Text("show more", 
+                    style:  TextStyle(color: Theme.of(context).accentColor),
+                  ), 
                   onPressed: () {
                     setState(() {
                       _showMore = !_showMore;

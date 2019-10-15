@@ -9,6 +9,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:rate_my_app/rate_my_app.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/pulsator.dart';
@@ -327,26 +328,9 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
             new PlatformDialogAction(
               child: PlatformText("Approve", style: TextStyle(color: Color.fromARGB(255, 0, 255, 0)),),
               onPressed: () {
+                redeemDeal();
                 Navigator.of(context).pop();
-                print("Deal " + widget.deal.key + " redeemed!");
-                var redemptionTime = widget.deal.redeemedTime = DateTime.now().millisecondsSinceEpoch~/1000;
-                redemptionRef.set(redemptionTime);
 
-                //notification subscriptions
-                userRef.child("following").child(widget.deal.vendor.key).set(true);
-                OneSignal.shared.sendTag(widget.deal.vendor.key, true);
-                OneSignal.shared.getPermissionSubscriptionState().then((status){
-                  if (status.subscriptionStatus.subscribed){
-                    vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
-                  }else{
-                    // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
-                    vendorRef.child("followers").child(user.uid).set(user.uid);
-                  }
-                });
-                setState(() {
-                  widget.deal.redeemed = true;
-                  widget.deal.redeemedTime = redemptionTime*1000;
-                });
               },
             ),
             PlatformDialogAction(
@@ -360,6 +344,55 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         );
       },
     );
+  }
+
+  void redeemDeal(){
+    //perform redmeption actions
+    print("Deal " + widget.deal.key + " redeemed!");
+    var redemptionTime = widget.deal.redeemedTime = DateTime.now().millisecondsSinceEpoch~/1000;
+    redemptionRef.set(redemptionTime);
+
+    //notification subscriptions
+    userRef.child("following").child(widget.deal.vendor.key).set(true);
+    OneSignal.shared.sendTag(widget.deal.vendor.key, true);
+    OneSignal.shared.getPermissionSubscriptionState().then((status){
+      if (status.subscriptionStatus.subscribed){
+        vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
+      }else{
+        // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
+        vendorRef.child("followers").child(user.uid).set(user.uid);
+      }
+    });
+    setState(() {
+      widget.deal.redeemed = true;
+      widget.deal.redeemedTime = redemptionTime*1000;
+    });
+
+    //Prompt user for rating!
+    RateMyApp rateMyApp = RateMyApp(
+      preferencesPrefix: 'rateMyApp_',
+      minDays: 0,
+      minLaunches: 0,
+      remindDays: 7,
+      remindLaunches: 10,
+      googlePlayIdentifier: 'com.CP.Savour',
+      appStoreIdentifier: '1294994353'
+    );
+
+    rateMyApp.init().then((_) {
+      if (rateMyApp.shouldOpenDialog) {
+        rateMyApp.showRateDialog(
+          context,
+          title: 'Rate Savour Deals!',
+          message: 'We want to make sure you are having the best deals experience!\nLeave us a rating so we know what you think!',
+          rateButton: 'Rate',
+          noButton: 'No',
+          laterButton: 'Later',
+          ignoreIOS: false,
+          dialogStyle: DialogStyle(),
+        );
+      }
+    });
   }
 
   void startTimer() {
@@ -418,7 +451,4 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
     }
   }
   
-}
-
-class _ColorWithFakeLuminance {
 }

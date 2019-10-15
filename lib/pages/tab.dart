@@ -10,6 +10,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:location_permissions/location_permissions.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:rate_my_app/rate_my_app.dart';
 import 'package:savour_deals_flutter/pages/loginPages/onboardingPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
@@ -54,7 +55,6 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    
     WidgetsBinding.instance.addObserver(this);
     var newState = await LocationPermissions().checkPermissionStatus();
     if (!mounted) return;
@@ -296,7 +296,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   }
 
   Color getTabOutlineColor(){
-    return appState.isDark? theme.accentColor:SavourColorsMaterial.savourGreen;
+    return appState.isDark? Colors.white:SavourColorsMaterial.savourGreen;
   }
 
 // The following commented code is for notifications when a user is nearby so many vendors

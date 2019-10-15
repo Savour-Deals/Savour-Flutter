@@ -129,6 +129,8 @@ PODS:
     - OneSignal (= 2.11.0)
   - path_provider (0.0.1):
     - Flutter
+  - rate_my_app (0.1):
+    - Flutter
   - share (0.5.2):
     - Flutter
   - shared_preferences (0.0.1):
@@ -153,6 +155,7 @@ DEPENDENCIES:
   - OneSignal (< 3.0, >= 2.9.3)
   - onesignal_flutter (from `.symlinks/plugins/onesignal_flutter/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
+  - rate_my_app (from `.symlinks/plugins/rate_my_app/ios`)
   - share (from `.symlinks/plugins/share/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
@@ -209,6 +212,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/onesignal_flutter/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
+  rate_my_app:
+    :path: ".symlinks/plugins/rate_my_app/ios"
   share:
     :path: ".symlinks/plugins/share/ios"
   shared_preferences:
@@ -250,6 +255,7 @@ SPEC CHECKSUMS:
   OneSignal: 1e2ed98358f87cb755e7262412ddb2949b8e5c55
   onesignal_flutter: 4b1a299c510913d6ab15ee493b554b3a4f33f43c
   path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
+  rate_my_app: 45513a2f4d9a55b7b46d19b64fc13882fd101157
   share: 7d22fe8baedfe93aefd864bf0b73f29711fbb0a3
   shared_preferences: 1feebfa37bb57264736e16865e7ffae7fc99b523
   url_launcher: 0067ddb8f10d36786672aa0722a21717dba3a298
