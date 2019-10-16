@@ -13,6 +13,8 @@ import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 
+import '../../utils.dart';
+
 
 class MapPageWidget extends StatefulWidget {
   final text;
@@ -88,8 +90,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
           actionsForegroundColor: Colors.white,
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          brightness: Brightness.dark,
+          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
           heroTag: "favTab",
           transitionBetweenRoutes: false,
         ),

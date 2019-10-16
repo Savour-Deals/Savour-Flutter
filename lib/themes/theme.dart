@@ -5,13 +5,14 @@ final ThemeData savourMaterialLightThemeData = new ThemeData(
   brightness: Brightness.light,
   primaryColor: SavourColorsMaterial.savourGreen,
   primaryColorBrightness: Brightness.light,
-  accentColor: Colors.white,//Colors.black,
+  accentColor: SavourColorsMaterial.savourAccent,//Colors.black,
   accentColorBrightness: Brightness.light,
   highlightColor: Colors.transparent,
   splashColor: Colors.transparent,
   splashFactory: NoSplashFactory(),
   cardTheme: CardTheme(color: Colors.white),
   dialogTheme: DialogTheme(backgroundColor: Colors.white),
+  buttonTheme: ButtonThemeData(colorScheme: ColorScheme.light()),
 );
 
 final ThemeData savourMaterialDarkThemeData = new ThemeData(
@@ -26,6 +27,7 @@ final ThemeData savourMaterialDarkThemeData = new ThemeData(
   splashFactory: NoSplashFactory(),
   dialogBackgroundColor: Color(0xff4C4C4C),
   cardTheme: CardTheme(color: Color(0xff4C4C4C)),
+  buttonTheme: ButtonThemeData(colorScheme: ColorScheme.light()),
 );
 
 class SavourColorsMaterial {
@@ -44,6 +46,22 @@ class SavourColorsMaterial {
       700: const Color.fromRGBO(73, 171, 170, .8),
       800: const Color.fromRGBO(73, 171, 170, .9),
       900: const Color.fromRGBO(73, 171, 170, 1.0)
+    },
+  );
+  static const _savourAccent = 0xFF49ABAA;
+  static const MaterialColor savourAccent = MaterialColor (
+    _savourAccent,
+    const <int, Color>{
+      50: const Color.fromRGBO(223, 157, 29, .1),
+      100: const Color.fromRGBO(223, 157, 29, .2),
+      200: const Color.fromRGBO(223, 157, 29, .3),
+      300: const Color.fromRGBO(223, 157, 29, .4),
+      400: const Color.fromRGBO(223, 157, 29, .5),
+      500: const Color.fromRGBO(223, 157, 29, .6),
+      600: const Color.fromRGBO(223, 157, 29, .7),
+      700: const Color.fromRGBO(223, 157, 29, .8),
+      800: const Color.fromRGBO(223, 157, 29, .9),
+      900: const Color.fromRGBO(223, 157, 29, 1.0)
     },
   );
 }

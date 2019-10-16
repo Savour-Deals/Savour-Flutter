@@ -1,6 +1,7 @@
 part of tab_lib;
 
 
+
 class AccountPageWidget extends StatefulWidget {
   final  String text;
   AccountPageWidget(this.text);
@@ -43,8 +44,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
       appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
-          brightness: Brightness.dark,
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
           heroTag: "dealTab",
           transitionBetweenRoutes: false,
         ),

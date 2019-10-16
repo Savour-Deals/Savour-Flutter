@@ -114,9 +114,8 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
       appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
+          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
           leading: CupertinoNavigationBarBackButton(color: Colors.white,),
-          brightness: Brightness.dark,
           heroTag: "vendorPage",
           transitionBetweenRoutes: false,
         ),
@@ -360,7 +359,12 @@ class _AboutWidgetState extends State<AboutWidget> {
                   ),
                 ),
                 FlatButton(
-                  child: (_showMore) ? Text("show less"): Text("show more"), 
+                  child: (_showMore) ? 
+                  Text("show less", 
+                    style:  TextStyle(color: Theme.of(context).accentColor),
+                  ): Text("show more", 
+                    style:  TextStyle(color: Theme.of(context).accentColor),
+                  ), 
                   onPressed: () {
                     setState(() {
                       _showMore = !_showMore;

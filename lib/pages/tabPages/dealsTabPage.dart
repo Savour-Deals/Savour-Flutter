@@ -61,18 +61,24 @@ class _DealsPageState extends State<DealsPageWidget> {
       geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
     }
     geo.onObserveReady.listen((ready){
-      setState(() {
-        geoFireReady = true;
-      });
+      if(this.mounted){
+        setState(() {
+          geoFireReady = true;
+        });      
+      }
     });
     geo.onKeyEntered.listen((data){
-      setState(() {
-        keyEnteredCounter++;
-      });
-      keyEntered(data);
+      if (this.mounted){
+        setState(() {
+          keyEnteredCounter++;
+        });
+        keyEntered(data);
+      }
     });
     geo.onKeyExited.listen((data){
-      keyExited(data);
+      if (this.mounted){
+        keyExited(data);  
+      }
     });
     _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
       if (this.mounted){
@@ -121,20 +127,22 @@ class _DealsPageState extends State<DealsPageWidget> {
     const tenSec = const Duration(seconds: 10);
     Timer.periodic(
       tenSec,
-      (Timer timer) => setState(
-        () {
-          timer.cancel();
-          if(!geoFireReady){
-            Fluttertoast.showToast(
-              msg: "We seem to be taking a while to load. Check your internet connection to make sure you're online.",
-              toastLength: Toast.LENGTH_LONG,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIos: 8,
-              backgroundColor: Colors.black.withOpacity(0.5),
-            );
-          }
-        },
-      ),
+      (Timer timer) {
+        if(this.mounted){
+          setState(() {
+            timer.cancel();
+            if(!geoFireReady){
+              Fluttertoast.showToast(
+                msg: "We seem to be taking a while to load. Check your internet connection to make sure you're online.",
+                toastLength: Toast.LENGTH_LONG,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIos: 8,
+                backgroundColor: Colors.black.withOpacity(0.5),
+              );
+            }
+          });
+        }
+      }
     );
   }
 
@@ -270,8 +278,7 @@ class _DealsPageState extends State<DealsPageWidget> {
           )
         ],
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          brightness: Brightness.dark,
+          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
           heroTag: "dealTab",
           transitionBetweenRoutes: false,
         ),

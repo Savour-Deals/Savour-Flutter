@@ -10,14 +10,12 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:location_permissions/location_permissions.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:rate_my_app/rate_my_app.dart';
 import 'package:savour_deals_flutter/pages/loginPages/onboardingPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
-import '../utils.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:savour_deals_flutter/utils.dart';
 
 class SavourTabPage extends StatefulWidget {
   SavourTabPage({Key key, this.uid}) : super(key: key);
@@ -36,7 +34,6 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   final geo = Geofire();
   int vendorsNearby = 0;
 
-  SharedPreferences prefs;
   // int lastNearbyNotificationTime;
   // FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
@@ -58,29 +55,38 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    //check if user has used this app before
-    // prefs = await SharedPreferences.getInstance();
-    // var hasOnboarded = prefs.getBool('hasOnboarded') ?? false;
-    // if (!hasOnboarded){
-    //   //TODO: Uncomment this when testing of onboarding is done
-    //   // prefs.setBool('hasOnboarded', true);
-    //   Navigator.push(context,
-    //     platformPageRoute(
-                  // context: context,
-    //       builder: (BuildContext context) {
-    //         return new OnboardingPage();
-    //       },
-    //       fullscreenDialog: true
-    //     )
-    //   );
-    // }
-    
+    //Init app rating 
+    RateMyApp rateMyApp = RateMyApp(
+      preferencesPrefix: 'rateMyApp_',
+      minDays: 0,
+      minLaunches: 0,
+      remindDays: 7,
+      remindLaunches: 10,
+      googlePlayIdentifier: 'com.CP.Savour',
+      appStoreIdentifier: '1294994353'
+    );
+    rateMyApp.init();
+
     WidgetsBinding.instance.addObserver(this);
     var newState = await LocationPermissions().checkPermissionStatus();
     if (!mounted) return;
     setState(() {
       locationStatus = newState;
     });
+    
+    //check if user has used this app before and they have not been prompted for location
+    if (locationStatus == PermissionStatus.unknown){
+      await Navigator.push(context,
+        platformPageRoute(
+          context: context,
+          builder: (BuildContext context) {
+            return new OnboardingPage();
+          },
+          fullscreenDialog: true
+        )
+      );
+      sleep(const Duration(milliseconds:500));//used so that dismiss doesnt happen and look weird when prompts pop up
+    }
 
     //setup remote notifications
     var settings = {
@@ -98,10 +104,19 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
     OneSignal.shared.setInFocusDisplayType(OSNotificationDisplayType.notification);
 
+    //Request Permissions here too incase for some reason we still have not asked 
+    LocationPermissions().requestPermissions(permissionLevel: LocationPermissionLevel.locationAlways);
     if(Platform.isIOS){
-      OneSignal.shared.promptUserForPushNotificationPermission().then((accepted){
+      OneSignal.shared.getPermissionSubscriptionState().then((state) async {
+        var accepted = false;
+        if(!state.permissionStatus.hasPrompted){
+          accepted = await OneSignal().promptUserForPushNotificationPermission();
+        }else{
+          accepted = state.permissionStatus.status == OSNotificationPermission.authorized;
+        }
         print("Accepted permission: $accepted");
         _notificationPermissionHandler(accepted);
+
       });
     }else{
       print("Accepted permission: Not needed for android");
@@ -159,13 +174,11 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     appState = Provider.of<AppState>(context);
     theme = Theme.of(context);
     if (locationStatus == PermissionStatus.unknown){
-      LocationPermissions().requestPermissions(permissionLevel: LocationPermissionLevel.locationAlways);
       return PlatformScaffold(
         appBar: PlatformAppBar(
           title: Image.asset("images/Savour_White.png"),
           ios: (_) => CupertinoNavigationBarData(
-            brightness: Brightness.dark,
-            backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
+            backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
             heroTag: "dealTab",
             transitionBetweenRoutes: false,
           ),
@@ -259,8 +272,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         appBar: PlatformAppBar(
           title: Image.asset("images/Savour_White.png"),
           ios: (_) => CupertinoNavigationBarData(
-            brightness: Brightness.dark,
-            backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
+            backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
             heroTag: "dealTab",
             transitionBetweenRoutes: false,
           ),
@@ -296,7 +308,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   }
 
   Color getTabOutlineColor(){
-    return appState.isDark? theme.accentColor:SavourColorsMaterial.savourGreen;
+    return appState.isDark? Colors.white:SavourColorsMaterial.savourGreen;
   }
 
 // The following commented code is for notifications when a user is nearby so many vendors

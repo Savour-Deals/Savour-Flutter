@@ -9,6 +9,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:rate_my_app/rate_my_app.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/pulsator.dart';
@@ -17,8 +18,7 @@ import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-import '../../utils.dart';
+import 'package:savour_deals_flutter/utils.dart';
 
 class DealPageWidget extends StatefulWidget {
   final Deal deal;
@@ -59,7 +59,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   void initialization() async{
     user = await FirebaseAuth.instance.currentUser();
     redemptionRef = FirebaseDatabase().reference().child("Deals").child(widget.deal.key).child("redeemed").child(user.uid);
-    userRef = FirebaseDatabase().reference().child("Users");
+    userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
     vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.deal.vendor.key);
   }
 
@@ -89,8 +89,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
           leading: CupertinoNavigationBarBackButton(color: Colors.white,),
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          brightness: Brightness.dark,
+          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
           heroTag: "dealPage",
           transitionBetweenRoutes: false,
         ),
@@ -296,7 +295,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         ),
         onPressed: () {
           if (!widget.deal.redeemed){
-            if(inRange()){
+            if (inRange()){
               promptRedemption();
             }else{
               openMap();
@@ -329,26 +328,9 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
             new PlatformDialogAction(
               child: PlatformText("Approve", style: TextStyle(color: Color.fromARGB(255, 0, 255, 0)),),
               onPressed: () {
+                redeemDeal();
                 Navigator.of(context).pop();
-                print("Deal " + widget.deal.key + " redeemed!");
-                var redemptionTime = widget.deal.redeemedTime = DateTime.now().millisecondsSinceEpoch~/1000;
-                redemptionRef.set(redemptionTime);
 
-                //notification subscriptions
-                userRef.child("following").child(widget.deal.vendor.key).set(true);
-                OneSignal.shared.sendTag(widget.deal.vendor.key, true);
-                OneSignal.shared.getPermissionSubscriptionState().then((status){
-                  if (status.subscriptionStatus.subscribed){
-                    vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
-                  }else{
-                    // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
-                    vendorRef.child("followers").child(user.uid).set(user.uid);
-                  }
-                });
-                setState(() {
-                  widget.deal.redeemed = true;
-                  widget.deal.redeemedTime = redemptionTime*1000;
-                });
               },
             ),
             PlatformDialogAction(
@@ -362,6 +344,55 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         );
       },
     );
+  }
+
+  void redeemDeal(){
+    //perform redmeption actions
+    print("Deal " + widget.deal.key + " redeemed!");
+    var redemptionTime = widget.deal.redeemedTime = DateTime.now().millisecondsSinceEpoch~/1000;
+    redemptionRef.set(redemptionTime);
+
+    //notification subscriptions
+    userRef.child("following").child(widget.deal.vendor.key).set(true);
+    OneSignal.shared.sendTag(widget.deal.vendor.key, true);
+    OneSignal.shared.getPermissionSubscriptionState().then((status){
+      if (status.subscriptionStatus.subscribed){
+        vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
+      }else{
+        // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
+        vendorRef.child("followers").child(user.uid).set(user.uid);
+      }
+    });
+    setState(() {
+      widget.deal.redeemed = true;
+      widget.deal.redeemedTime = redemptionTime*1000;
+    });
+
+    //Prompt user for rating!
+    RateMyApp rateMyApp = RateMyApp(
+      preferencesPrefix: 'rateMyApp_',
+      minDays: 0,
+      minLaunches: 0,
+      remindDays: 7,
+      remindLaunches: 10,
+      googlePlayIdentifier: 'com.CP.Savour',
+      appStoreIdentifier: '1294994353'
+    );
+
+    rateMyApp.init().then((_) {
+      if (rateMyApp.shouldOpenDialog) {
+        rateMyApp.showRateDialog(
+          context,
+          title: 'Rate Savour Deals!',
+          message: 'We want to make sure you are having the best deals experience!\nLeave us a rating so we know what you think!',
+          rateButton: 'Rate',
+          noButton: 'No',
+          laterButton: 'Later',
+          ignoreIOS: false,
+          dialogStyle: DialogStyle(),
+        );
+      }
+    });
   }
 
   void startTimer() {
