@@ -54,5 +54,5 @@ class SizeConfig {
     _safeAreaHorizontal) / 100;
     safeBlockVertical = (screenHeight -
     _safeAreaVertical) / 100;
- }
+  }
 }

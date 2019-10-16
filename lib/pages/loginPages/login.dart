@@ -29,7 +29,6 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   TextEditingController emailController = new TextEditingController();
   TextEditingController passwordController = new TextEditingController();
-  bool _passwordObscured = true;
   DatabaseReference userRef;
   GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
@@ -72,20 +71,7 @@ class _LoginPageState extends State<LoginPage> {
                     hint: "Password",
                     controller: passwordController,
                     keyboard: TextInputType.text,
-                    obscureTxt: _passwordObscured,
-                    suffixIcon: IconButton(
-                      color: Colors.black,
-                      icon: Icon(
-                        _passwordObscured
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _passwordObscured = !_passwordObscured;
-                        });
-                      },
-                    ),
+                    obscureTxt: true,
                   ),
                   Container(padding: EdgeInsets.all(5)),
                   PlatformButton(
@@ -109,7 +95,7 @@ class _LoginPageState extends State<LoginPage> {
                       facebookLogin();
                     },
                   ),
-                  Container(padding: EdgeInsets.all(5),alignment: Alignment.bottomCenter,),
+                  Container(padding: EdgeInsets.all(10),alignment: Alignment.bottomCenter,),
                   GestureDetector(
                     onTap: () async {
                       print("create account pressed");
@@ -121,11 +107,19 @@ class _LoginPageState extends State<LoginPage> {
                           context: context,
                       ),
                       );
-                      _displayCreateAccountSuccess();
                     },
-                    child: Text("Create Account", style: TextStyle(color: Colors.white),),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: 20.0,
+                      child: Center(
+                        child: Text("Create Account", 
+                          style: TextStyle(color: Colors.white, fontSize: 15.0),
+                          textAlign: TextAlign.center,
+                        ),
+                      )
+                    ),
                   ),
-                  Container(padding: EdgeInsets.all(5),alignment: Alignment.bottomCenter,),
+                  Container(padding: EdgeInsets.all(10),alignment: Alignment.bottomCenter,),
                   GestureDetector(
                     onTap: () async {
                       await Navigator.push(context, platformPageRoute(maintainState: false,
@@ -136,9 +130,17 @@ class _LoginPageState extends State<LoginPage> {
                           context: context,
                         ),
                       );
-                      _displayResetAccountSuccess();
                     },
-                    child: Text("Reset Account", style: TextStyle(color: Colors.white),),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: 20.0, 
+                      child: Center(
+                        child: Text("Reset Account", 
+                          style: TextStyle(color: Colors.white, fontSize: 15.0),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    )
                   ),
                 ],
               ),
@@ -149,81 +151,45 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _displayCreateAccountSuccess() async {
-    var currentUser = await _auth.currentUser();
-    print("CURRENT USER");
-    print(currentUser);
-    print(currentUser.email);
-    showPlatformDialog(
-      context: context,
-      builder: (BuildContext context) {
-        // return object of type Dialog
-        return PlatformAlertDialog(
-          title: new Text("Account Created!"),
-          content: new Text("Please check your email to authenticate your account"),
-          actions: <Widget>[
-            // usually buttons at the bottom of the dialog
-            new FlatButton(
-              child: new Text("Close"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-
-  void _displayResetAccountSuccess() async {
-    var currentUser = await _auth.currentUser();
-    print("CURRENT USER");
-    print(currentUser.email);
-    showPlatformDialog(
-      context: context,
-      builder: (BuildContext context) {
-        // return object of type Dialog
-        return PlatformAlertDialog(
-          title: new Text("Account Reset!"),
-          content: new Text("Please check your email to reset your password"),
-          actions: <Widget>[
-            // usually buttons at the bottom of the dialog
-            new FlatButton(
-              child: new Text("Close"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
   void login() {
+    _onLoading();
     if (emailController.text.isEmpty || passwordController.text.isEmpty){
+      // this removes the loading bar
+      Navigator.pop(context);
       displayError("Missing email or password","Please provide both an email and password", "OK");
     } else {
       _auth.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error){
-        displayError("Login Failed!","Please check that your email and password are correct and try again.", "OK");
+        // this removes the loading bar
+        // Navigator.pop(context);
       }).then((user){
-        if (!user.isEmailVerified){
-          promptUnverified(user: user);
+        // this removes the loading bar
+        Navigator.pop(context);
+        if(user != null){
+          if (!user.isEmailVerified){
+            _auth.signOut();
+            promptUnverified(user: user);
+          }
+        }else{
+          displayError("Login Failed!","Please check that your email and password are correct and try again.", "OK");
         }
       });
     }
   }
 
   void facebookLogin() async {
+    _onLoading();
     var facebook = new FacebookLogin();
     facebook.loginBehavior = FacebookLoginBehavior.nativeWithFallback;
-    var result = await facebook.logInWithReadPermissions(['email', 'public_profile']);
+    var result = await facebook.logIn(['email', 'public_profile']);
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
         _auth.signInWithCredential(FacebookAuthProvider.getCredential(
             accessToken: result.accessToken.token)
         ).then((fbauth) async {
+          // this removes the loading bar
+          Navigator.pop(context);
           UserUpdateInfo userUpdateInfo = new UserUpdateInfo();
+
           userRef = FirebaseDatabase.instance.reference().child("Users").child(fbauth.uid);
 
           var graphResponse = await http.get('https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email,picture&access_token=${result.accessToken.token}');
@@ -246,8 +212,12 @@ class _LoginPageState extends State<LoginPage> {
         
         break;
       case FacebookLoginStatus.cancelledByUser:
+        // this removes the loading bar
+        Navigator.pop(context);
         break;
       case FacebookLoginStatus.error:
+        // this removes the loading bar
+        Navigator.pop(context);
         displayError("Facebook Error", "Please try again.", "OK");
         break;
     }
@@ -301,6 +271,7 @@ class _LoginPageState extends State<LoginPage> {
               child: new Text("Resend Email"),
               onPressed: () {
                 user.sendEmailVerification();
+                Navigator.of(context).pop();
               },
             ),
             new FlatButton(

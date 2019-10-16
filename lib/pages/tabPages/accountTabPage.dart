@@ -81,25 +81,14 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
               alignment: Alignment.center,
               child: ClipOval(
                 child: Image(
-                  fit: BoxFit.contain,
+                  fit: BoxFit.cover,
                   image: getPhoto(),
                   width: MediaQuery.of(context).size.height*0.2,
                   height: MediaQuery.of(context).size.height*0.2,
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                "Welcome " + user.displayName, 
-                style: TextStyle(fontWeight: 
-                  FontWeight.bold, 
-                  fontSize: 20.0,
-                  color: appState.isDark? Colors.white:Colors.black,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
+            Container(height: 20.0,),
             Container(
               child: ListTile(
                 leading: Padding(
@@ -228,11 +217,11 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
       return AdvancedNetworkImage(
           user.photoUrl,
           useDiskCache: true,
-          fallbackAssetImage: "images/Savour_Deals_FullColor-white-back.png",
+          fallbackAssetImage: "images/login_background.jpg",
           retryLimit: 0,
       );
     }
-    return AssetImage("images/Savour_Deals_FullColor-white-back.png");
+    return AssetImage("images/login_background.jpg");
   }
 
   _toggleNotifications() async {

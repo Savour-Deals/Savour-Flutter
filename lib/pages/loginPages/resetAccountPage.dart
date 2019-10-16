@@ -59,21 +59,21 @@ class _ResetAccountPageState extends State<ResetAccountPage> {
                       _resetAccount();
                     },
                   ),
-                  Container(padding: EdgeInsets.all(5)),
-                  PlatformButton(
-                    ios: (_) => CupertinoButtonData(
-                      pressedOpacity: 0.7,
-                    ),
-                    android: (_) => MaterialRaisedButtonData(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    color: SavourColorsMaterial.savourGreen,
-                    child: Text("Back", style: whiteText),
-                    onPressed: () {
+                  Container(padding: EdgeInsets.all(15)),
+                  GestureDetector(
+                    onTap: () async {
                       Navigator.pop(context);
                     },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: 25.0,
+                      child: Center(
+                        child: Text("Back", 
+                          style: TextStyle(color: Colors.white, fontSize: 20.0),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -91,9 +91,9 @@ class _ResetAccountPageState extends State<ResetAccountPage> {
       Navigator.pop(context);
       // send user back
       Navigator.pop(context);
+      _displayResetAccountSuccess();
     }).catchError((error) {
       displayError("Invalid Email Account", "Please enter a valid email account.", "OK");
-
     });
   }
   void displayError(title, message, buttonText){
@@ -110,6 +110,28 @@ class _ResetAccountPageState extends State<ResetAccountPage> {
             // usually buttons at the bottom of the dialog
             new FlatButton(
               child: new Text(buttonText),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _displayResetAccountSuccess() async {
+    showPlatformDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return PlatformAlertDialog(
+          title: new Text("Reset Email Sent!"),
+          content: new Text("Please check your email to reset your password"),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text("Close"),
               onPressed: () {
                 Navigator.of(context).pop();
               },

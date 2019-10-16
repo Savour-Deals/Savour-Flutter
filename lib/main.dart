@@ -92,6 +92,7 @@ class _SavourDealsState extends State<SavourApp> {
         return true;
       }
     }
+    FirebaseAuth.instance.signOut();
     return false;
   }
 }

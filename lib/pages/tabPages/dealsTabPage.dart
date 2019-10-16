@@ -32,10 +32,22 @@ class _DealsPageState extends State<DealsPageWidget> {
   bool geoFireReady = false;
   int keyEnteredCounter = 0;
 
+  SharedPreferences prefs;
+  BuildContext showcasecontext;
+  GlobalKey _one = GlobalKey();
+  GlobalKey _two = GlobalKey();
+  GlobalKey _three = GlobalKey();
+
   @override
   void initState() {
     super.initState();
     initPlatform();
+  }
+
+  void presentShowcase(){
+    if (showcasecontext != null){
+      ShowCaseWidget.of(showcasecontext).startShowCase([_one, _two, _three]);
+    }
   }
 
   void initPlatform() async {
@@ -54,6 +66,13 @@ class _DealsPageState extends State<DealsPageWidget> {
       }
     } on PlatformException catch (e) {
       print(e.message);
+    }
+
+    //Do we need to show help for new app flow?
+    prefs = await SharedPreferences.getInstance();
+    if(!prefs.containsKey('hasOnboarded')){
+      prefs.setBool('hasOnboarded', true);
+      presentShowcase();
     }
 
     if (currentLocation != null){
@@ -230,6 +249,7 @@ class _DealsPageState extends State<DealsPageWidget> {
       print("No DealID");
     }
   }
+
   @override
   Widget build(BuildContext context) {
     appState = Provider.of<AppState>(context);
@@ -237,57 +257,78 @@ class _DealsPageState extends State<DealsPageWidget> {
     if (notificationData.isNotiDealPresent) displayNotiDeal(); //check to make sure we already are pending a notification deal
     notificationData.addListener(() => displayNotiDeal());//if not, listen for changes!
     theme = Theme.of(context);
-    return PlatformScaffold(
-      appBar: PlatformAppBar(
-        leading: FlatButton(
-          child: Icon(Icons.search,
-            color: Colors.white,
-          ),
-          onPressed: (){
-            Navigator.push(context,
-              platformPageRoute(
-                context: context,
-                builder: (BuildContext context) {
-                  return SearchPageWidget(deals: deals, location: currentLocation,);
-                },
-                fullscreenDialog: true
-              )
-            );
-          },
-        ),
-        title: Image.asset("images/Savour_White.png"),
-        trailingActions: <Widget>[
-          FlatButton(
-            child: Image.asset('images/wallet_filled.png',
-              color: Colors.white,
-              width: 30,
-              height: 30,
-            ),
-            color: Colors.transparent,
-            onPressed: (){
-              Navigator.push(context,
-                platformPageRoute(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return WalletPageWidget(deals,vendors);
+    return ShowCaseWidget(
+      builder: Builder(
+        builder: (context) {
+          showcasecontext = context;
+          return PlatformScaffold(
+            appBar: PlatformAppBar(
+              leading: Showcase(
+                key: _one,
+                title: 'Search',
+                description: 'Search for deals and restaurants!',
+                shapeBorder: CircleBorder(),
+                showArrow: false,
+                child: FlatButton(
+                  child: Icon(Icons.search,
+                    color: Colors.white,
+                  ),
+                  onPressed: (){
+                    Navigator.push(context,
+                      platformPageRoute(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return SearchPageWidget(deals: deals, location: currentLocation,);
+                        },
+                        fullscreenDialog: true
+                      )
+                    );
                   },
-                  fullscreenDialog: true
-                )
-              );
-            },
-          )
-        ],
-        ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
-          heroTag: "dealTab",
-          transitionBetweenRoutes: false,
-        ),
-        android: (_) => MaterialAppBarData(
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          brightness: Brightness.dark,
-        ),
-      ),
-      body: bodyWidget(),
+                ),
+              ),
+              title: Image.asset("images/Savour_White.png"),
+              trailingActions: <Widget>[
+                Showcase(
+                  key: _two,
+                  title: 'My Wallet',
+                  description: 'View your favorite deals and past redemptions!',
+                  shapeBorder: CircleBorder(),
+                  showArrow: false,
+                  child: FlatButton(
+                    child: Image.asset('images/wallet_filled.png',
+                      color: Colors.white,
+                      width: 30,
+                      height: 30,
+                    ),
+                    color: Colors.transparent,
+                    onPressed: (){
+                      Navigator.push(context,
+                        platformPageRoute(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return WalletPageWidget(deals,vendors);
+                          },
+                          fullscreenDialog: true
+                        )
+                      );
+                    },
+                  ), 
+                ),
+              ],
+              ios: (_) => CupertinoNavigationBarData(
+                backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
+                heroTag: "dealTab",
+                transitionBetweenRoutes: false,
+              ),
+              android: (_) => MaterialAppBarData(
+                backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
+                brightness: Brightness.dark,
+              ),
+            ),
+            body: bodyWidget(),
+          );
+        },
+      )
     );
   }
   
@@ -325,23 +366,30 @@ class _DealsPageState extends State<DealsPageWidget> {
           ),
           Align(
             alignment: Alignment(-0.90, 0.90),
-            child: FloatingActionButton(
-              heroTag: null,
-              backgroundColor: SavourColorsMaterial.savourGreen,
-              child: Icon(Icons.pin_drop, color: Colors.white,),
-              onPressed: (){
-                Navigator.push(context,
-                  platformPageRoute(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return new MapPageWidget("Map Page", this.vendors, currentLocation);
-                    },
-                    fullscreenDialog: true
-                  )
-                );
-              },
-            ),
-          )
+            child: Showcase(
+              key: _three,
+              title: 'Maps',
+              description: "See what's nearby!",
+              shapeBorder: CircleBorder(),
+              showArrow: false,
+              child:  FloatingActionButton(
+                heroTag: null,
+                backgroundColor: SavourColorsMaterial.savourGreen,
+                child: Icon(Icons.pin_drop, color: Colors.white,),
+                onPressed: (){
+                  Navigator.push(context,
+                    platformPageRoute(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return new MapPageWidget("Map Page", this.vendors, currentLocation);
+                      },
+                      fullscreenDialog: true
+                    )
+                  );
+                },
+              ),
+            )
+          ),
         ],
       );
     } else {
@@ -437,5 +485,3 @@ class _DealsPageState extends State<DealsPageWidget> {
     );
   }
 }
-
-
