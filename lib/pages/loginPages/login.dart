@@ -7,18 +7,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:savour_deals_flutter/pages/loginPages/resetAccountPage.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/themes/decoration.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:http/http.dart' as http;
 
-import 'CreateAccountPage.dart';
+import 'createAccountPage.dart';
 
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class LoginPage extends StatefulWidget {
-  LoginPage({Key key}) : super(key: key);
 
 
 
@@ -31,6 +31,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = new TextEditingController();
   bool _passwordObscured = true;
   DatabaseReference userRef;
+  GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -42,6 +43,7 @@ class _LoginPageState extends State<LoginPage> {
 
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     return PlatformScaffold(
+      key: scaffoldKey,
       backgroundColor: Colors.black,
       body: Container(
         decoration: BoxDecoration(
@@ -80,9 +82,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       onPressed: () {
                         setState(() {
-                          _passwordObscured
-                              ? _passwordObscured = false
-                              : _passwordObscured = true;
+                          _passwordObscured = !_passwordObscured;
                         });
                       },
                     ),
@@ -111,20 +111,34 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   Container(padding: EdgeInsets.all(5),alignment: Alignment.bottomCenter,),
                   GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       print("create account pressed");
-                      Navigator.push(context, 
-                        platformPageRoute(
+                      await Navigator.push(context, platformPageRoute(maintainState: false,
+                            builder: (BuildContext context) {
+                        return new CreateAccountPage();
+                      },
+                          fullscreenDialog: true,
                           context: context,
-                          maintainState: false,
-                          builder: (BuildContext context) {
-                            return new CreateAccountPage();
-                          },
-                          fullscreenDialog: true
-                        ),
+                      ),
                       );
+                      _displayCreateAccountSuccess();
                     },
                     child: Text("Create Account", style: TextStyle(color: Colors.white),),
+                  ),
+                  Container(padding: EdgeInsets.all(5),alignment: Alignment.bottomCenter,),
+                  GestureDetector(
+                    onTap: () async {
+                      await Navigator.push(context, platformPageRoute(maintainState: false,
+                          builder: (BuildContext context) {
+                            return new ResetAccountPage();
+                          },
+                          fullscreenDialog: true,
+                          context: context,
+                        ),
+                      );
+                      _displayResetAccountSuccess();
+                    },
+                    child: Text("Reset Account", style: TextStyle(color: Colors.white),),
                   ),
                 ],
               ),
@@ -135,9 +149,57 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void createAccount() {
+  void _displayCreateAccountSuccess() async {
+    var currentUser = await _auth.currentUser();
+    print("CURRENT USER");
+    print(currentUser);
+    print(currentUser.email);
+    showPlatformDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return PlatformAlertDialog(
+          title: new Text("Account Created!"),
+          content: new Text("Please check your email to authenticate your account"),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text("Close"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
+
+  void _displayResetAccountSuccess() async {
+    var currentUser = await _auth.currentUser();
+    print("CURRENT USER");
+    print(currentUser.email);
+    showPlatformDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return PlatformAlertDialog(
+          title: new Text("Account Reset!"),
+          content: new Text("Please check your email to reset your password"),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text("Close"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
   void login() {
     if (emailController.text.isEmpty || passwordController.text.isEmpty){
       displayError("Missing email or password","Please provide both an email and password", "OK");
@@ -155,9 +217,7 @@ class _LoginPageState extends State<LoginPage> {
   void facebookLogin() async {
     var facebook = new FacebookLogin();
     facebook.loginBehavior = FacebookLoginBehavior.nativeWithFallback;
-
-    var result =
-        await facebook.logIn(['email', 'public_profile']);
+    var result = await facebook.logInWithReadPermissions(['email', 'public_profile']);
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
         _auth.signInWithCredential(FacebookAuthProvider.getCredential(
@@ -212,6 +272,18 @@ class _LoginPageState extends State<LoginPage> {
           ],
         );
       },
+    );
+  }
+  void _onLoading() {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        child: new Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            new PlatformCircularProgressIndicator(),
+          ],
+        )
     );
   }
 
