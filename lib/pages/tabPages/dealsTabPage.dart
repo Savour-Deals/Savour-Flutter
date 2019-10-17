@@ -453,9 +453,9 @@ class _DealsPageState extends State<DealsPageWidget> {
         SizedBox(
           height: 300,
           child: (carouselDeals.length <= 0)? Container():PageView.builder(
-            physics: AlwaysScrollableScrollPhysics(),
-            // store this controller in a State to save the carousel scroll position
+            key: PageStorageKey('dealGroup$carouselIndex'), //save deal group's position when scrolling
             controller: PageController(viewportFraction: 0.9),
+            physics: AlwaysScrollableScrollPhysics(),
             itemBuilder: (BuildContext context, int item) {
               return GestureDetector(
                 onTap: () {

@@ -68,7 +68,7 @@ class _VendorCardState extends State<VendorCard> {
             ),
             Align(
               alignment: Alignment(0.9, 0.8),
-              child: widget.vendor.isPreferred? Icon(Icons.star, color: Colors.white,): null,
+              child: widget.vendor.isPreferred? Icon(Icons.star, color: Color(0xFFD7B740)): null,
             )
           ],
         ),

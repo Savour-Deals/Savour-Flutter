@@ -121,8 +121,8 @@ class DealCardFull extends StatelessWidget {
                 Container(
                   height: 200*scalar,
                   child: Align(
-                    alignment: Alignment(-.95,.9),
-                    child: deal.isPreferred()? Icon(Icons.star, color: Colors.white): null,
+                    alignment: Alignment(-.95,-.9),
+                    child: deal.isPreferred()? Icon(Icons.star, color: Color(0xFFD7B740)): null,
                   ),
                 ),
               ]
