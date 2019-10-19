@@ -13,7 +13,6 @@ class AccountPageWidget extends StatefulWidget {
 class _AccountPageWidgetState extends State<AccountPageWidget> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseUser user;
-  String userPhoto;
   SharedPreferences prefs;
 
   //Declare contextual variables
@@ -74,18 +73,15 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
       ):Center(
         child: ListView(
           children: <Widget>[
+            Container(height: 20.0,),
             Container(
-              padding: EdgeInsets.all(8.0),
-            ),
-            Align(
               alignment: Alignment.center,
-              child: ClipOval(
                 child: Image(
                   fit: BoxFit.cover,
-                  image: getPhoto(),
-                  width: MediaQuery.of(context).size.height*0.2,
-                  height: MediaQuery.of(context).size.height*0.2,
-                ),
+                  color: Theme.of(context).accentColor,
+                  image: AssetImage("images/user_icon.png"),
+                  width: MediaQuery.of(context).size.width*0.5,
+                  // height: MediaQuery.of(context).size.height*0.2,
               ),
             ),
             Container(height: 20.0,),
@@ -212,17 +208,17 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
     }
   }
 
-  ImageProvider getPhoto(){
-    if (user.photoUrl != null){
-      return AdvancedNetworkImage(
-          user.photoUrl,
-          useDiskCache: true,
-          fallbackAssetImage: "images/login_background.jpg",
-          retryLimit: 0,
-      );
-    }
-    return AssetImage("images/login_background.jpg");
-  }
+  // ImageProvider getPhoto(){
+  //   if (user.photoUrl != null){
+  //     return AdvancedNetworkImage(
+  //         user.photoUrl,
+  //         useDiskCache: true,
+  //         fallbackAssetImage: "images/login_background.jpg",
+  //         retryLimit: 0,
+  //     );
+  //   }
+  //   return AssetImage("images/login_background.jpg");
+  // }
 
   _toggleNotifications() async {
     if(notificationSettings.isNotificationsEnabled){

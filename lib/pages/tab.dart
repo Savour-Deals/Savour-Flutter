@@ -16,7 +16,6 @@ import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
 import 'package:savour_deals_flutter/utils.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SavourTabPage extends StatefulWidget {
   SavourTabPage({Key key, this.uid}) : super(key: key);
@@ -34,6 +33,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   // final _locationService = Geolocator();
   final geo = Geofire();
   int vendorsNearby = 0;
+  bool onboardFinished = false;
 
   // int lastNearbyNotificationTime;
   // FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
@@ -86,7 +86,14 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
           fullscreenDialog: true
         )
       );
+      setState(() {
+        onboardFinished = true;//onboarding complete, we can move on and build tabs
+      });
       sleep(const Duration(milliseconds:500));//used so that dismiss doesnt happen and look weird when prompts pop up
+    }else{
+      setState(() {
+        onboardFinished = true;//onboarding has already been done, we can move on and build tabs
+      });
     }
 
     //setup remote notifications
@@ -193,7 +200,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
           child: PlatformCircularProgressIndicator(),
         ),
       ); 
-    }else if (locationStatus == PermissionStatus.granted){
+    }else if (locationStatus == PermissionStatus.granted && onboardFinished == true){
       // _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
       //   geo.queryAtLocation(result.latitude, result.longitude, 0.25);
       //   geo.onKeyEntered.listen((data){

@@ -245,22 +245,22 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
             child: getCard(favorites[position-1])
           );
         },
-        itemCount: favorites.length,
+        itemCount: favorites.length+1,
       );
     }
     return Center(child: Text("No favorites to show!"));
   }
 
   Widget getCard(Deal deal){
-    if (deal.isLive()){
+    // if (deal.isLive()){
       return DealCard(
         deal: deal, 
         location: widget.location, 
         type: DealCardType.large,
         onFavoriteChanged: removeFavoriteAndRefresh,
       );
-    }
-    return Container();
+    // }
+    // return Container();
   }
 
   void removeFavoriteAndRefresh(String dealID, bool favorited){

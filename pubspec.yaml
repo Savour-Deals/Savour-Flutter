@@ -36,13 +36,13 @@ dependencies:
   geolocator: '^5.1.2'
   location_permissions: '^2.0.0'
   google_maps_flutter: ^0.5.19
-  
+
   firebase_database: ^2.0.2
-  flutter_geofire: 
+  flutter_geofire:
     git:
       url: https://github.com/Savour-Deals/flutter_geofire.git
     # path: "../flutter_geofire"
-  
+
   app_settings: 1.0.6+2
   onesignal_flutter: ^2.1.0
   # flutter_local_notifications: ^0.8.2

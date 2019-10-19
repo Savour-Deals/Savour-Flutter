@@ -83,7 +83,7 @@ class Deals {
   }
 
   List<Deal> getFavorites(){
-    return getAllDeals().where((deal) => deal.favorited).toList();
+    return sortByDistance(getAllDeals().where((deal) => deal.favorited).toList());
   }
 
   int compareDistance(Deal a, Deal b){
