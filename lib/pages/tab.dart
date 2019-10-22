@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:location_permissions/location_permissions.dart';
@@ -76,9 +77,10 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     });
     
     //check if user has used this app before and they have not been prompted for location
-    if (locationStatus == PermissionStatus.unknown){
+    if (locationStatus == PermissionStatus.unknown || (Platform.isAndroid && locationStatus == PermissionStatus.denied)){
       await Navigator.push(context,
         platformPageRoute(
+          settings: RouteSettings(name: "OnboardingPage"),
           context: context,
           builder: (BuildContext context) {
             return new OnboardingPage();
@@ -113,7 +115,11 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     OneSignal.shared.setInFocusDisplayType(OSNotificationDisplayType.notification);
 
     //Request Permissions here too incase for some reason we still have not asked 
-    LocationPermissions().requestPermissions(permissionLevel: LocationPermissionLevel.locationAlways);
+    LocationPermissions().requestPermissions(permissionLevel: LocationPermissionLevel.locationAlways).then((permissionStatus){
+      setState(() {
+        locationStatus = permissionStatus;
+      });
+    });
     if(Platform.isIOS){
       OneSignal.shared.getPermissionSubscriptionState().then((state) async {
         var accepted = false;
@@ -158,17 +164,21 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   @override
   Future didChangeAppLifecycleState(AppLifecycleState state) async {
     if(state == AppLifecycleState.resumed){
-      var newState = await LocationPermissions().checkPermissionStatus();
-      var notificationStatus = await OneSignal.shared.getPermissionSubscriptionState();
-      var notificationsEnabled = notificationStatus.permissionStatus.status == OSNotificationPermission.authorized;
-      debugPrint("Accepted: $notificationsEnabled");
-      if(this.mounted){
-        setState(() {
-          locationStatus = newState;
-          _notificationPermissionHandler(notificationsEnabled);
-        });
+      try {
+        var newState = await LocationPermissions().checkPermissionStatus();
+        var notificationStatus = await OneSignal.shared.getPermissionSubscriptionState();
+        var notificationsEnabled = notificationStatus.permissionStatus.status == OSNotificationPermission.authorized;
+        debugPrint("Accepted: $notificationsEnabled");
+        if(this.mounted){
+          setState(() {
+            locationStatus = newState;
+            _notificationPermissionHandler(notificationsEnabled);
+          });
+        }
+        print("Resumed");
+      } on PlatformException catch (e) {
+        print(e.message);
       }
-      print("Resumed");
     }
   }
   

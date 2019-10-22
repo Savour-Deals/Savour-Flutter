@@ -1,11 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/themes/decoration.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CreateAccountPage extends StatefulWidget {
 
@@ -20,86 +22,145 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   TextEditingController passwordController = new TextEditingController();
   TextEditingController passwordConfirmController = new TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _loading = false;
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
 
-    return PlatformScaffold(
-      backgroundColor: Colors.black,
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("images/login_background.jpg"),
-            fit: BoxFit.cover,
-            colorFilter: new ColorFilter.mode(
-                Colors.black.withOpacity(0.45), BlendMode.srcATop
+    return Stack(
+      children: <Widget>[
+        PlatformScaffold(
+          backgroundColor: Colors.black,
+          body: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("images/login_background.jpg"),
+                fit: BoxFit.cover,
+                colorFilter: new ColorFilter.mode(
+                    Colors.black.withOpacity(0.45), BlendMode.srcATop
+                ),
+              ),
             ),
-          ),
-        ),
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(18.0),
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  Image(image: AssetImage("images/Savour_Deals_White.png")),
-                  LoginTextInput(
-                      hint: "Email",
-                      controller: emailController,
-                      keyboard: TextInputType.emailAddress
-                  ),
-                  Container(padding: EdgeInsets.all(5)),
-                  LoginTextInput(
-                    hint: "Password",
-                    controller: passwordController,
-                    keyboard: TextInputType.text,
-                    obscureTxt: true,
-                  ),
-                  Container(padding: EdgeInsets.all(5)),
-                  LoginTextInput(
-                    hint: "Password Confirm",
-                    controller: passwordConfirmController,
-                    keyboard: TextInputType.text,
-                    obscureTxt: true,
-                  ),
-                  Container(padding: EdgeInsets.all(5)),
-                  PlatformButton(
-                    ios: (_) => CupertinoButtonData(
-                      pressedOpacity: 0.7,
-                    ),
-                    android: (_) => MaterialRaisedButtonData(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(18.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: <Widget>[
+                      Image(image: AssetImage("images/Savour_Deals_White.png")),
+                      LoginTextInput(
+                          hint: "Email",
+                          controller: emailController,
+                          keyboard: TextInputType.emailAddress
                       ),
-                    ),
-                    color: SavourColorsMaterial.savourGreen,
-                    child: Text("Create Account", style: whiteText),
-                    onPressed: () {
-                      _createAccount();
-                    },
-                  ),
-                  Container(padding: EdgeInsets.all(15)),
-                  GestureDetector(
-                    onTap: () async {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: 25.0,
-                      child: Center(
-                        child: Text("Back", 
-                          style: TextStyle(color: Colors.white, fontSize: 20.0),
-                          textAlign: TextAlign.center,
+                      Container(padding: EdgeInsets.all(5)),
+                      LoginTextInput(
+                        hint: "Password",
+                        controller: passwordController,
+                        keyboard: TextInputType.text,
+                        obscureTxt: true,
+                      ),
+                      Container(height: 10),
+                      LoginTextInput(
+                        hint: "Password Confirm",
+                        controller: passwordConfirmController,
+                        keyboard: TextInputType.text,
+                        obscureTxt: true,
+                      ),
+                      Container(height: 10),
+                      PlatformButton(
+                        ios: (_) => CupertinoButtonData(
+                          pressedOpacity: 0.7,
+                        ),
+                        android: (_) => MaterialRaisedButtonData(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        color: SavourColorsMaterial.savourGreen,
+                        child: Text("Create Account", style: whiteText),
+                        onPressed: () {
+                          _createAccount();
+                        },
+                      ),
+                      Container(height: 15),
+                      Container(
+                        height: 20,
+                        child: RichText(
+                          text: TextSpan(
+                            text: 'Back',
+                            style: TextStyle(color: Colors.white),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.pop(context);
+                              },
+                          ),
                         ),
                       ),
-                    ),
+                      Container(height: 15),
+                      Center(
+                        child: RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'By signing up you agree to our',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'Terms of Use',
+                                style: TextStyle(color: Colors.blue),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    launch('https://www.savourdeals.com/terms-of-use');
+                                  },
+                              ),
+                              TextSpan(
+                                text: ' and ',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              TextSpan(
+                                text: 'Privacy Policy',
+                                style: TextStyle(color: Colors.blue),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    launch('https://www.savourdeals.com/privacy-policy');
+                                  },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
         ),
-      ),
+        Visibility(
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            color: Colors.black54,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                PlatformCircularProgressIndicator(),
+              ],
+            ),
+          ),
+          visible: _loading,
+        )
+      ],
     );
   }
 
@@ -132,7 +193,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
       user.updateProfile(userUpdateInfo);
 
       // this removes the loading bar
-      Navigator.pop(context);
+      _endLoading();
       //This sends the user back
       Navigator.pop(context);
       user.sendEmailVerification();
@@ -162,7 +223,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   }
   
   void _displayError(title, message, buttonText){
-    Navigator.pop(context);
+    _endLoading();   
     showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
@@ -184,17 +245,17 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     );
   }
 
-  void _onLoading() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          new PlatformCircularProgressIndicator(),
-        ],
-      )
-    );
+
+  void _onLoading(){
+    setState(() {
+      _loading = true;
+    });
+  }
+
+  void _endLoading(){
+    setState(() {
+      _loading = false;
+    });
   }
 }
 

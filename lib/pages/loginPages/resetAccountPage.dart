@@ -1,6 +1,6 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
@@ -16,71 +16,88 @@ class ResetAccountPage extends StatefulWidget {
 class _ResetAccountPageState extends State<ResetAccountPage> {
 
   TextEditingController emailController = new TextEditingController();
+  bool _loading = false;
 
   @override
   Widget build(BuildContext context) {
-    return PlatformScaffold(
-      backgroundColor: Colors.black,
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("images/login_background.jpg"),
-            fit: BoxFit.cover,
-            colorFilter: new ColorFilter.mode(
-                Colors.black.withOpacity(0.45), BlendMode.srcATop
+    return Stack(
+      children: <Widget>[
+        PlatformScaffold(
+          backgroundColor: Colors.black,
+          body: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("images/login_background.jpg"),
+                fit: BoxFit.cover,
+                colorFilter: new ColorFilter.mode(
+                    Colors.black.withOpacity(0.45), BlendMode.srcATop
+                ),
+              ),
             ),
-          ),
-        ),
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(18.0),
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  Image(image: AssetImage("images/Savour_Deals_White.png")),
-                  LoginTextInput(
-                      hint: "Email",
-                      controller: emailController,
-                      keyboard: TextInputType.emailAddress
-                  ),
-                  Container(padding: EdgeInsets.all(5)),
-                  PlatformButton(
-                    ios: (_) => CupertinoButtonData(
-                      pressedOpacity: 0.7,
-                    ),
-                    android: (_) => MaterialRaisedButtonData(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(18.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: <Widget>[
+                      Image(image: AssetImage("images/Savour_Deals_White.png")),
+                      LoginTextInput(
+                          hint: "Email",
+                          controller: emailController,
+                          keyboard: TextInputType.emailAddress
                       ),
-                    ),
-                    color: SavourColorsMaterial.savourGreen,
-                    child: Text("Reset Password", style: whiteText),
-                    onPressed: () {
-                      _resetAccount();
-                    },
-                  ),
-                  Container(padding: EdgeInsets.all(15)),
-                  GestureDetector(
-                    onTap: () async {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: 25.0,
-                      child: Center(
-                        child: Text("Back", 
-                          style: TextStyle(color: Colors.white, fontSize: 20.0),
-                          textAlign: TextAlign.center,
+                      Container(padding: EdgeInsets.all(5)),
+                      PlatformButton(
+                        ios: (_) => CupertinoButtonData(
+                          pressedOpacity: 0.7,
+                        ),
+                        android: (_) => MaterialRaisedButtonData(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        color: SavourColorsMaterial.savourGreen,
+                        child: Text("Reset Password", style: whiteText),
+                        onPressed: () {
+                          _resetAccount();
+                        },
+                      ),
+                      Container(padding: EdgeInsets.all(15)),
+                      Container(
+                        height: 20,
+                        child: RichText(
+                          text: TextSpan(
+                            text: 'Back',
+                            style: TextStyle(color: Colors.white),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.pop(context);
+                              },
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
         ),
-      ),
+        Visibility(
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            color: Colors.black54,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                PlatformCircularProgressIndicator(),
+              ],
+            ),
+          ),
+          visible: _loading,
+        )
+      ],
     );
   }
 
@@ -88,7 +105,7 @@ class _ResetAccountPageState extends State<ResetAccountPage> {
     _onLoading();
     FirebaseAuth.instance.sendPasswordResetEmail(email: emailController.text).then((user) {
       // pop loading wheel
-      Navigator.pop(context);
+      _endLoading();
       // send user back
       Navigator.pop(context);
       _displayResetAccountSuccess();
@@ -97,8 +114,7 @@ class _ResetAccountPageState extends State<ResetAccountPage> {
     });
   }
   void displayError(title, message, buttonText){
-
-    Navigator.pop(context);
+    _endLoading();
     showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
@@ -141,17 +157,19 @@ class _ResetAccountPageState extends State<ResetAccountPage> {
       },
     );
   }
+  void _onLoading(){
+    setState(() {
+      if(this.mounted){
+        _loading = true;
+      }
+    });
+  }
 
-  void _onLoading() {
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        child: new Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            new PlatformCircularProgressIndicator(),
-          ],
-        )
-    );
+  void _endLoading(){
+    setState(() {
+      if(this.mounted){
+        _loading = false;
+      }
+    });
   }
 }

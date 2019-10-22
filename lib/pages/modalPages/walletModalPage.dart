@@ -235,6 +235,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
                 context,
                 platformPageRoute(
                   context: context,
+                  settings: RouteSettings(name: "DealPage"),
                   builder: (context) => DealPageWidget(
                     deal: favorites[position-1], 
                     location: widget.location
@@ -408,6 +409,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
                   Navigator.push(context,
                     platformPageRoute(
                       context: context,
+                      settings: RouteSettings(name: "DealPage"),
                       builder: (BuildContext context) {
                         return DealPageWidget(
                           deal: redemptions[position-1].deal, 
@@ -420,6 +422,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
                   Navigator.push(context,
                     platformPageRoute(
                       context: context,
+                      settings: RouteSettings(name: "DealPage"),
                       builder: (BuildContext context) {
                         return VendorPageWidget(redemptions[position-1].vendor, widget.location);
                       },

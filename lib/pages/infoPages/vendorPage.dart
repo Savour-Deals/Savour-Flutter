@@ -232,6 +232,7 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
                     context,
                     platformPageRoute(
                       context: context,
+                      settings: RouteSettings(name: "DealPage"),
                       builder: (context) => DealPageWidget(
                         deal: carouselDeals[item], 
                         location: currentLocation,

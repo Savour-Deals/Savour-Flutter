@@ -239,6 +239,7 @@ class _DealsPageState extends State<DealsPageWidget> {
         context,
         platformPageRoute(
           context: context,
+          settings: RouteSettings(name: "DealPage"),
           builder: (context) => DealPageWidget(
             deal: notiDeal,
             location: currentLocation
@@ -277,6 +278,7 @@ class _DealsPageState extends State<DealsPageWidget> {
                     Navigator.push(context,
                       platformPageRoute(
                         context: context,
+                        settings: RouteSettings(name: "SearchPage"),
                         builder: (BuildContext context) {
                           return SearchPageWidget(deals: deals, location: currentLocation,);
                         },
@@ -305,6 +307,7 @@ class _DealsPageState extends State<DealsPageWidget> {
                       Navigator.push(context,
                         platformPageRoute(
                           context: context,
+                          settings: RouteSettings(name: "WalletPage"),
                           builder: (BuildContext context) {
                             return WalletPageWidget(deals,vendors);
                           },
@@ -380,6 +383,7 @@ class _DealsPageState extends State<DealsPageWidget> {
                   Navigator.push(context,
                     platformPageRoute(
                       context: context,
+                      settings: RouteSettings(name: "MapPage"),
                       builder: (BuildContext context) {
                         return new MapPageWidget("Map Page", this.vendors, currentLocation);
                       },
@@ -464,9 +468,10 @@ class _DealsPageState extends State<DealsPageWidget> {
                     context,
                     platformPageRoute(
                       context: context,
+                      settings: RouteSettings(name: "DealPage"),
                       builder: (context) => DealPageWidget(
                         deal: carouselDeals[item], 
-                        location: currentLocation
+                        location: currentLocation,
                       ),
                     ),
                   );

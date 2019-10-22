@@ -165,7 +165,12 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           ),
           onPressed: () async {
             var page = await buildPageAsync(PageType.searchPage);
-            var route = MaterialPageRoute(builder: (_) => page, fullscreenDialog: true);
+            var route = platformPageRoute(
+              context: context,
+              settings: RouteSettings(name: "SearchPage"),
+              builder: (_) => page, 
+              fullscreenDialog: true, 
+            );
             Navigator.push(context,route);
           },
         ),
@@ -196,7 +201,11 @@ class _VendorsPageState extends State<VendorsPageWidget> {
                 onTap: () async {
                   print(vendors[position].name + " clicked");
                   var page = await buildPageAsync(PageType.vendorPage, position: position);
-                  var route = MaterialPageRoute(builder: (_) => page);
+                  var route = platformPageRoute(
+                    context: context,
+                    settings: RouteSettings(name: "VendorPage"),
+                    builder: (_) => page, 
+                  );
                   Navigator.push(context,route);
                 },
                 child: VendorCard(vendors[position], currentLocation)
@@ -212,7 +221,12 @@ class _VendorsPageState extends State<VendorsPageWidget> {
               child: Icon(Icons.pin_drop, color: Colors.white,),
               onPressed: () async {
                 var page = await buildPageAsync(PageType.mapPage);
-                var route = MaterialPageRoute(builder: (_) => page, fullscreenDialog: true);
+                var route = platformPageRoute(
+                  context: context,
+                  settings: RouteSettings(name: "MapPage"),
+                  builder: (_) => page, 
+                  fullscreenDialog: true, 
+                );
                 Navigator.push(context,route);
               },
             ),

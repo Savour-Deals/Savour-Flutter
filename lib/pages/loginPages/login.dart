@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
@@ -11,7 +10,7 @@ import 'package:savour_deals_flutter/pages/loginPages/resetAccountPage.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/themes/decoration.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
-import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 import 'createAccountPage.dart';
 
@@ -31,6 +30,9 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = new TextEditingController();
   DatabaseReference userRef;
   GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+  BuildContext thisContext;
+
+  bool _loading = false;
 
   @override
   void initState() {
@@ -41,113 +43,170 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
 
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
-    return PlatformScaffold(
-      key: scaffoldKey,
-      backgroundColor: Colors.black,
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("images/login_background.jpg"),
-            fit: BoxFit.cover,
-            colorFilter: new ColorFilter.mode(
-              Colors.black.withOpacity(0.45), BlendMode.srcATop
+    return Stack(
+      children: <Widget>[
+        PlatformScaffold(
+          key: scaffoldKey,
+          backgroundColor: Colors.black,
+          body: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("images/login_background.jpg"),
+                fit: BoxFit.cover,
+                colorFilter: new ColorFilter.mode(
+                  Colors.black.withOpacity(0.45), BlendMode.srcATop
+                ),
+              ),
             ),
-          ),
-        ),
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(18.0),
-            child: SingleChildScrollView(
-                child: Column(
-                children: <Widget>[
-                  Image(image: AssetImage("images/Savour_Deals_White.png")),
-                  LoginTextInput(
-                    hint: "Email", 
-                    controller: emailController,
-                    keyboard: TextInputType.emailAddress
-                  ),
-                  Container(padding: EdgeInsets.all(5)),
-                  LoginTextInput(
-                    hint: "Password",
-                    controller: passwordController,
-                    keyboard: TextInputType.text,
-                    obscureTxt: true,
-                  ),
-                  Container(padding: EdgeInsets.all(5)),
-                  PlatformButton(
-                    ios: (_) => CupertinoButtonData(
-                      pressedOpacity: 0.7,
-                    ),
-                    android: (_) => MaterialRaisedButtonData(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(18.0),
+                child: SingleChildScrollView(
+                    child: Column(
+                    children: <Widget>[
+                      Image(image: AssetImage("images/Savour_Deals_White.png")),
+                      LoginTextInput(
+                        hint: "Email", 
+                        controller: emailController,
+                        keyboard: TextInputType.emailAddress
                       ),
-                    ),
-                    color: SavourColorsMaterial.savourGreen,
-                    child: Text("Login", style: whiteText),
-                    onPressed: () {
-                      login();
-                    },
-                  ),
-                  Container(padding: EdgeInsets.all(5)),
-                  FacebookSignInButton(
-                    onPressed: () {
-                      facebookLogin();
-                    },
-                  ),
-                  Container(padding: EdgeInsets.all(10),alignment: Alignment.bottomCenter,),
-                  GestureDetector(
-                    onTap: () async {
-                      print("create account pressed");
-                      await Navigator.push(context, platformPageRoute(maintainState: false,
-                            builder: (BuildContext context) {
-                        return new CreateAccountPage();
-                      },
-                          fullscreenDialog: true,
-                          context: context,
+                      Container(height: 10),
+                      LoginTextInput(
+                        hint: "Password",
+                        controller: passwordController,
+                        keyboard: TextInputType.text,
+                        obscureTxt: true,
                       ),
-                      );
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: 20.0,
-                      child: Center(
-                        child: Text("Create Account", 
-                          style: TextStyle(color: Colors.white, fontSize: 15.0),
-                          textAlign: TextAlign.center,
+                      Container(height: 10),
+                      PlatformButton(
+                        ios: (_) => CupertinoButtonData(
+                          pressedOpacity: 0.7,
                         ),
-                      )
-                    ),
-                  ),
-                  Container(padding: EdgeInsets.all(10),alignment: Alignment.bottomCenter,),
-                  GestureDetector(
-                    onTap: () async {
-                      await Navigator.push(context, platformPageRoute(maintainState: false,
-                          builder: (BuildContext context) {
-                            return new ResetAccountPage();
-                          },
-                          fullscreenDialog: true,
-                          context: context,
+                        android: (_) => MaterialRaisedButtonData(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                         ),
-                      );
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: 20.0, 
-                      child: Center(
-                        child: Text("Reset Account", 
-                          style: TextStyle(color: Colors.white, fontSize: 15.0),
-                          textAlign: TextAlign.center,
+                        color: SavourColorsMaterial.savourGreen,
+                        child: Text("Login", style: whiteText),
+                        onPressed: () {
+                          login();
+                        },
+                      ),
+                      Container(height: 10),
+                      FacebookSignInButton(
+                        onPressed: () {
+                          facebookLogin();
+                        },
+                      ),
+                      Container(height: 20),
+                      Container(
+                        height: 20,
+                        child: RichText(
+                          text: TextSpan(
+                            text: 'Create Account',
+                            style: TextStyle(color: Colors.white),
+                            recognizer: TapGestureRecognizer()..onTap = () {
+                              Navigator.push(context, 
+                                platformPageRoute(
+                                  maintainState: false,
+                                  settings: RouteSettings(name: "CreateAccountPage"),
+                                  builder: (BuildContext context) {
+                                    return new CreateAccountPage();
+                                  },
+                                  fullscreenDialog: true,
+                                  context: context,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
-                    )
+                      Container(height: 20),
+                      Container(
+                        height: 20,
+                        child: RichText(
+                          text: TextSpan(
+                            text: 'Reset Account',
+                            style: TextStyle(color: Colors.white),
+                            recognizer: TapGestureRecognizer()..onTap = () {
+                              Navigator.push(context, 
+                                platformPageRoute(maintainState: false,
+                                  settings: RouteSettings(name: "ResetAccountPage"),
+                                  builder: (BuildContext context) {
+                                    return new ResetAccountPage();
+                                  },
+                                  fullscreenDialog: true,
+                                  context: context,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      Container(height: 20),
+                      Center(
+                        child: RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'By logging in you agree to our',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'Terms of Use',
+                                style: TextStyle(color: Colors.blue),
+                                recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                    launch('https://www.savourdeals.com/terms-of-use');
+                                },
+                              ),
+                              TextSpan(
+                                text: ' and ',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              TextSpan(
+                                text: 'Privacy Policy',
+                                style: TextStyle(color: Colors.blue),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    launch('https://www.savourdeals.com/privacy-policy');
+                                  },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
         ),
-      ),
+        Visibility(
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            color: Colors.black54,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                PlatformCircularProgressIndicator(),
+              ],
+            ),
+          ),
+          visible: _loading,
+        )
+      ],
     );
   }
 
@@ -155,21 +214,23 @@ class _LoginPageState extends State<LoginPage> {
     _onLoading();
     if (emailController.text.isEmpty || passwordController.text.isEmpty){
       // this removes the loading bar
-      Navigator.pop(context);
+        _endLoading();
       displayError("Missing email or password","Please provide both an email and password", "OK");
     } else {
       _auth.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error){
         // this removes the loading bar
-        // Navigator.pop(context);
-      }).then((user){
+        _endLoading();
+      }).then((authResult){
+        FirebaseUser user = authResult;
         // this removes the loading bar
-        Navigator.pop(context);
+        _endLoading();
         if(user != null){
           if (!user.isEmailVerified){
             _auth.signOut();
             promptUnverified(user: user);
           }
         }else{
+          _endLoading();
           displayError("Login Failed!","Please check that your email and password are correct and try again.", "OK");
         }
       });
@@ -185,39 +246,19 @@ class _LoginPageState extends State<LoginPage> {
       case FacebookLoginStatus.loggedIn:
         _auth.signInWithCredential(FacebookAuthProvider.getCredential(
             accessToken: result.accessToken.token)
-        ).then((fbauth) async {
+        ).then((authResult) async {
           // this removes the loading bar
-          Navigator.pop(context);
-          UserUpdateInfo userUpdateInfo = new UserUpdateInfo();
-
-          userRef = FirebaseDatabase.instance.reference().child("Users").child(fbauth.uid);
-
-          var graphResponse = await http.get('https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email,picture&access_token=${result.accessToken.token}');
-
-          var profile = json.decode(graphResponse.body);
-          if (profile['name'] != null){
-            userUpdateInfo.displayName = profile['name'];
-            userRef.child("full_name").set(profile['name']);
-          }
-          if (profile['id'] != null){
-            userUpdateInfo.photoUrl = "https://graph.facebook.com/" + profile['id'] + "/picture?height=500";
-            userRef.child("photo").set("https://graph.facebook.com/" + profile['id'] + "/picture?height=500");
-            userRef.child("facebook_id").set(profile['id']);
-          }
-          if (profile['email'] != null){
-            userRef.child("email").set(profile['email']);
-          }
-          fbauth.updateProfile(userUpdateInfo);
+          _endLoading();
         });
         
         break;
       case FacebookLoginStatus.cancelledByUser:
         // this removes the loading bar
-        Navigator.pop(context);
+        _endLoading();
         break;
       case FacebookLoginStatus.error:
         // this removes the loading bar
-        Navigator.pop(context);
+        _endLoading();
         displayError("Facebook Error", "Please try again.", "OK");
         break;
     }
@@ -244,17 +285,21 @@ class _LoginPageState extends State<LoginPage> {
       },
     );
   }
-  void _onLoading() {
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        child: new Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            new PlatformCircularProgressIndicator(),
-          ],
-        )
-    );
+
+  void _onLoading(){
+    setState(() {
+      if(this.mounted){
+        _loading = true;
+      }
+    });
+  }
+
+  void _endLoading(){
+    setState(() {
+      if(this.mounted){
+        _loading = false;
+      }
+    });
   }
 
   void promptUnverified({user: FirebaseUser}){

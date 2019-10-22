@@ -348,7 +348,7 @@ class CountdownWidget extends StatelessWidget {
           child: Container(
             padding: EdgeInsets.all(10.0),
             child: AutoSizeText(deal.countdownString(), 
-              maxLines: 1,
+              maxLines: 2,
               style: TextStyle(color: Colors.white),
             ),
             color: Colors.black54,
@@ -365,7 +365,7 @@ class CountdownWidget extends StatelessWidget {
             width: MediaQuery.of(context).size.width,
             padding: EdgeInsets.all(10.0),
             child: AutoSizeText(info, 
-              maxLines: 1,
+              maxLines: 2,
               style: TextStyle(color: Colors.white),textAlign: TextAlign.center,
             ),
             color: Colors.black54,

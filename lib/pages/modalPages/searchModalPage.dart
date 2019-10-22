@@ -155,6 +155,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 context,
                 platformPageRoute(
                   context: context,
+                  settings: RouteSettings(name: "DealPage"),
                   builder: (context) => DealPageWidget(
                     deal: _filteredDeals[index], 
                     location: currentLocation
@@ -185,6 +186,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               Navigator.push(
                 context,
                 platformPageRoute(
+                  settings: RouteSettings(name: "DealPage"),
                   context: context,
                   builder: (context) => VendorPageWidget(_filteredVendors[index], currentLocation),
                 ),
