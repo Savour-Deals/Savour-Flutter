@@ -57,6 +57,7 @@ target 'Runner' do
   }
 
   # Plugin Pods
+  pod 'GeoFire', :git => 'https://github.com/firebase/geofire-objc.git', :branch => 'master'
   plugin_pods = parse_KV_file('../.flutter-plugins')
   plugin_pods.map { |p|
     if p[:name] == 'FLUTTER_FRAMEWORK_DIR'
@@ -72,14 +73,12 @@ target 'Runner' do
 end
 
 # Prevent Cocoapods from embedding a second Flutter framework and causing an error with the new Xcode build system.
-# install! 'cocoapods', :disable_input_output_paths => true
+install! 'cocoapods', :disable_input_output_paths => true
 
 target 'OneSignalNotificationServiceExtension' do
   use_frameworks!
   pod 'OneSignal', '>= 2.9.3', '< 3.0'
 end
-
-install! 'cocoapods', :disable_input_output_paths => true
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|

@@ -20,6 +20,8 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
   NotificationSettings notificationSettings;
   ThemeData theme;
 
+  int totalSavings = 0;
+
   @override
   void initState() { 
     super.initState();
@@ -30,6 +32,13 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
     _auth.currentUser().then((_userData) {
       setState(() {
         user = _userData;
+        FirebaseDatabase().reference().child("Users").child(user.uid).child("total_savings").onValue.listen((datasnapshot) {
+          if (this.mounted){
+            setState(() {
+              totalSavings = datasnapshot.snapshot.value ?? 0; 
+            });
+          }
+        });
       });
     });
   }
@@ -73,6 +82,12 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
       ):Center(
         child: ListView(
           children: <Widget>[
+            Container(height: 20.0,),
+            Text(
+              "Total Estimated Savings: \$" + totalSavings.toString(), 
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+            ),
             Container(height: 20.0,),
             Container(
               alignment: Alignment.center,

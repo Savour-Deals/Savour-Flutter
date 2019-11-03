@@ -440,6 +440,12 @@ class _DealsPageState extends State<DealsPageWidget> {
   }
 
   Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carouselDeals, String carouselText) {
+    var viewportFrac = 0.9;
+    var initialPage = 0;
+    if(MediaQuery.of(context).size.shortestSide > 600){//this is getting into tablet range
+      viewportFrac = 0.35; //make a couple fit on the page
+      initialPage = 1;
+    }
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: <Widget>[
@@ -458,7 +464,7 @@ class _DealsPageState extends State<DealsPageWidget> {
           height: 300,
           child: (carouselDeals.length <= 0)? Container():PageView.builder(
             key: PageStorageKey('dealGroup$carouselIndex'), //save deal group's position when scrolling
-            controller: PageController(viewportFraction: 0.9),
+            controller: PageController(viewportFraction: viewportFrac, initialPage: initialPage),
             physics: AlwaysScrollableScrollPhysics(),
             itemBuilder: (BuildContext context, int item) {
               return GestureDetector(

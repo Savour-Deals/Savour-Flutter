@@ -53,6 +53,10 @@ class Deals {
     return this._deals.where((deal)=> (!deal.redeemed || (now-deal.redeemedTime~/1000 < halfhour) )&& deal.isLive()).toList();
   }
 
+  List<Deal> getAllDealsPlusInactive(){
+    return this._deals;
+  }
+
   List<Deal> getDealsByValue(){
     var sortedDeals = getAllDeals();
     sortedDeals.sort((a, b) {

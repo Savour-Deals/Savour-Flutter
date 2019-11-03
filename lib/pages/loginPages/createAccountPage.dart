@@ -8,6 +8,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/themes/decoration.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 
 class CreateAccountPage extends StatefulWidget {
 
@@ -24,10 +25,19 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _loading = false;
 
+  static FirebaseAnalytics analytics = FirebaseAnalytics();
+
+  @override
+  void initState() {
+    super.initState();
+    analytics.setCurrentScreen(
+      screenName: 'CreateAccountPage',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
-
     return Stack(
       children: <Widget>[
         PlatformScaffold(
@@ -175,7 +185,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     } else {
       FirebaseUser user;
       try {
-        user = await _auth.createUserWithEmailAndPassword(email: emailController.text, password: passwordController.text);
+        var authResult = await _auth.createUserWithEmailAndPassword(email: emailController.text, password: passwordController.text);
+        user = authResult.user;
       } catch (error) {
         PlatformException exception = error;
         if (exception.code == "ERROR_WEAK_PASSWORD") {
@@ -185,6 +196,9 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         }
         return;
       }
+      await analytics.logSignUp(
+        signUpMethod: 'email',
+      );
       UserUpdateInfo userUpdateInfo = new UserUpdateInfo();
       var userRef = FirebaseDatabase.instance.reference().child("Users").child(user.uid);
       userUpdateInfo.displayName = "";//set these blank for now

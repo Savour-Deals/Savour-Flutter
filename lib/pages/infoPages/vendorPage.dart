@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:app_settings/app_settings.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:barcode_scan/barcode_scan.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
@@ -38,6 +39,8 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
   FirebaseUser user;
   DatabaseReference _userRef;
 
+  FirebaseAnalytics analytics = FirebaseAnalytics();
+
   //Location variables
   final _locationService = Geolocator();
   Position currentLocation;
@@ -59,6 +62,11 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
   }
 
   void initialize() async {
+    await analytics.logViewItem(
+      itemId: widget.vendor.key,
+      itemName: widget.vendor.name,
+      itemCategory: 'vendor',
+    );
     var serviceStatus;
     try {
       serviceStatus = await _locationService.checkGeolocationPermissionStatus();

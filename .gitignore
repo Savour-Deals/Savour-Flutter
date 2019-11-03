@@ -36,7 +36,10 @@
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
 **/android/**/google-services.json
+**/android/**/google-services_dev.json
 **/android/app/src/main/AndroidManifest.xml
+**/android/**/SVR_PROD
+android/app/google-services-prod.json
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
@@ -66,6 +69,7 @@
 **/ios/**/GoogleService-Info.plist
 **/ios/Runner/Firebase
 **/ios/Runner/AppDelegate.*
+**/ios/Runner/GoogleService-Info-prod.plist
 
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3

@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/cupertino.dart';
@@ -242,8 +243,9 @@ class SearchTextField extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final bool isDealSearch;
+  final FirebaseAnalytics analytics = FirebaseAnalytics();
 
-  SearchTextField(this.controller, this.focusNode, this.isDealSearch);
+  SearchTextField(this.controller, this.focusNode, this.isDealSearch,);
 
   @override
   Widget build(BuildContext context) {
@@ -259,6 +261,12 @@ class SearchTextField extends StatelessWidget {
         focusNode: focusNode,
         cursorColor: Colors.white,
         style: new TextStyle(fontSize: 16, color: Colors.white),
+        onSubmitted: (searchText) async {
+          await analytics.logSearch(
+            searchTerm: searchText,
+            origin: this.isDealSearch? 'deal' : 'vendor',
+          );
+        },
         decoration: InputDecoration(
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: Colors.white, width: 2.5),

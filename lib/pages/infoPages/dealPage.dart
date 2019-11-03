@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
@@ -45,6 +46,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   ThemeData theme;
 
   FirebaseUser user;
+  FirebaseAnalytics analytics = FirebaseAnalytics();
 
   @override
   void initState() {
@@ -61,6 +63,11 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
     redemptionRef = FirebaseDatabase().reference().child("Deals").child(widget.deal.key).child("redeemed").child(user.uid);
     userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
     vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.deal.vendor.key);
+    await analytics.logViewItem(
+      itemId: widget.deal.key,
+      itemName: widget.deal.description,
+      itemCategory: 'deal',
+    );
   }
 
   @override
@@ -170,8 +177,10 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => VendorPageWidget(widget.deal.vendor, widget.location)
+                        platformPageRoute(
+                          context: context,
+                          settings: RouteSettings(name: "VendorPage"),
+                          builder: (context) => VendorPageWidget(widget.deal.vendor, widget.location), 
                         ),
                       );
                     },
@@ -295,9 +304,11 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         ),
         onPressed: () {
           if (!widget.deal.redeemed){
+            analytics.logEvent(name: "redeem_initiated", parameters: {'deal': widget.deal.key});
             if (inRange()){
               promptRedemption();
             }else{
+              analytics.logEvent(name: "redeem_incomplete", parameters: {"reason": 'not_within_distances', 'deal': widget.deal.key});
               openMap();
             }
           }
@@ -312,7 +323,8 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         style: whiteText,
       ),
       onPressed: (){
-        //Do nothing!
+        analytics.logEvent(name: "redeem_initiated", parameters: {'deal': widget.deal.key});
+        analytics.logEvent(name: "redeem_incomplete", parameters: {"reason": 'not_active', 'deal': widget.deal.key});
       },
     );
   }
@@ -329,13 +341,14 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
               child: PlatformText("Approve", style: TextStyle(color: Color.fromARGB(255, 0, 255, 0)),),
               onPressed: () {
                 redeemDeal();
+                analytics.logEvent(name: "redeem_completed", parameters: {'deal': widget.deal.key});
                 Navigator.of(context).pop();
-
               },
             ),
             PlatformDialogAction(
               child: PlatformText("Not Now", style: TextStyle(color: Colors.red),),
               onPressed: () {
+                analytics.logEvent(name: "redeem_incomplete", parameters: {"reason": 'canceled', 'deal': widget.deal.key});
                 print("Deal " + widget.deal.key + " redemption canceled.");
                 Navigator.of(context).pop();
               },

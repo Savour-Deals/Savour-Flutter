@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
@@ -249,7 +250,18 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
         itemCount: favorites.length+1,
       );
     }
-    return Center(child: Text("No favorites to show!"));
+    return ListView(
+      padding: EdgeInsets.only(top: 10.0),
+      children: <Widget>[
+        Text(
+          "Total Estimated Savings: \$" + totalSavings.toString(), 
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+        ),
+        Container(height: 20,),
+        Center(child: Text("No favorites to show!"))
+      ],
+    );
   }
 
   Widget getCard(Deal deal){
@@ -295,14 +307,14 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
   //Declare contextual variables
   ThemeData theme;
 
-  Deals deals;
+  List<Deal> deals;
   List<Vendor> vendors = [];
 
   @override
   void initState() {
     super.initState();
-    deals = widget.deals;
-    vendors = widget.vendors;
+    deals = widget.deals.getAllDealsPlusInactive().toList();
+    vendors = widget.vendors.toList();
     init();
   }
 
@@ -317,6 +329,9 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
     });
     redemptionRef.orderByChild("user_id").equalTo(user.uid).onValue.listen((datasnapshot) {
       var userData = datasnapshot.snapshot.value;
+      setState(() {
+        loaded = true;
+      });
       if (this.mounted && userData!= null) {
         Map<String, dynamic> redemptionData = new Map<String, dynamic>.from(userData);
         redemptionData.forEach((key,data) async {
@@ -342,23 +357,24 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
   }
 
   Future<Deal> getDeal(String dealID) async {
-    if(!deals.containsDeal(dealID)){
+    if(deals.indexWhere((deal) => deal.key == dealID) < 0){
       return await FirebaseDatabase().reference().child("Deals").child(dealID).once().then((dealSnap) async {
         var newVendor;
         newVendor = await getVendor(dealSnap.value["vendor_id"]);        
         var newDeal = Deal.fromSnapshot(dealSnap, newVendor, user.uid);
-        deals.addDeal(newDeal);//save it for future use
+        deals.add(newDeal);//save it for fusture use
         return newDeal;
       });
     }
     //If the deal is already here, send it back
-    return deals.getDealByKey(dealID);
+    return deals.firstWhere((deal) => deal.key == dealID);
   }
 
   Future<Vendor> getVendor(String vendorID) async {
     if(vendors.indexWhere((vendor) => vendor.key == vendorID) < 0){
+      var loc = await Geofire().getLocation(vendorID);
       return await FirebaseDatabase().reference().child("Vendors").child(vendorID).once().then((vendorSnap) {
-        var newVendor = Vendor.fromSnapshot(vendorSnap, widget.location.latitude, widget.location.longitude);
+        var newVendor = Vendor.fromSnapshot(vendorSnap, loc['lat'], loc['lng']);
         vendors.add(newVendor);
         return newVendor;//save it for future use
       });
@@ -391,7 +407,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
               leading: CircleAvatar(
                 backgroundColor: theme.primaryColor,
                 backgroundImage: AdvancedNetworkImage(
-                  redemptions[position-1].redemptionPhoto,
+                  (redemptions[position-1].redemptionType == RedemptionType.deal)? redemptions[position-1].deal.photo : redemptions[position-1].vendor.photo,
                   retryDuration: Duration(milliseconds: 1),
                   fallbackAssetImage: 'images/glass-and-fork.png',
                 ),
@@ -436,8 +452,18 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
         itemCount: redemptions.length+1,
       );
     }
-    return Center(
-      child: Text("No Redemptions.\nRedeem deals to start saving!", textAlign: TextAlign.center,),
+    return ListView(
+      padding: EdgeInsets.only(top: 10.0),
+      children: <Widget>[
+        Text(
+          "Total Estimated Savings: \$" + totalSavings.toString(), 
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+        ),
+        Container(height: 20,),
+        Center(
+          child: loaded? Text("No Redemptions.\nRedeem deals to start saving!", textAlign: TextAlign.center,) : PlatformCircularProgressIndicator())
+      ],
     );
   }
 }

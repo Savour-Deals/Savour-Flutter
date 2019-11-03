@@ -11,6 +11,7 @@ import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/themes/decoration.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 
 import 'createAccountPage.dart';
 
@@ -32,11 +33,16 @@ class _LoginPageState extends State<LoginPage> {
   GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
   BuildContext thisContext;
 
+  FirebaseAnalytics analytics = FirebaseAnalytics();
+
   bool _loading = false;
 
   @override
   void initState() {
     super.initState();
+    analytics.setCurrentScreen(
+      screenName: 'LoginPage',
+    );
   }
 
   @override
@@ -214,20 +220,24 @@ class _LoginPageState extends State<LoginPage> {
     _onLoading();
     if (emailController.text.isEmpty || passwordController.text.isEmpty){
       // this removes the loading bar
-        _endLoading();
+      _endLoading();
       displayError("Missing email or password","Please provide both an email and password", "OK");
     } else {
       _auth.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error){
         // this removes the loading bar
         _endLoading();
+        displayError("Login Failed!","Please check that your email and password are correct and try again.", "OK");
       }).then((authResult){
-        FirebaseUser user = authResult;
+        FirebaseUser user = authResult.user;
         // this removes the loading bar
         _endLoading();
         if(user != null){
           if (!user.isEmailVerified){
             _auth.signOut();
             promptUnverified(user: user);
+          }else{
+            analytics.logLogin();
+            analytics.setUserId(user.uid);
           }
         }else{
           _endLoading();
@@ -248,6 +258,13 @@ class _LoginPageState extends State<LoginPage> {
             accessToken: result.accessToken.token)
         ).then((authResult) async {
           // this removes the loading bar
+          if(authResult.additionalUserInfo.isNewUser){
+            await analytics.logSignUp(
+              signUpMethod: 'facebook',
+            );
+          }
+          analytics.logLogin();
+          analytics.setUserId(authResult.user.uid);
           _endLoading();
         });
         

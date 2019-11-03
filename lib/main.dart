@@ -1,8 +1,11 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/observer.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:provider/provider.dart';
-import 'package:savour_deals_flutter/pages/loginPages/login.dart';
+import 'package:savour_deals_flutter/pages/loginPages/loginPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tab.dart';
@@ -13,6 +16,14 @@ import 'dart:convert';
 
 
 void main() async { 
+  // Set `enableInDevMode` to true to see reports while in debug mode
+  // This is only to be used for confirming that reports are being
+  // submitted as expected. It is not intended to be used for everyday
+  // development.
+  Crashlytics.instance.enableInDevMode = false;
+
+  // Pass all uncaught errors from the framework to Crashlytics.
+  FlutterError.onError = Crashlytics.instance.recordFlutterError;
   runApp(
     MultiProvider(
       providers: [
@@ -39,6 +50,7 @@ class SavourApp extends StatefulWidget {
 class _SavourDealsState extends State<SavourApp> {
 
   SharedPreferences prefs;
+  FirebaseAnalytics analytics = FirebaseAnalytics();
 
   @override
   initState() {
@@ -52,6 +64,9 @@ class _SavourDealsState extends State<SavourApp> {
       theme: Provider.of<AppState>(context).isDark? savourMaterialDarkThemeData: savourMaterialLightThemeData,
       debugShowCheckedModeBanner: false,
       home: _handleCurrentScreen(),
+      navigatorObservers: [
+        FirebaseAnalyticsObserver(analytics: analytics),
+      ],
     );
   }
 
@@ -115,8 +130,6 @@ class _SavourDealsState extends State<SavourApp> {
         userRef.child("full_name").set(profile['name']);
       }
       if (profile['id'] != null){
-        userUpdateInfo.photoUrl = "https://graph.facebook.com/" + profile['id'] + "/picture?height=500";
-        userRef.child("photo").set("https://graph.facebook.com/" + profile['id'] + "/picture?height=500");
         userRef.child("facebook_id").set(profile['id']);
       }
       if (profile['email'] != null){

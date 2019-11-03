@@ -3,6 +3,7 @@ import 'dart:io';
 
 //TODO: When data handling is restructured, setup local notifications
 
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -36,6 +37,8 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   int vendorsNearby = 0;
   bool onboardFinished = false;
 
+  FirebaseAnalytics analytics = FirebaseAnalytics();
+
   // int lastNearbyNotificationTime;
   // FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
@@ -49,6 +52,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     AccountPageWidget("Accounts Page"),
   ];
 
+
   @override
   void initState() {
     super.initState();
@@ -57,6 +61,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
+    _sendCurrentTabToAnalytics(0);
     //Init app rating 
     RateMyApp rateMyApp = RateMyApp(
       preferencesPrefix: 'rateMyApp_',
@@ -78,6 +83,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     
     //check if user has used this app before and they have not been prompted for location
     if (locationStatus == PermissionStatus.unknown || (Platform.isAndroid && locationStatus == PermissionStatus.denied)){
+      await analytics.logTutorialBegin();
       await Navigator.push(context,
         platformPageRoute(
           settings: RouteSettings(name: "OnboardingPage"),
@@ -91,6 +97,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
       setState(() {
         onboardFinished = true;//onboarding complete, we can move on and build tabs
       });
+      await analytics.logTutorialComplete();
       sleep(const Duration(milliseconds:500));//used so that dismiss doesnt happen and look weird when prompts pop up
     }else{
       setState(() {
@@ -364,9 +371,12 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   // }
 
   void onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    if (index != _currentIndex) {
+      setState(() {
+        _currentIndex = index;
+        _sendCurrentTabToAnalytics(index);  
+      });
+    }
   }
 
   Future _notificationPermissionHandler(bool accepted) async {
@@ -401,4 +411,25 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         }
       }//else Opened notification with no additional data
   }
+
+  void _sendCurrentTabToAnalytics(int index) {
+    var name;
+    switch (index) {
+      case 0:
+        name = 'DealTabPage';
+        break;
+      case 1:
+        name = 'VendorTabPage';
+        break;
+      case 2:
+        name = 'AccountTabPage';
+        break;
+      default:
+        name = 'UnknownTabPage';
+    }
+    analytics.setCurrentScreen(
+      screenName: 'TabsPage/$name',
+    );
+  }
+
 }

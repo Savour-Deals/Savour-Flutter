@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
@@ -17,6 +18,15 @@ class _ResetAccountPageState extends State<ResetAccountPage> {
 
   TextEditingController emailController = new TextEditingController();
   bool _loading = false;
+  static FirebaseAnalytics analytics = FirebaseAnalytics();
+
+  @override
+  void initState() {
+    super.initState();
+    analytics.setCurrentScreen(
+      screenName: 'CreateAccountPage',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
