@@ -563,7 +563,7 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
     }else{
       //user is not following, follow this vendor
       _userRef.child("following").child(widget.vendor.key).set(true);
-      OneSignal.shared.sendTag(widget.vendor.key, true);
+      // OneSignal.shared.sendTag(widget.vendor.key, true);
       OneSignal.shared.getPermissionSubscriptionState().then((status){
         if (status.subscriptionStatus.subscribed){
           _vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
@@ -856,7 +856,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
           //Code was correct!
           //subscribe to notifications
           _userRef.child("following").child(widget.vendor.key).set(true);
-          OneSignal.shared.sendTag(widget.vendor.key, true);
+          // OneSignal.shared.sendTag(widget.vendor.key, true);
           OneSignal.shared.getPermissionSubscriptionState().then((status){
             if (status.subscriptionStatus.subscribed){
               _vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
