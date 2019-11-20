@@ -367,7 +367,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
 
     //notification subscriptions
     userRef.child("following").child(widget.deal.vendor.key).set(true);
-    OneSignal.shared.sendTag(widget.deal.vendor.key, true);
+    // OneSignal.shared.sendTag(widget.deal.vendor.key, true);
     OneSignal.shared.getPermissionSubscriptionState().then((status){
       if (status.subscriptionStatus.subscribed){
         vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
