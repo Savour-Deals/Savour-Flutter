@@ -80,137 +80,128 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
           ),
         ],
       ):Center(
-        child: ListView(
-          children: <Widget>[
-            Container(height: 20.0,),
-            Text(
-              "Total Estimated Savings: \$" + totalSavings.toString(), 
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-            ),
-            Container(height: 20.0,),
-            Container(
-              alignment: Alignment.center,
-                child: Image(
-                  fit: BoxFit.cover,
-                  color: Theme.of(context).accentColor,
-                  image: AssetImage("images/user_icon.png"),
-                  width: MediaQuery.of(context).size.width*0.5,
-                  // height: MediaQuery.of(context).size.height*0.2,
+        child: Material(
+          child: ListView(
+            children: <Widget>[
+              Container(height: 20.0,),
+              Text(
+                "Total Estimated Savings: \$" + totalSavings.toString(), 
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
-            ),
-            Container(height: 20.0,),
-            Container(
-              child: ListTile(
-                leading: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.people,
-                    color: appState.isDark? Colors.white:Colors.black,
+              Container(height: 20.0,),
+              Container(
+                child: ListTile(
+                  leading: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(Icons.people,
+                      color: appState.isDark? Colors.white:Colors.black,
+                    ),
                   ),
-                ),
-                title: Text(
-                  "Click to invite more friends!",
-                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
-                ),
-                contentPadding: EdgeInsets.all(4.0),
-                onTap: () =>{
-                  Share.share("Check out Savour to get deals from local restaurants! https://www.savourdeals.com/getsavour")
-                }
-              ),
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(width: 0.1))
-              ),
-            ),
-            Container(
-              child: ListTile(
-                leading: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.mail,
-                    color: appState.isDark? Colors.white:Colors.black,
+                  title: Text(
+                    "Click to invite more friends!",
+                    style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
                   ),
+                  contentPadding: EdgeInsets.all(4.0),
+                  onTap: () =>{
+                    Share.share("Check out Savour to get deals from local restaurants! https://www.savourdeals.com/getsavour")
+                  }
                 ),
-                title: Text(
-                  "Contact Us",
-                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
+                decoration: BoxDecoration(
+                  border: Border(top: BorderSide(width: 0.1))
                 ),
-                contentPadding: EdgeInsets.all(4.0),
-                onTap: ()=> _launchURL('https://www.savourdeals.com/contact/'),
               ),
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(width: 0.1))
-              ),
-            ),
-            Container(
-              child: ListTile(
-                leading: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.notifications_active,
-                    color: appState.isDark? Colors.white:Colors.black,
+              Container(
+                child: ListTile(
+                  leading: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(Icons.mail,
+                      color: appState.isDark? Colors.white:Colors.black,
+                    ),
                   ),
+                  title: Text(
+                    "Contact Us",
+                    style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
+                  ),
+                  contentPadding: EdgeInsets.all(4.0),
+                  onTap: ()=> _launchURL('https://www.savourdeals.com/contact/'),
                 ),
-                title: Text(
-                  "Notifications",
-                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
+                decoration: BoxDecoration(
+                  border: Border(top: BorderSide(width: 0.1))
                 ),
-                trailing: PlatformSwitch(
-                  value: notificationSettings.isNotificationsEnabled,
-                  onChanged: (value) {
-                    _toggleNotifications();
+              ),
+              Container(
+                child: ListTile(
+                  leading: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(Icons.notifications_active,
+                      color: appState.isDark? Colors.white:Colors.black,
+                    ),
+                  ),
+                  title: Text(
+                    "Notifications",
+                    style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
+                  ),
+                  trailing: PlatformSwitch(
+                    value: notificationSettings.isNotificationsEnabled,
+                    onChanged: (value) {
+                      _toggleNotifications();
+                    },
+                    // activeTrackColor: theme.primaryColor, 
+                    activeColor: theme.primaryColor,
+                  ),
+                  // onTap: () => _toggleNotifications(),
+                  contentPadding: EdgeInsets.all(4.0),
+                ),
+                decoration: BoxDecoration(
+                  border: Border(top: BorderSide(width: 0.1))
+                ),
+              ),
+              Container(
+                child: ListTile(
+                  leading: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(Icons.people,
+                      color: appState.isDark? Colors.white:Colors.black,
+                    ),
+                  ),
+                  title: Text(
+                    "Learn more about becoming a vendor!",
+                    style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
+                  ),
+                  contentPadding: EdgeInsets.all(4.0),
+                  onTap: ()=> _launchURL('https://www.savourdeals.com/vendorsinfo'),
+                ),
+                decoration: BoxDecoration(
+                  border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1)),
+                ),
+              ),
+              Container(
+                child: ListTile(
+                  leading: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(Icons.lightbulb_outline,
+                      color: appState.isDark? Colors.white:Colors.black,
+                    ),
+                  ),
+                  title: Text(
+                    "Switch to " + (appState.isDark? "light":"dark") + " mode",
+                    style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
+                  ),
+                  contentPadding: EdgeInsets.all(4.0),
+                  onTap: () {
+                    setState(() {
+                      appState.setDarkMode(!appState.isDark);
+                    });
                   },
-                  // activeTrackColor: theme.primaryColor, 
-                  activeColor: theme.primaryColor,
                 ),
-                // onTap: () => _toggleNotifications(),
-                contentPadding: EdgeInsets.all(4.0),
-              ),
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(width: 0.1))
-              ),
-            ),
-            Container(
-              child: ListTile(
-                leading: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.people,
-                    color: appState.isDark? Colors.white:Colors.black,
-                  ),
+                decoration: BoxDecoration(
+                  border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1)),
                 ),
-                title: Text(
-                  "Learn more about becoming a vendor!",
-                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
-                ),
-                contentPadding: EdgeInsets.all(4.0),
-                onTap: ()=> _launchURL('https://www.savourdeals.com/vendorsinfo'),
               ),
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1)),
-              ),
-            ),
-            Container(
-              child: ListTile(
-                leading: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.lightbulb_outline,
-                    color: appState.isDark? Colors.white:Colors.black,
-                  ),
-                ),
-                title: Text(
-                  "Switch to " + (appState.isDark? "light":"dark") + " mode",
-                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
-                ),
-                contentPadding: EdgeInsets.all(4.0),
-                onTap: () {
-                  setState(() {
-                    appState.setDarkMode(!appState.isDark);
-                  });
-                },
-              ),
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1)),
-              ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        )
       )
     );
   }

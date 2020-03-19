@@ -6,7 +6,8 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart'
+  hide BuildContext;
 import 'package:geolocator/geolocator.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
@@ -112,18 +113,20 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            ListTile(
-              title: Text(
-                widget.deal.vendor.name, 
-                style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal*4),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-              ),
-              subtitle: Text(
-                widget.deal.description, 
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeConfig.safeBlockHorizontal*6), 
-                textAlign: TextAlign.center,
-                maxLines: 2,
+            Material(
+              child: ListTile(
+                title: Text(
+                  widget.deal.vendor.name, 
+                  style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal*4),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                ),
+                subtitle: Text(
+                  widget.deal.description, 
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeConfig.safeBlockHorizontal*6), 
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                ),
               ),
             ),
             Stack(
@@ -254,26 +257,30 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
       );
     }else if (Platform.isAndroid){
       mapApps.add(
-        ListTile(
-          title: new Text("Navigate with:", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),)
+        Card(
+          child: Text("Navigate with:", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),)
         ),
       );
       mapURLs.forEach((appName, url) {
         mapApps.add(
-          ListTile(
-            title: new Text(appName),
+          GestureDetector(
             onTap: () async {
               await launch(url);
-            },          
+            }, 
+            child: Card(
+              child: new Text(appName),         
+            ),
           ),
         );
       });
       mapApps.add(
-        ListTile(
-          title: Text("Cancel", style: TextStyle(color: Colors.red),),
+        GestureDetector(
           onTap: () async {
             Navigator.of(context).pop();
           },
+          child: Card(
+            child: Text("Cancel", style: TextStyle(color: Colors.red),),
+          ),
         )
       );
       showModalBottomSheet(

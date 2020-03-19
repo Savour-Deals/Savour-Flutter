@@ -77,7 +77,7 @@ class _DealsPageState extends State<DealsPageWidget> {
 
     if (currentLocation != null){
       //If we have the location, fire off the query, otherwise we will have to wait for the stream
-      geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+      geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 800.0);
     }
     geo.onObserveReady.listen((ready){
       if(this.mounted){
@@ -107,10 +107,10 @@ class _DealsPageState extends State<DealsPageWidget> {
         });
         if (geo.geoQueryActive){
           //Query already running, update location
-          geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+          geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 800.0);
         }else{
           // this is our first location update. Fire off the geoquery
-          geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+          geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 800.0);
         }      
       }
     });
@@ -177,7 +177,7 @@ class _DealsPageState extends State<DealsPageWidget> {
             if (!vendors.contains(newVendor)){
               vendors.add(newVendor); 
               dealRef.orderByChild("vendor_id").equalTo(newVendor.key).onValue.listen((dealEvent) {
-                if (this.mounted && dealEvent.snapshot != null){
+                if (this.mounted && dealEvent.snapshot != null && dealEvent.snapshot.value != null){
                   setState(() {
                     Map<String, dynamic> dealDataMap = new Map<String, dynamic>.from(dealEvent.snapshot.value);
                     dealDataMap.forEach((key,data){

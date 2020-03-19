@@ -68,7 +68,7 @@ class Vendor {
         loyalty.points.add(points["sun"]);
       }
     }
-    var days = snapshot.value["daily_hours"]?? [];
+    var days = snapshot.value["daily_hours"]?? null;
     if (days != null){
       dailyHours.add(days["mon"]);
       dailyHours.add(days["tues"]);
@@ -106,7 +106,7 @@ class Vendor {
         loyalty.points.add(points["sun"]);
       }
     }
-    var days = data["daily_hours"];
+    var days = data["daily_hours"]?? null;
     if (days != null){
       dailyHours.add(days["mon"]);
       dailyHours.add(days["tues"]);

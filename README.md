@@ -3,9 +3,9 @@ This project is a flutter version of the native iOS and Android Savour Deals app
 
 ## Getting Started
 
-flutter run --flavor  dev  -> Dev firebase
+flutter run --release
 
-flutter run --flavor prod  -> Prod firebase
+flutter run 
 
 
 This project is a starting point for a Flutter application.

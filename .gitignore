@@ -40,6 +40,8 @@
 **/android/app/src/main/AndroidManifest.xml
 **/android/**/SVR_PROD
 android/app/google-services-prod.json
+android/app/google-services-dev.json
+
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
@@ -70,6 +72,7 @@ android/app/google-services-prod.json
 **/ios/Runner/Firebase
 **/ios/Runner/AppDelegate.*
 **/ios/Runner/GoogleService-Info-prod.plist
+**/ios/Runner/GoogleService-Info-dev.plist
 
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3

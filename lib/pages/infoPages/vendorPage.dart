@@ -9,7 +9,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart'
+  hide BuildContext;
 import 'package:geolocator/geolocator.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
@@ -158,7 +159,7 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Container(
+                child: Card(
                   child: ListTile(
                     title: Text(
                       widget.vendor.name,
@@ -175,10 +176,7 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.8),
-                    borderRadius: BorderRadius.all(Radius.circular(5))
-                  ),
+                  color: Colors.black.withOpacity(0.8),
                 ),
               ),
             ] 

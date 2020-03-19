@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 class  LoginTextInput extends StatefulWidget {
   LoginTextInput({this.hint, this.controller, this.keyboard, this.suffixIcon, this.obscureTxt });
@@ -28,30 +29,44 @@ class _LoginTextInputState extends State<LoginTextInput> {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    return PlatformTextField(
       controller: widget.controller,
       keyboardType: widget.keyboard,
-      decoration: InputDecoration(
-        hintText: widget.hint,
-        filled: true,
-        fillColor: Colors.grey,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(30.0)),
-          borderSide: BorderSide(color: Colors.white, width: 2.0),
+      android: (_) => MaterialTextFieldData(
+        decoration: InputDecoration(
+          hintText: widget.hint,
+          filled: true,
+          fillColor: Colors.grey,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(30.0)),
+            borderSide: BorderSide(color: Colors.white, width: 2.0),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(30.0)),
+            borderSide: BorderSide(color: Colors.white, width: 2.0),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(30.0)),
+            borderSide: BorderSide(color: Colors.white, width: 2.0),
+          ),
+          labelStyle: TextStyle(color: Colors.white),
+          suffixIcon: widget.suffixIcon,
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(30.0)),
-          borderSide: BorderSide(color: Colors.white, width: 2.0),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(30.0)),
-          borderSide: BorderSide(color: Colors.white, width: 2.0),
-        ),
-        labelStyle: TextStyle(color: Colors.white),
-        suffixIcon: widget.suffixIcon,
+        obscureText: obscured,
+        cursorColor: Colors.white
       ),
-      obscureText: obscured,
-      cursorColor: Colors.white,
-    );
+      ios: (_) => CupertinoTextFieldData(
+        placeholder: widget.hint,
+        placeholderStyle: TextStyle(color: Colors.black),
+        padding: EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.grey,
+          border: Border.all(color: Colors.white, width: 2.0),
+          borderRadius: BorderRadius.all(Radius.circular(30.0)),
+        ),
+        obscureText: obscured,
+        cursorColor: Colors.white
+      ),
+    );  
   }
 }
