@@ -9,8 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart'
-  hide BuildContext;
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
@@ -135,61 +134,63 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
           centerTitle: true,
         ),
       ),
-      body: ListView(
-        children: <Widget>[
-          Stack(
-            children: <Widget>[
-              Container(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height*0.3,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: AdvancedNetworkImage(
-                        widget.vendor.photo,
-                        useDiskCache: true,
-                    ),
-                  )
-                ),
-              ),
-              Container(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height*0.3,
-                color: Colors.black.withOpacity(0.3),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Card(
-                  child: ListTile(
-                    title: Text(
-                      widget.vendor.name,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
+      body: Material(
+        child: ListView(
+          children: <Widget>[
+            Stack(
+              children: <Widget>[
+                Container(
+                  width: double.infinity,
+                  height: MediaQuery.of(context).size.height*0.3,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: AdvancedNetworkImage(
+                          widget.vendor.photo,
+                          useDiskCache: true,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    subtitle: Text(
-                      widget.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).toStringAsFixed(1) + " Miles Away", 
-                      style: whiteText,
-                      textAlign: TextAlign.center,
-                    ),
+                    )
                   ),
-                  color: Colors.black.withOpacity(0.8),
                 ),
-              ),
-            ] 
-          ),
-          VendorButtonRow(
-            address: widget.vendor.address,
-            menuURL: widget.vendor.menu,
-            vendor: widget.vendor,
-          ),
-          AboutWidget(vendor: widget.vendor,),
-          (widget.vendor.loyalty.count > -1) ? LoyaltyWidget(vendor: widget.vendor, currentLocation: currentLocation): Container(),
-          _buildCarousel(context, deals.getAllDeals())
-        ],
+                Container(
+                  width: double.infinity,
+                  height: MediaQuery.of(context).size.height*0.3,
+                  color: Colors.black.withOpacity(0.3),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Card(
+                    child: ListTile(
+                      title: Text(
+                        widget.vendor.name,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      subtitle: Text(
+                        widget.vendor.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).toStringAsFixed(1) + " Miles Away", 
+                        style: whiteText,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    color: Colors.black.withOpacity(0.8),
+                  ),
+                ),
+              ] 
+            ),
+            VendorButtonRow(
+              address: widget.vendor.address,
+              menuURL: widget.vendor.menu,
+              vendor: widget.vendor,
+            ),
+            AboutWidget(vendor: widget.vendor,),
+            (widget.vendor.loyalty.count > -1) ? LoyaltyWidget(vendor: widget.vendor, currentLocation: currentLocation): Container(),
+            _buildCarousel(context, deals.getAllDeals())
+          ],
+        ),
       ),
     );
   }

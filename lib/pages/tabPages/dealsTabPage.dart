@@ -449,14 +449,16 @@ class _DealsPageState extends State<DealsPageWidget> {
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: <Widget>[
-        Container(
-          padding: EdgeInsets.only(left: 15.0),
-          width: MediaQuery.of(context).size.width,
-          child: Text(carouselText, 
-            textAlign: TextAlign.left, 
-            style: TextStyle(
-              fontSize: 25.0,
-              fontWeight: FontWeight.bold,
+        Material(
+          child: Container(
+            padding: EdgeInsets.only(left: 15.0),
+            width: MediaQuery.of(context).size.width,
+            child: Text(carouselText, 
+              textAlign: TextAlign.left, 
+              style: TextStyle(
+                fontSize: 25.0,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),

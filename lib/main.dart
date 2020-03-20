@@ -28,13 +28,13 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider<AppState>(
-          builder: (_) => AppState(),
+          create: (_) => AppState(),
         ),
         ChangeNotifierProvider<NotificationData>(
-          builder: (_) => NotificationData(),
+          create: (_) => NotificationData(),
         ),
         ChangeNotifierProvider<NotificationSettings>(
-          builder: (_) => NotificationSettings(),
+          create: (_) => NotificationSettings(),
         ),
       ],
       child: SavourApp(),

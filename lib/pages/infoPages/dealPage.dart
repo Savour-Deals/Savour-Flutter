@@ -6,8 +6,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart'
-  hide BuildContext;
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
@@ -443,12 +442,14 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   Widget getDetailsText(){
-    return AutoSizeText("For dine in and carry out only. Not redeemable with any other promotions unless otherwise mentioned. This deal is only valid for one person. BOGO free items are for equal or lesser value. This deal has no cash value. You must be 21+ to redeem any alcohol deals",
-      style: TextStyle(fontSize: 12.0),
-      minFontSize: 10.0,
-      maxFontSize: 20.0,
-      maxLines: 3,
-      textAlign: TextAlign.center,
+    return Material(
+      child: AutoSizeText("For dine in and carry out only. Not redeemable with any other promotions unless otherwise mentioned. This deal is only valid for one person. BOGO free items are for equal or lesser value. This deal has no cash value. You must be 21+ to redeem any alcohol deals",
+        style: TextStyle(fontSize: 12.0),
+        minFontSize: 10.0,
+        maxFontSize: 20.0,
+        maxLines: 3,
+        textAlign: TextAlign.center,
+      ),
     );
   }
 
