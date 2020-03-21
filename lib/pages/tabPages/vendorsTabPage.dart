@@ -1,9 +1,7 @@
 part of tab_lib;
 
 class VendorsPageWidget extends StatefulWidget {
-  final String text;
-
-  VendorsPageWidget(this.text);
+  VendorsPageWidget();
 
   @override
   _VendorsPageState createState() => _VendorsPageState();
@@ -184,7 +182,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           brightness: Brightness.dark,
         ),
       ),
-      body: bodyWidget(),
+      body: Material(child: bodyWidget()),
     );
   }
 

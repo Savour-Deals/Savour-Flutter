@@ -107,13 +107,13 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
           centerTitle: true,
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Material(
-              child: ListTile(
+      body: Material(
+          child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              ListTile(
                 title: Text(
                   widget.deal.vendor.name, 
                   style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal*4),
@@ -127,79 +127,79 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
                   maxLines: 2,
                 ),
               ),
-            ),
-            Stack(
-              overflow: Overflow.visible,
-              alignment: AlignmentDirectional.center,
-              children: <Widget>[ 
-                CustomPaint(
-                  painter: SpritePainter(_controller, 
-                    _pulsatorColor(),
+              Stack(
+                overflow: Overflow.visible,
+                alignment: AlignmentDirectional.center,
+                children: <Widget>[ 
+                  CustomPaint(
+                    painter: SpritePainter(_controller, 
+                      _pulsatorColor(),
+                    ),
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.height*0.45,
+                      height: MediaQuery.of(context).size.height*0.45,
+                    ),
                   ),
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.height*0.45,
-                    height: MediaQuery.of(context).size.height*0.45,
-                  ),
-                ),
-                Container(
-                  width: MediaQuery.of(context).size.height*0.3,
-                  height: MediaQuery.of(context).size.height*0.3,
-                  decoration: new BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: new DecorationImage(
-                      fit: BoxFit.cover,
-                      image: new AdvancedNetworkImage(
-                          widget.deal.photo,
-                          useDiskCache: true,
-                      ),
+                  Container(
+                    width: MediaQuery.of(context).size.height*0.3,
+                    height: MediaQuery.of(context).size.height*0.3,
+                    decoration: new BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: new DecorationImage(
+                        fit: BoxFit.cover,
+                        image: new AdvancedNetworkImage(
+                            widget.deal.photo,
+                            useDiskCache: true,
+                        ),
+                      )
                     )
-                  )
-                ),
-              ],
-            ),
-            Container(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                alignment: Alignment.center,
-                child: (widget.deal.redeemed) ? getTimer() : getDetailsText(),
+                  ),
+                ],
               ),
-            ),
-            (widget.displayMore)? 
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  alignment: Alignment.center,
+                  child: (widget.deal.redeemed) ? getTimer() : getDetailsText(),
+                ),
+              ),
+              (widget.displayMore)? 
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    width: double.infinity, // match_parent
+                    height: MediaQuery.of(context).size.height*0.05,
+                    child: FlatButton(
+                      shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
+                      color: SavourColorsMaterial.savourGreen,
+                      child: Text("See More from " + widget.deal.vendor.name,
+                        style: whiteText,
+                      ), 
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          platformPageRoute(
+                            context: context,
+                            settings: RouteSettings(name: "VendorPage"),
+                            builder: (context) => VendorPageWidget(widget.deal.vendor, widget.location), 
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                )
+                : 
+                Container(height: MediaQuery.of(context).size.height*0.05,),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: SizedBox(
                   width: double.infinity, // match_parent
                   height: MediaQuery.of(context).size.height*0.05,
-                  child: FlatButton(
-                    shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-                    color: SavourColorsMaterial.savourGreen,
-                    child: Text("See More from " + widget.deal.vendor.name,
-                      style: whiteText,
-                    ), 
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        platformPageRoute(
-                          context: context,
-                          settings: RouteSettings(name: "VendorPage"),
-                          builder: (context) => VendorPageWidget(widget.deal.vendor, widget.location), 
-                        ),
-                      );
-                    },
-                  ),
+                  child: redemptionButton()
                 ),
-              )
-              : 
-              Container(height: MediaQuery.of(context).size.height*0.05,),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: double.infinity, // match_parent
-                height: MediaQuery.of(context).size.height*0.05,
-                child: redemptionButton()
               ),
-            ),
-          ]
+            ]
+          ),
         ),
       ),
     );
@@ -442,14 +442,12 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   Widget getDetailsText(){
-    return Material(
-      child: AutoSizeText("For dine in and carry out only. Not redeemable with any other promotions unless otherwise mentioned. This deal is only valid for one person. BOGO free items are for equal or lesser value. This deal has no cash value. You must be 21+ to redeem any alcohol deals",
-        style: TextStyle(fontSize: 12.0),
-        minFontSize: 10.0,
-        maxFontSize: 20.0,
-        maxLines: 3,
-        textAlign: TextAlign.center,
-      ),
+    return AutoSizeText("For dine in and carry out only. Not redeemable with any other promotions unless otherwise mentioned. This deal is only valid for one person. BOGO free items are for equal or lesser value. This deal has no cash value. You must be 21+ to redeem any alcohol deals",
+      style: TextStyle(fontSize: 12.0),
+      minFontSize: 10.0,
+      maxFontSize: 20.0,
+      maxLines: 3,
+      textAlign: TextAlign.center,
     );
   }
 

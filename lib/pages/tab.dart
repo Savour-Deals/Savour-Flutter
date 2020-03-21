@@ -47,9 +47,9 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   ThemeData theme;
 
   List<Widget> _children = [
-    DealsPageWidget("Deals Page"),
-    VendorsPageWidget("Vendors Page"),
-    AccountPageWidget("Accounts Page"),
+    DealsPageWidget(),
+    VendorsPageWidget(),
+    AccountPageWidget(),
   ];
 
 

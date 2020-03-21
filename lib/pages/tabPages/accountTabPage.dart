@@ -3,8 +3,7 @@ part of tab_lib;
 
 
 class AccountPageWidget extends StatefulWidget {
-  final  String text;
-  AccountPageWidget(this.text);
+  AccountPageWidget();
 
   @override
   _AccountPageWidgetState createState() => _AccountPageWidgetState();

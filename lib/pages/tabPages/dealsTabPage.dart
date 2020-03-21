@@ -1,9 +1,7 @@
 part of tab_lib;
 
 class DealsPageWidget extends StatefulWidget {
-  final String text;
-
-  DealsPageWidget(this.text);
+  DealsPageWidget();
 
   @override
   _DealsPageState createState() => _DealsPageState();
@@ -328,7 +326,7 @@ class _DealsPageState extends State<DealsPageWidget> {
                 brightness: Brightness.dark,
               ),
             ),
-            body: bodyWidget(),
+            body: Material(child: bodyWidget()),
           );
         },
       )
@@ -449,16 +447,14 @@ class _DealsPageState extends State<DealsPageWidget> {
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: <Widget>[
-        Material(
-          child: Container(
-            padding: EdgeInsets.only(left: 15.0),
-            width: MediaQuery.of(context).size.width,
-            child: Text(carouselText, 
-              textAlign: TextAlign.left, 
-              style: TextStyle(
-                fontSize: 25.0,
-                fontWeight: FontWeight.bold,
-              ),
+        Container(
+          padding: EdgeInsets.only(left: 15.0),
+          width: MediaQuery.of(context).size.width,
+          child: Text(carouselText, 
+            textAlign: TextAlign.left, 
+            style: TextStyle(
+              fontSize: 25.0,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
