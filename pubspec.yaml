@@ -96,6 +96,9 @@ flutter:
     - images/like.png
     - images/like_filled.png
     - images/user_icon.png
+    - images/menu-dots.png
+    - images/diamond.png
+    - images/diamond_filled.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.io/assets-and-images/#resolution-aware.

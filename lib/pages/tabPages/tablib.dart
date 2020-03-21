@@ -1,9 +1,7 @@
 library tab_lib;
 
 import 'dart:async';
-import 'dart:io';
 
-import 'package:app_settings/app_settings.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,11 +10,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
 import 'package:savour_deals_flutter/containers/vendorCardWidget.dart';
 import 'package:savour_deals_flutter/pages/infoPages/dealPage.dart';
+import 'package:savour_deals_flutter/pages/modalPages/accountModalPage.dart';
 import 'package:savour_deals_flutter/pages/modalPages/searchModalPage.dart';
 import 'package:savour_deals_flutter/pages/modalPages/walletModalPage.dart';
 import 'package:savour_deals_flutter/pages/modalPages/mapModalPage.dart';
@@ -28,13 +26,10 @@ import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:share/share.dart';
 import 'package:showcaseview/showcase_widget.dart';
 import 'package:showcaseview/showcaseview.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../utils.dart';
 
 part "dealsTabPage.dart";
 part "vendorsTabPage.dart";
-part "accountTabPage.dart";

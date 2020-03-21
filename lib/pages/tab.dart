@@ -19,6 +19,8 @@ import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
 import 'package:savour_deals_flutter/utils.dart';
 
+import 'modalPages/accountModalPage.dart';
+
 class SavourTabPage extends StatefulWidget {
   SavourTabPage({Key key, this.uid}) : super(key: key);
   final String title = 'Savour Deals';
@@ -47,9 +49,9 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   ThemeData theme;
 
   List<Widget> _children = [
-    DealsPageWidget("Deals Page"),
-    VendorsPageWidget("Vendors Page"),
-    AccountPageWidget("Accounts Page"),
+    DealsPageWidget(),
+    AccountPageWidget(),
+    VendorsPageWidget(),
   ];
 
 
@@ -260,6 +262,21 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
               )
             ),
             BottomNavigationBarItem(
+              icon: Image.asset('images/diamond.png',
+                color: Color.fromARGB(255, 212, 175, 55),
+                width: 30,
+                height: 30,
+              ),
+              activeIcon: Image.asset('images/diamond_filled.png',
+                color: Color.fromARGB(255, 212, 175, 55),
+                width: 30,
+                height: 30,
+              ),
+              title: Text('Savour+',
+                style: TextStyle(color: Color.fromARGB(255, 212, 175, 55)),//Colors.yellow),
+              )
+            ),
+            BottomNavigationBarItem(
               icon: Image.asset('images/vendor.png',
                 color: this.getTabOutlineColor(),
                 width: 30,
@@ -274,21 +291,6 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
                 style: TextStyle(color: this.getTabOutlineColor()),
               )
             ),
-            BottomNavigationBarItem(
-              icon: Image.asset('images/user.png',
-                color: this.getTabOutlineColor(),
-                width: 30,
-                height: 30,
-              ),
-              activeIcon: Image.asset('images/user_filled.png',
-                color: this.getTabOutlineColor(),
-                width: 30,
-                height: 30,
-              ),
-              title: Text('Account',
-                style: TextStyle(color: this.getTabOutlineColor()),
-              )
-            )
           ],
         ),
       );

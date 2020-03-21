@@ -1,9 +1,7 @@
 part of tab_lib;
 
 class DealsPageWidget extends StatefulWidget {
-  final String text;
-
-  DealsPageWidget(this.text);
+  DealsPageWidget();
 
   @override
   _DealsPageState createState() => _DealsPageState();
@@ -37,6 +35,8 @@ class _DealsPageState extends State<DealsPageWidget> {
   GlobalKey _one = GlobalKey();
   GlobalKey _two = GlobalKey();
   GlobalKey _three = GlobalKey();
+  GlobalKey _four = GlobalKey();
+
 
   @override
   void initState() {
@@ -296,26 +296,57 @@ class _DealsPageState extends State<DealsPageWidget> {
                   description: 'View your favorite deals and past redemptions!',
                   shapeBorder: CircleBorder(),
                   showArrow: false,
-                  child: FlatButton(
-                    child: Image.asset('images/wallet_filled.png',
-                      color: Colors.white,
-                      width: 30,
-                      height: 30,
-                    ),
-                    color: Colors.transparent,
-                    onPressed: (){
-                      Navigator.push(context,
-                        platformPageRoute(
-                          context: context,
-                          settings: RouteSettings(name: "WalletPage"),
-                          builder: (BuildContext context) {
-                            return WalletPageWidget(deals,vendors);
-                          },
-                          fullscreenDialog: true
-                        )
-                      );
-                    },
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 20.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(context,
+                          platformPageRoute(
+                            context: context,
+                            settings: RouteSettings(name: "WalletPage"),
+                            builder: (BuildContext context) {
+                              return WalletPageWidget(deals,vendors);
+                            },
+                            fullscreenDialog: true
+                          )
+                        );
+                      },
+                      child: Image.asset('images/wallet_filled.png',
+                        color: Colors.white,
+                        width: 30,
+                        height: 30,
+                      ),
+                    )
                   ), 
+                ),
+                Showcase(
+                  key: _three,
+                  title: 'My Account',
+                  description: 'View your app settings and share Savour Deals!',
+                  shapeBorder: CircleBorder(),
+                  showArrow: false,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 20.0, right: 10.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(context,
+                          platformPageRoute(
+                            context: context,
+                            settings: RouteSettings(name: "AccountOAge"),
+                            builder: (BuildContext context) {
+                              return AccountPageWidget();
+                            },
+                            fullscreenDialog: true
+                          )
+                        );
+                      },
+                      child: Image.asset('images/menu-dots.png',
+                        color: Colors.white,
+                        width: 30,
+                        height: 30,
+                      ),
+                    )
+                  ),  
                 ),
               ],
               ios: (_) => CupertinoNavigationBarData(
@@ -328,7 +359,7 @@ class _DealsPageState extends State<DealsPageWidget> {
                 brightness: Brightness.dark,
               ),
             ),
-            body: bodyWidget(),
+            body: Material(child: bodyWidget()),
           );
         },
       )
@@ -370,7 +401,7 @@ class _DealsPageState extends State<DealsPageWidget> {
           Align(
             alignment: Alignment(-0.90, 0.90),
             child: Showcase(
-              key: _three,
+              key: _four,
               title: 'Maps',
               description: "See what's nearby!",
               shapeBorder: CircleBorder(),
@@ -449,16 +480,14 @@ class _DealsPageState extends State<DealsPageWidget> {
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: <Widget>[
-        Material(
-          child: Container(
-            padding: EdgeInsets.only(left: 15.0),
-            width: MediaQuery.of(context).size.width,
-            child: Text(carouselText, 
-              textAlign: TextAlign.left, 
-              style: TextStyle(
-                fontSize: 25.0,
-                fontWeight: FontWeight.bold,
-              ),
+        Container(
+          padding: EdgeInsets.only(left: 15.0),
+          width: MediaQuery.of(context).size.width,
+          child: Text(carouselText, 
+            textAlign: TextAlign.left, 
+            style: TextStyle(
+              fontSize: 25.0,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),

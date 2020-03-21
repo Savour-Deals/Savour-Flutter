@@ -117,7 +117,11 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
     theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Image.asset("images/Savour_White.png"),
+        title: Image.asset(
+          "images/Savour_White.png",
+          fit: BoxFit.cover,
+          height: 45.0,
+        ),
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
@@ -148,13 +152,9 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
                     width: 15.0,
                   ),
                   Expanded(
-                    child: CupertinoSegmentedControl(
-                      borderColor: Colors.white,
-                      pressedColor: Colors.white.withOpacity(0.5),
-                      unselectedColor: (theme.brightness == Brightness.light) ? 
-                        theme.primaryColor: 
-                          theme.bottomAppBarColor,
-                      selectedColor: Colors.white,
+                    child: CupertinoSlidingSegmentedControl(
+                      thumbColor: Colors.white.withOpacity(0.5),
+                      backgroundColor: Colors.white.withOpacity(0.3),
                       groupValue: tabIndex,
                       onValueChanged: (value){
                         setState(() {

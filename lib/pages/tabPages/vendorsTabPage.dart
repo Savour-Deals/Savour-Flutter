@@ -1,9 +1,7 @@
 part of tab_lib;
 
 class VendorsPageWidget extends StatefulWidget {
-  final String text;
-
-  VendorsPageWidget(this.text);
+  VendorsPageWidget();
 
   @override
   _VendorsPageState createState() => _VendorsPageState();
@@ -183,8 +181,32 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           brightness: Brightness.dark,
         ),
+        trailingActions: <Widget>[
+          Padding(
+            padding: EdgeInsets.only(left: 20.0, right: 10.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(context,
+                  platformPageRoute(
+                    context: context,
+                    settings: RouteSettings(name: "AccountOAge"),
+                    builder: (BuildContext context) {
+                      return AccountPageWidget();
+                    },
+                    fullscreenDialog: true
+                  )
+                );
+              },
+              child: Image.asset('images/menu-dots.png',
+                color: Colors.white,
+                width: 30,
+                height: 30,
+              ),
+            )
+          ),  
+        ],
       ),
-      body: bodyWidget(),
+      body: Material(child: bodyWidget()),
     );
   }
 
