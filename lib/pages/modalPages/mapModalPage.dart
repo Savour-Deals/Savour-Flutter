@@ -31,10 +31,13 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   FirebaseUser user;
   final _locationService = Geolocator();
   Completer<GoogleMapController> _controller = Completer();
+  PageController _pageController;
   CameraPosition _userPosition;
   Position _position;
   Map<String,Marker> _markers = new Map<String,Marker>();
   List<Vendor> sortedVendors;
+
+  bool _moving = false;
 
   //Declare contextual variables
   AppState appState;
@@ -84,9 +87,15 @@ class _MapPageWidgetState extends State<MapPageWidget> {
           title: vendor.name + "  ⓘ",
           // snippet: vendor.name + "  ⓘ",
           onTap: () {
-            _onMarkerPressed(markerId);
+            _onMarkerWindowPressed(markerId);
           }
         ),
+        onTap: () {
+          _moving = true;
+          _pageController.animateToPage(this.sortedVendors.indexOf(vendor), duration: Duration(milliseconds: 500), curve: Curves.ease).then((_) {
+            _moving = false;
+          });
+        }
       );
 
       setState(() {
@@ -104,6 +113,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       viewportFrac = 0.35; //make a couple fit on the page
       initialPage = 1;
     }
+    _pageController = PageController(viewportFraction: viewportFrac, initialPage: initialPage);
     appState = Provider.of<AppState>(context);
     theme = Theme.of(context);
     return PlatformScaffold(
@@ -137,7 +147,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
               padding: const EdgeInsets.only(bottom: 20.0),
               child: PageView.builder(
                 key: PageStorageKey('vendorGroup1'), //save deal group's position when scrolling
-                controller: PageController(viewportFraction: viewportFrac, initialPage: initialPage),
+                controller: _pageController,
                 physics: AlwaysScrollableScrollPhysics(),
                 onPageChanged: (int item) {
                   this._goToLocation(this.sortedVendors[item].lat, this.sortedVendors[item].long, this.sortedVendors[item].key);
@@ -172,12 +182,17 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   }
 
   Future<void> _goToLocation(double lat, double long, String id) async {
-    final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(new CameraPosition(target: LatLng(lat, long), zoom: 12)));
-    controller.showMarkerInfoWindow(this._markers[id].markerId);
+    if (!_moving){//make sure not to update focused marker if we are already moving
+      _moving = true;
+      final GoogleMapController controller = await _controller.future;
+      controller.animateCamera(CameraUpdate.newCameraPosition(new CameraPosition(target: LatLng(lat, long), zoom: 12))).then((_) {
+        controller.showMarkerInfoWindow(this._markers[id].markerId);
+        _moving = false;
+      });
+    }
   }
 
-  void _onMarkerPressed(MarkerId markerId) {
+  void _onMarkerWindowPressed(MarkerId markerId) {
     for (Vendor vendor in this.widget.vendors) {
       if (markerId.value == vendor.name) {
         Navigator.push(
