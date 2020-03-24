@@ -76,7 +76,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                             children: <Widget>[
                               Image(image: AssetImage("images/Savour_Deals_White.png")),
                               Container(
-                                child: const Text('Sign-in with your phone number'),
+                                child: const Text('Sign-in with your phone number', style: TextStyle(color: Colors.white),),
                                 padding: const EdgeInsets.all(16),
                                 alignment: Alignment.center,
                               ),
@@ -156,7 +156,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                             children: <Widget>[
                               Image(image: AssetImage("images/Savour_Deals_White.png")),
                               Container(
-                                child: const Text('Enter the code you recieved'),
+                                child: const Text('Enter the code you recieved', style: TextStyle(color: Colors.white)),
                                 padding: const EdgeInsets.all(16),
                                 alignment: Alignment.center,
                               ),

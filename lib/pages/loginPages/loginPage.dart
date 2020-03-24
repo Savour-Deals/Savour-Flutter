@@ -47,7 +47,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     return Stack(
       children: <Widget>[
@@ -106,29 +105,29 @@ class _LoginPageState extends State<LoginPage> {
                         },
                       ),
                       Container(height: 20),
-                      // Container(
-                      //   height: 20,
-                      //   child: RichText(
-                      //     text: TextSpan(
-                      //       text: 'Create Account',
-                      //       style: TextStyle(color: Colors.white),
-                      //       recognizer: TapGestureRecognizer()..onTap = () {
-                      //         Navigator.push(context, 
-                      //           platformPageRoute(
-                      //             maintainState: false,
-                      //             settings: RouteSettings(name: "CreateAccountPage"),
-                      //             builder: (BuildContext context) {
-                      //               return new CreateAccountPage();
-                      //             },
-                      //             fullscreenDialog: true,
-                      //             context: context,
-                      //           ),
-                      //         );
-                      //       },
-                      //     ),
-                      //   ),
-                      // ),
-                      // Container(height: 20),
+                      Container(
+                        height: 20,
+                        child: RichText(
+                          text: TextSpan(
+                            text: 'Create Account',
+                            style: TextStyle(color: Colors.white),
+                            recognizer: TapGestureRecognizer()..onTap = () {
+                              Navigator.push(context, 
+                                platformPageRoute(
+                                  maintainState: false,
+                                  settings: RouteSettings(name: "CreateAccountPage"),
+                                  builder: (BuildContext context) {
+                                    return new CreateAccountPage();
+                                  },
+                                  fullscreenDialog: true,
+                                  context: context,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      Container(height: 20),
                       Container(
                         height: 20,
                         child: RichText(
@@ -221,7 +220,7 @@ class _LoginPageState extends State<LoginPage> {
     if (emailController.text.isEmpty || passwordController.text.isEmpty){
       // this removes the loading bar
       _endLoading();
-      displayError("Missing email or password","Please provide both an email and password", "OK");
+      displayError("Missing email or password", "Please provide both an email and password", "OK");
     } else {
       _auth.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text).catchError((error){
         // this removes the loading bar

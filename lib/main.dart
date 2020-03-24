@@ -103,20 +103,23 @@ class _SavourDealsState extends State<SavourApp> {
   }
 
   verifyUser(FirebaseUser user){
-    return true;
+    // return true;
     // if (user.isEmailVerified){
     //   //user email is verified
     //   return true;
     // }
-    // for (var provider in user.providerData){
-    //   if(provider.providerId == "facebook.com"){
-    //     //user logged in w/ FB
-    //     _collectFBData(user);
-    //     return true;
-    //   }
-    // }
-    // FirebaseAuth.instance.signOut();
-    // return false;
+    for (var provider in user.providerData){
+      print(provider.providerId);
+      if(provider.providerId == "facebook.com"){
+        //user logged in w/ FB
+        // _collectFBData(user);
+        // return true;
+      }else if (provider.providerId == "phone"){
+        return true;
+      }
+    }
+    FirebaseAuth.instance.signOut();
+    return false;
   }
 
   void _collectFBData(FirebaseUser user) async{
