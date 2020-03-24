@@ -106,29 +106,29 @@ class _LoginPageState extends State<LoginPage> {
                         },
                       ),
                       Container(height: 20),
-                      Container(
-                        height: 20,
-                        child: RichText(
-                          text: TextSpan(
-                            text: 'Create Account',
-                            style: TextStyle(color: Colors.white),
-                            recognizer: TapGestureRecognizer()..onTap = () {
-                              Navigator.push(context, 
-                                platformPageRoute(
-                                  maintainState: false,
-                                  settings: RouteSettings(name: "CreateAccountPage"),
-                                  builder: (BuildContext context) {
-                                    return new CreateAccountPage();
-                                  },
-                                  fullscreenDialog: true,
-                                  context: context,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      Container(height: 20),
+                      // Container(
+                      //   height: 20,
+                      //   child: RichText(
+                      //     text: TextSpan(
+                      //       text: 'Create Account',
+                      //       style: TextStyle(color: Colors.white),
+                      //       recognizer: TapGestureRecognizer()..onTap = () {
+                      //         Navigator.push(context, 
+                      //           platformPageRoute(
+                      //             maintainState: false,
+                      //             settings: RouteSettings(name: "CreateAccountPage"),
+                      //             builder: (BuildContext context) {
+                      //               return new CreateAccountPage();
+                      //             },
+                      //             fullscreenDialog: true,
+                      //             context: context,
+                      //           ),
+                      //         );
+                      //       },
+                      //     ),
+                      //   ),
+                      // ),
+                      // Container(height: 20),
                       Container(
                         height: 20,
                         child: RichText(

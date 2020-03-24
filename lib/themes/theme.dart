@@ -13,6 +13,7 @@ final ThemeData savourMaterialLightThemeData = new ThemeData(
   cardTheme: CardTheme(color: Colors.white),
   dialogTheme: DialogTheme(backgroundColor: Colors.white),
   buttonTheme: ButtonThemeData(colorScheme: ColorScheme.light()),
+  cursorColor: Colors.red,
 );
 
 final ThemeData savourMaterialDarkThemeData = new ThemeData(

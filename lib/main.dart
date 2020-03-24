@@ -5,7 +5,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:provider/provider.dart';
-import 'package:savour_deals_flutter/pages/loginPages/loginPage.dart';
+import 'package:savour_deals_flutter/pages/loginPages/phoneAuth.dart';
+// import 'package:savour_deals_flutter/pages/loginPages/loginPage.dart';
+// import 'package:savour_deals_flutter/pages/loginPages/phoneAuth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tab.dart';
@@ -92,7 +94,7 @@ class _SavourDealsState extends State<SavourApp> {
           }
           FirebaseDatabase.instance.goOffline(); //If logged out, disbale db connection
           return MediaQuery(
-            child: LoginPage(),
+            child: PhoneAuth(),
             data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
           );
         }
@@ -101,19 +103,20 @@ class _SavourDealsState extends State<SavourApp> {
   }
 
   verifyUser(FirebaseUser user){
-    if (user.isEmailVerified){
-      //user email is verified
-      return true;
-    }
-    for (var provider in user.providerData){
-      if(provider.providerId == "facebook.com"){
-        //user logged in w/ FB
-        _collectFBData(user);
-        return true;
-      }
-    }
-    FirebaseAuth.instance.signOut();
-    return false;
+    return true;
+    // if (user.isEmailVerified){
+    //   //user email is verified
+    //   return true;
+    // }
+    // for (var provider in user.providerData){
+    //   if(provider.providerId == "facebook.com"){
+    //     //user logged in w/ FB
+    //     _collectFBData(user);
+    //     return true;
+    //   }
+    // }
+    // FirebaseAuth.instance.signOut();
+    // return false;
   }
 
   void _collectFBData(FirebaseUser user) async{
