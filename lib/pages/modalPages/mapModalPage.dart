@@ -111,14 +111,9 @@ class _MapPageWidgetState extends State<MapPageWidget> {
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
           actionsForegroundColor: Colors.white,
-          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
+          backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
           heroTag: "favTab",
           transitionBetweenRoutes: false,
-        ),
-        android: (_) => MaterialAppBarData(
-          iconTheme: IconThemeData(color: Colors.white),
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          brightness: Brightness.dark,
         ),
       ),
       body: Stack(

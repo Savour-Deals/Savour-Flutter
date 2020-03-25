@@ -124,12 +124,8 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
         ),
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-        brightness: Brightness.dark,
         bottom: Platform.isAndroid? 
         TabBar(
-          labelColor: Colors.white,
-          indicatorColor: Colors.white,
           labelStyle: TextStyle(fontSize: 25),
           controller: _tabController,
           tabs: <Widget>[

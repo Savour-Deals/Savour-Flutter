@@ -135,7 +135,6 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         title: SearchTextField(_controller, _focusNode, isDealSearch()),
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: Provider.of<AppState>(context).isDark? Theme.of(context).bottomAppBarColor:SavourColorsMaterial.savourGreen,
         brightness: Brightness.dark,
       ),
       body: bodyWidget(),

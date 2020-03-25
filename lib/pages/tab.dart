@@ -203,14 +203,12 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         appBar: PlatformAppBar(
           title: Image.asset("images/Savour_White.png"),
           ios: (_) => CupertinoNavigationBarData(
-            backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
+            backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
             heroTag: "dealTab",
             transitionBetweenRoutes: false,
           ),
           android: (_) => MaterialAppBarData(
             elevation: 0.0,
-            brightness: Brightness.light,
-            backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           ),
         ),
         body: Center(
@@ -241,52 +239,52 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
           currentIndex: _currentIndex,
           itemChanged: onTabTapped,
           ios: (_) => CupertinoTabBarData(
-            backgroundColor: theme.bottomAppBarColor.withOpacity(1),//SavourColorsMaterial.savourGreen,
+            backgroundColor: theme.bottomAppBarColor.withOpacity(1),
           ),
           items: [
             BottomNavigationBarItem(
               icon: Image.asset('images/tags.png',
-                color: this.getTabOutlineColor(),
+                color: theme.accentColor,
                 width: 30,
                 height: 30,
               ),
               activeIcon: Image.asset('images/tags_filled.png',
-                color: this.getTabOutlineColor(),
+                color: theme.accentColor,
                 width: 30,
                 height: 30,
               ),
               title: Text('Deals',
-                style: TextStyle(color: this.getTabOutlineColor()),
+                style: TextStyle(color: theme.accentColor),
               )
             ),
             BottomNavigationBarItem(
               icon: Image.asset('images/vendor.png',
-                color: this.getTabOutlineColor(),
+                color: theme.accentColor,
                 width: 30,
                 height: 30,
               ),
               activeIcon: Image.asset('images/vendor_filled.png',
-                color: this.getTabOutlineColor(),
+                color: theme.accentColor,
                 width: 30,
                 height: 30,
               ),
               title: Text('Vendors',
-                style: TextStyle(color: this.getTabOutlineColor()),
+                style: TextStyle(color: theme.accentColor),
               )
             ),
             BottomNavigationBarItem(
               icon: Image.asset('images/user.png',
-                color: this.getTabOutlineColor(),
+                color: theme.accentColor,
                 width: 30,
                 height: 30,
               ),
               activeIcon: Image.asset('images/user_filled.png',
-                color: this.getTabOutlineColor(),
+                color: theme.accentColor,
                 width: 30,
                 height: 30,
               ),
               title: Text('Account',
-                style: TextStyle(color: this.getTabOutlineColor()),
+                style: TextStyle(color: theme.accentColor),
               )
             )
           ],
@@ -297,14 +295,12 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         appBar: PlatformAppBar(
           title: Image.asset("images/Savour_White.png"),
           ios: (_) => CupertinoNavigationBarData(
-            backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
+            backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
             heroTag: "dealTab",
             transitionBetweenRoutes: false,
           ),
           android: (_) => MaterialAppBarData(
             elevation: 0.0,
-            brightness: Brightness.light,
-            backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           ),
         ),
         body: Column(

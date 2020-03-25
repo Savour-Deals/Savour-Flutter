@@ -122,15 +122,13 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
       appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
+          backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
           leading: CupertinoNavigationBarBackButton(color: Colors.white,),
           heroTag: "vendorPage",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           leading: BackButton(color: Colors.white,),
-          brightness: Brightness.dark,
           centerTitle: true,
         ),
       ),
