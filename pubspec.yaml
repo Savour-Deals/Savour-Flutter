@@ -30,6 +30,7 @@ dependencies:
 
   firebase_auth: ^0.15.5+3
   flutter_facebook_login: ^3.0.0
+  apple_sign_in: ^0.1.0
   flutter_auth_buttons: ^0.7.0
 
   latlong: ^0.6.1
@@ -84,7 +85,8 @@ flutter:
     - images/login_background.jpg
     - images/permissions.jpg
     - images/Savour_Deals_White.png
-    - images/Savour_Deals_FullColor-white-back.png
+    - images/Savour_Deals_FullColor.png
+    - images/Savour_FullColor.png
     - images/Savour_White.png
     - images/glass-and-fork.png
     - images/tags.png

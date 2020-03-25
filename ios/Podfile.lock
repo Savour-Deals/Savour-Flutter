@@ -1,6 +1,8 @@
 PODS:
   - "app_settings (3.0.0+1)":
     - Flutter
+  - apple_sign_in (0.0.1):
+    - Flutter
   - barcode_scan (0.0.1):
     - Flutter
     - MTBBarcodeScanner
@@ -208,6 +210,7 @@ PODS:
 
 DEPENDENCIES:
   - app_settings (from `.symlinks/plugins/app_settings/ios`)
+  - apple_sign_in (from `.symlinks/plugins/apple_sign_in/ios`)
   - barcode_scan (from `.symlinks/plugins/barcode_scan/ios`)
   - firebase_analytics (from `.symlinks/plugins/firebase_analytics/ios`)
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
@@ -273,6 +276,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   app_settings:
     :path: ".symlinks/plugins/app_settings/ios"
+  apple_sign_in:
+    :path: ".symlinks/plugins/apple_sign_in/ios"
   barcode_scan:
     :path: ".symlinks/plugins/barcode_scan/ios"
   firebase_analytics:
@@ -334,6 +339,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   app_settings: d103828c9f5d515c4df9ee754dabd443f7cedcf3
+  apple_sign_in: 7716c7ddfa195aeab7dec0dc374ef4ff45d1adb4
   barcode_scan: 33f586d02270046fc6559135038b34b5754eaa4f
   Crashlytics: 540b7e5f5da5a042647227a5e3ac51d85eed06df
   Fabric: 706c8b8098fff96c33c0db69cbf81f9c551d0d74

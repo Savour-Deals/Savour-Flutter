@@ -1,10 +1,11 @@
+import 'package:apple_sign_in/apple_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
+import 'package:flutter_auth_buttons/flutter_auth_buttons.dart' hide AppleSignInButton;
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:savour_deals_flutter/pages/loginPages/resetAccountPage.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
@@ -27,14 +28,14 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  TextEditingController emailController = new TextEditingController();
-  TextEditingController passwordController = new TextEditingController();
+  final Future<bool> _isAppleAvailableFuture = AppleSignIn.isAvailable();
+  final TextEditingController emailController = new TextEditingController();
+  final TextEditingController passwordController = new TextEditingController();
+  final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+  final FirebaseAnalytics analytics = FirebaseAnalytics();
+
   DatabaseReference userRef;
-  GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
   BuildContext thisContext;
-
-  FirebaseAnalytics analytics = FirebaseAnalytics();
-
   bool _loading = false;
 
   @override
@@ -95,16 +96,21 @@ class _LoginPageState extends State<LoginPage> {
                         color: SavourColorsMaterial.savourGreen,
                         child: Text("Login", style: whiteText),
                         onPressed: () {
-                          login();
+                          _login();
                         },
                       ),
                       Container(height: 10),
                       FacebookSignInButton(
                         onPressed: () {
-                          facebookLogin();
+                          _facebookLogin();
                         },
                       ),
                       Container(height: 20),
+                      AppleSignInButton(
+                        onPressed: () {
+                          _appleLogin();
+                        },
+                      ),
                       Container(
                         height: 20,
                         child: RichText(
@@ -215,7 +221,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void login() {
+  void _login() {
     _onLoading();
     if (emailController.text.isEmpty || passwordController.text.isEmpty){
       // this removes the loading bar
@@ -246,27 +252,23 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void facebookLogin() async {
+  void _facebookLogin() async {
     _onLoading();
     var facebook = new FacebookLogin();
     facebook.loginBehavior = FacebookLoginBehavior.nativeWithFallback;
     var result = await facebook.logIn(['email', 'public_profile']);
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
-        _auth.signInWithCredential(FacebookAuthProvider.getCredential(
-            accessToken: result.accessToken.token)
-        ).then((authResult) async {
-          // this removes the loading bar
-          if(authResult.additionalUserInfo.isNewUser){
-            await analytics.logSignUp(
-              signUpMethod: 'facebook',
-            );
-          }
-          analytics.logLogin();
-          analytics.setUserId(authResult.user.uid);
-          _endLoading();
-        });
-        
+        final authResult = await _auth.signInWithCredential(FacebookAuthProvider.getCredential(accessToken: result.accessToken.token));
+        // this removes the loading bar
+        if(authResult.additionalUserInfo.isNewUser){
+          await analytics.logSignUp(
+            signUpMethod: 'facebook',
+          );
+        }
+        analytics.logLogin();
+        analytics.setUserId(authResult.user.uid);
+        _endLoading();
         break;
       case FacebookLoginStatus.cancelledByUser:
         // this removes the loading bar
@@ -276,6 +278,46 @@ class _LoginPageState extends State<LoginPage> {
         // this removes the loading bar
         _endLoading();
         displayError("Facebook Error", "Please try again.", "OK");
+        break;
+    }
+  }
+
+  Future<void> _appleLogin() async {
+    final AuthorizationResult result = await AppleSignIn.performRequests(
+        [AppleIdRequest(requestedScopes: [Scope.email, Scope.fullName])]);
+
+    switch (result.status) {
+      case AuthorizationStatus.authorized:
+        final appleIdCredential = result.credential;
+        final oAuthProvider = OAuthProvider(providerId: 'apple.com');
+        final credential = oAuthProvider.getCredential(
+          idToken: String.fromCharCodes(appleIdCredential.identityToken),
+          accessToken: String.fromCharCodes(appleIdCredential.authorizationCode),
+        );
+        final authResult = await _auth.signInWithCredential(credential);
+        final firebaseUser = authResult.user;
+
+        final updateUser = UserUpdateInfo();
+        updateUser.displayName =
+            '${appleIdCredential.fullName.givenName} ${appleIdCredential.fullName.familyName}';
+        await firebaseUser.updateProfile(updateUser);
+
+        // this removes the loading bar
+        if(authResult.additionalUserInfo.isNewUser){
+          await analytics.logSignUp(
+            signUpMethod: 'apple',
+          );
+        }
+        analytics.logLogin();
+        analytics.setUserId(authResult.user.uid);
+        _endLoading();
+        break;
+      case AuthorizationStatus.error:
+        displayError("Apple Sign In Error", "Please try again.", "OK");
+        _endLoading();
+        break;
+      case AuthorizationStatus.cancelled:
+        _endLoading();
         break;
     }
   }

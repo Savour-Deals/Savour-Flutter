@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:savour_deals_flutter/containers/tou.dart';
 import 'package:savour_deals_flutter/themes/decoration.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -52,32 +52,24 @@ class _PhoneAuthState extends State<PhoneAuth> {
           },
           child: PlatformScaffold(
             key: scaffoldKey,
-            backgroundColor: Colors.black,
             body: Material(
               child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage("images/login_background.jpg"),
-                  fit: BoxFit.cover,
-                  colorFilter: new ColorFilter.mode(
-                    Colors.black.withOpacity(0.45), BlendMode.srcATop
-                  ),
-                ),
-              ),
-              child: PageView(
-                physics: NeverScrollableScrollPhysics(),
-                controller: _pageViewController,
-                children: <Widget>[
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(18.0),
+                child: PageView(
+                  physics: NeverScrollableScrollPhysics(),
+                  controller: _pageViewController,
+                  children: <Widget>[
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(18.0),
                         child: SingleChildScrollView(
                           child: Column(
                             children: <Widget>[
-                              Image(image: AssetImage("images/Savour_Deals_White.png")),
+                              Image(image: AssetImage("images/Savour_Deals_FullColor.png")),
                               Container(
-                                child: const Text('Sign-in with your phone number', style: TextStyle(color: Colors.white),),
-                                padding: const EdgeInsets.all(16),
+                                child: Text('Sign-in with your phone number:', 
+                                  style: Theme.of(context).textTheme.title,
+                                ),
+                                padding: EdgeInsets.all(16),
                                 alignment: Alignment.center,
                               ),
                               LoginTextInput(
@@ -86,7 +78,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                 controller: _phoneNumberController,
                                 keyboard: TextInputType.phone
                               ),
-                              Container(height: 10),
+                              Container(height: 40),
                               PlatformButton(
                                 ios: (_) => CupertinoButtonData(
                                   pressedOpacity: 0.7,
@@ -103,61 +95,24 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                 },
                               ),
                               Container(height: 20),
-                              Center(
-                                child: RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: 'By logging in you agree to our',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Center(
-                                child: RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: 'Terms of Use',
-                                        style: TextStyle(color: Colors.blue),
-                                        recognizer: TapGestureRecognizer()
-                                        ..onTap = () {
-                                            launch('https://www.savourdeals.com/terms-of-use');
-                                        },
-                                      ),
-                                      TextSpan(
-                                        text: ' and ',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                      TextSpan(
-                                        text: 'Privacy Policy',
-                                        style: TextStyle(color: Colors.blue),
-                                        recognizer: TapGestureRecognizer()
-                                          ..onTap = () {
-                                            launch('https://www.savourdeals.com/privacy-policy');
-                                          },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                              TermsOfUse(),
                             ],
                           ),
                         ),
                       ),
                     ),
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(18.0),
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(18.0),
                         child: SingleChildScrollView(
                           child: Column(
                             children: <Widget>[
                               Image(image: AssetImage("images/Savour_Deals_White.png")),
                               Container(
-                                child: const Text('Enter the code you recieved', style: TextStyle(color: Colors.white)),
-                                padding: const EdgeInsets.all(16),
+                                child: Text('Enter the code you recieved',
+                                  style: Theme.of(context).textTheme.title,
+                                ),
+                                padding: EdgeInsets.all(16),
                                 alignment: Alignment.center,
                               ),
                               LoginTextInput(
@@ -166,7 +121,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                 controller: _smsController,
                                 keyboard: TextInputType.number
                               ),
-                              Container(height: 10),
+                              Container(height: 40),
                               PlatformButton(
                                 ios: (_) => CupertinoButtonData(
                                   pressedOpacity: 0.7,
@@ -200,7 +155,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                   ),
                                 ),
                               ),
-                              Container(height: 10),
+                              Container(height: 5),
                               Container(
                                 height: 20,
                                 child: RichText(
@@ -214,53 +169,14 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                 ),
                               ),
                               Container(height: 20),
-                              Center(
-                                child: RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: 'By logging in you agree to our',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Center(
-                                child: RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: 'Terms of Use',
-                                        style: TextStyle(color: Colors.blue),
-                                        recognizer: TapGestureRecognizer()
-                                        ..onTap = () {
-                                            launch('https://www.savourdeals.com/terms-of-use');
-                                        },
-                                      ),
-                                      TextSpan(
-                                        text: ' and ',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                      TextSpan(
-                                        text: 'Privacy Policy',
-                                        style: TextStyle(color: Colors.blue),
-                                        recognizer: TapGestureRecognizer()
-                                          ..onTap = () {
-                                            launch('https://www.savourdeals.com/privacy-policy');
-                                          },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                              TermsOfUse(),
                             ],
                           ),
                         ),
                       ),
                     ),
-                ],
-              ),
+                  ],
+                ),
               ),
             ),
           ),

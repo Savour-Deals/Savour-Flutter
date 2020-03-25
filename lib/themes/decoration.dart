@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 class  LoginTextInput extends StatefulWidget {
   LoginTextInput({this.hint, this.controller, this.keyboard, this.suffixIcon, this.obscureTxt, this.prefix });
@@ -40,17 +39,16 @@ class _LoginTextInputState extends State<LoginTextInput> {
         fillColor: Colors.grey,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(30.0)),
-          borderSide: BorderSide(color: Colors.white, width: 2.0),
+          borderSide: BorderSide(color: Colors.transparent, width: 2.0),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(30.0)),
-          borderSide: BorderSide(color: Colors.white, width: 2.0),
+          borderSide: BorderSide(color: Colors.transparent, width: 2.0),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(30.0)),
-          borderSide: BorderSide(color: Colors.white, width: 2.0),
+          borderSide: BorderSide(color: Theme.of(context).accentColor, width: 2.0),
         ),
-        labelStyle: TextStyle(color: Colors.white),
         suffixIcon: widget.suffixIcon,
       ),
       obscureText: obscured,

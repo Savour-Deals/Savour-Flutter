@@ -5,6 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:provider/provider.dart';
+import 'package:savour_deals_flutter/pages/loginPages/loginPage.dart';
 import 'package:savour_deals_flutter/pages/loginPages/phoneAuth.dart';
 // import 'package:savour_deals_flutter/pages/loginPages/loginPage.dart';
 // import 'package:savour_deals_flutter/pages/loginPages/phoneAuth.dart';
@@ -63,7 +64,8 @@ class _SavourDealsState extends State<SavourApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Savour Deals',
-      theme: Provider.of<AppState>(context).isDark? savourMaterialDarkThemeData: savourMaterialLightThemeData,
+      theme: savourMaterialLightThemeData,
+      darkTheme: savourMaterialDarkThemeData,
       debugShowCheckedModeBanner: false,
       home: _handleCurrentScreen(),
       navigatorObservers: [
@@ -103,18 +105,18 @@ class _SavourDealsState extends State<SavourApp> {
   }
 
   verifyUser(FirebaseUser user){
-    // return true;
     // if (user.isEmailVerified){
     //   //user email is verified
     //   return true;
     // }
     for (var provider in user.providerData){
       print(provider.providerId);
-      if(provider.providerId == "facebook.com"){
-        //user logged in w/ FB
-        // _collectFBData(user);
-        // return true;
-      }else if (provider.providerId == "phone"){
+      // if(provider.providerId == "facebook.com"){
+      //   // user logged in w/ FB
+      //   _collectFBData(user);
+      //   return true;
+      // }else 
+      if (provider.providerId == "phone"){
         return true;
       }
     }
