@@ -123,6 +123,7 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
           height: 45.0,
         ),
         centerTitle: true,
+        brightness: Brightness.dark,
         iconTheme: IconThemeData(color: Colors.white),
         bottom: Platform.isAndroid? 
         TabBar(

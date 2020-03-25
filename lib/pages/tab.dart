@@ -378,13 +378,13 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   Future _notificationPermissionHandler(bool accepted) async {
     if (accepted){
       var user = await FirebaseAuth.instance.currentUser();
-      Provider.of<NotificationSettings>(context).setNotificationsSetting(true);
+      Provider.of<NotificationSettings>(context, listen: false).setNotificationsSetting(true);
       OneSignal.shared.setSubscription(true);
       if (user.email != null){
         OneSignal.shared.setEmail(email: user.email);
       }
     }else{
-      Provider.of<NotificationSettings>(context).setNotificationsSetting(false);
+      Provider.of<NotificationSettings>(context, listen: false).setNotificationsSetting(false);
       OneSignal.shared.setSubscription(false);
     }
   }

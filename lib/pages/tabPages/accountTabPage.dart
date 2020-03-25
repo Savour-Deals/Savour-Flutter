@@ -129,10 +129,8 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                     onChanged: (value) {
                       _toggleNotifications();
                     },
-                    // activeTrackColor: theme.primaryColor, 
-                    // activeColor: theme.primaryColor,
+                    activeColor: SavourColorsMaterial.savourGreen,
                   ),
-                  // onTap: () => _toggleNotifications(),
                   contentPadding: EdgeInsets.all(4.0),
                 ),
                 decoration: BoxDecoration(

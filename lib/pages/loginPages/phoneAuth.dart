@@ -107,7 +107,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                         child: SingleChildScrollView(
                           child: Column(
                             children: <Widget>[
-                              Image(image: AssetImage("images/Savour_Deals_White.png")),
+                              Image(image: AssetImage("images/Savour_Deals_FullColor.png")),
                               Container(
                                 child: Text('Enter the code you recieved',
                                   style: Theme.of(context).textTheme.title,
@@ -148,7 +148,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                 child: RichText(
                                   text: TextSpan(
                                     text: "Re-Send Text",
-                                    style: TextStyle(color: Colors.white),
+                                    style: Theme.of(context).textTheme.body1,
                                     recognizer: TapGestureRecognizer()..onTap = () {
                                       _verifyPhoneNumber();
                                     },
@@ -161,7 +161,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                 child: RichText(
                                   text: TextSpan(
                                     text: 'Back',
-                                    style: TextStyle(color: Colors.white),
+                                    style: Theme.of(context).textTheme.body1,
                                     recognizer: TapGestureRecognizer()..onTap = () {
                                       _pageViewController.animateToPage(0, duration: Duration(milliseconds: 500), curve: Curves.ease);
                                     },

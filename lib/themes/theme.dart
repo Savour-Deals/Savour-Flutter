@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 final ThemeData savourMaterialLightThemeData = new ThemeData(
-  brightness: Brightness.dark,
+  brightness: Brightness.light,
   primaryColor: SavourColorsMaterial.savourGreen,
   primaryColorBrightness: Brightness.light,
   accentColor: SavourColorsMaterial.savourAccent,//Colors.black,
@@ -18,7 +18,7 @@ final ThemeData savourMaterialLightThemeData = new ThemeData(
   ),
   textTheme: TextTheme(
       headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
-      title: TextStyle(fontSize: 36.0),
+      title: TextStyle(fontSize: 20.0),
       body1: TextStyle(fontSize: 14.0),
   ),
 );
@@ -43,7 +43,7 @@ final ThemeData savourMaterialDarkThemeData = new ThemeData(
   buttonTheme: ButtonThemeData(colorScheme: ColorScheme.light()),
     textTheme: TextTheme(
       headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
-      title: TextStyle(fontSize: 36.0),
+      title: TextStyle(fontSize: 20.0),
       body1: TextStyle(fontSize: 14.0),
   ),
 );
