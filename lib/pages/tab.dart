@@ -7,12 +7,14 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:location_permissions/location_permissions.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rate_my_app/rate_my_app.dart';
+import 'package:savour_deals_flutter/blocs/vendor/vendor_bloc.dart';
 import 'package:savour_deals_flutter/pages/loginPages/onboardingPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
@@ -48,7 +50,10 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   List<Widget> _children = [
     DealsPageWidget(),
-    VendorsPageWidget(),
+    BlocProvider<VendorBloc>(
+      create: (context) => VendorBloc(),
+      child: VendorsPageWidget()
+    ),
     AccountPageWidget(),
   ];
 

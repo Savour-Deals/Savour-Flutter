@@ -10,6 +10,10 @@ class Deals {
 
   Deals();
 
+  Deals.fromLocation(){
+    
+  }
+
   addDeal(Deal newDeal){
     var idx = this._deals.indexWhere((d1) => d1.key == newDeal.key);
     if(idx<0){//add newDeal if it doesnt exit
