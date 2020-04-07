@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:savour_deals_flutter/repositories/vendors/vendors_provider.dart';
+import 'package:savour_deals_flutter/stores/vendors_model.dart';
 
 abstract class VendorState extends Equatable {
   const VendorState();
@@ -16,7 +16,7 @@ class VendorLoading extends VendorState {}
 class VendorError extends VendorState {}
 
 class VendorLoaded extends VendorState {
-  final Stream<List<VendorCacheItem>> vendorStream;
+  final Stream<Vendors> vendorStream;
 
   const VendorLoaded({@required this.vendorStream}) : assert(vendorStream != null);
 

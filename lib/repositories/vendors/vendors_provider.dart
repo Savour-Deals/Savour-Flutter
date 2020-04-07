@@ -4,48 +4,51 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
+import 'package:savour_deals_flutter/stores/vendors_model.dart';
 
 class VendorsApiProvider {
   final DatabaseReference _vendorRef = FirebaseDatabase().reference().child("Vendors");
   final _geo = Geofire();
-  StreamController geoController = StreamController();
-  Stream geoStream;
-  StreamController<List<VendorCacheItem>> vendorController = StreamController<List<VendorCacheItem>>();
-  Stream<List<VendorCacheItem>> vendorStream;
+  final StreamController _geoController = StreamController();
+  Stream _geoStream;
+  final StreamController<Vendors> _vendorController = StreamController<Vendors>();
+  Stream<Vendors> _vendorStream;
+  final Vendors _vendors = Vendors();
 
-  Map<String, VendorCacheItem> vendorMap = {};
+  Map<String, VendorCacheItem> _vendorMap = {};
 
-  bool equals(dynamic p, dynamic n) {
+  bool _equals(dynamic p, dynamic n) {
     return p["key"] == n["key"];
   }
 
   VendorsApiProvider(){
     _geo.initialize("Vendors_Location");
-    vendorStream = vendorController.stream;
-    geoStream = geoController.stream;
-    geoStream.distinct(equals).listen((vendorData) async {
-      vendorMap[vendorData["key"]] = VendorCacheItem(
-        await getVendor(vendorData["key"], vendorData["lat"], vendorData["long"]), 
-        DateTime.now());
-      vendorController.add(vendorMap.values.toList());
+    _vendorStream = _vendorController.stream;
+    _geoStream = _geoController.stream;
+    _geoStream.distinct(_equals).listen((vendorData) async {
+      final Vendor newVendor = await _getVendor(vendorData["key"], vendorData["lat"], vendorData["long"]);
+      _vendorMap[vendorData["key"]] = VendorCacheItem(newVendor, DateTime.now());
+      _vendors.addVendor(newVendor);
+      _vendorController.add(_vendors);
     });
     _geo.onKeyEntered.listen((data){
-      geoController.add(data);
+      _geoController.add(data);
     });
     _geo.onKeyExited.listen((data){
-      vendorMap.remove(data["key"]);
-      vendorController.add(vendorMap.values.toList());
+      _vendors.removeVendor(_vendorMap.remove(data["key"]).vendor);
+      _vendorController.add(_vendors);
     });
   }
 
-  Stream<List<VendorCacheItem>> vendorStreamByLocation(Position location) {
+  Stream<Vendors> vendorStreamByLocation(Position location) {
+    _vendors.setLocation(location);
     _geo.queryAtLocation(location.latitude, location.longitude, 800.0);//kick off geoquery
-    return vendorStream;
+    return _vendorStream;
   }
 
-  Future<Vendor> getVendor(String id, double lat, double long) async {
-    if (vendorMap.containsKey(id)  && DateTime.now().difference(vendorMap[id].timestamp).inHours < 5){
-      return vendorMap["id"].vendor;
+  Future<Vendor> _getVendor(String id, double lat, double long) async {
+    if (_vendorMap.containsKey(id) && DateTime.now().difference(_vendorMap[id].timestamp).inHours < 5){
+      return _vendorMap[id].vendor;
     }
     //only go to DB if we don't have this vendor and cache has not expired
     return await _vendorRef.child(id).once().then((snap) {

@@ -223,30 +223,31 @@ class _VendorsPageState extends State<VendorsPageWidget> {
         if (state is VendorLoaded) {
           return Stack(
             children: <Widget>[
-              StreamBuilder<List<VendorCacheItem>>(
+              StreamBuilder<Vendors>(
                 stream: state.vendorStream,
-                builder: (BuildContext context, AsyncSnapshot<List<VendorCacheItem>> vendorList) {
-                  if (vendorList.data != null && vendorList.data.length > 0){
+                builder: (BuildContext context, AsyncSnapshot<Vendors> snap) {
+                  final vendors = snap.data;
+                  if (vendors!= null && vendors.count > 0){
+                    final vendorList = vendors.getVendorList();
                     return ListView.builder(
                       physics: AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.all(0.0),
                       // physics: const AlwaysScrollableScrollPhysics (),
                       itemBuilder: (context, position) {
-                        final Vendor vendor = vendorList.data[position].vendor;
                         return GestureDetector(
                           onTap: () async {
-                            print(vendor.name + " clicked");
+                            print(vendorList[position].name + " clicked");
                             var route = platformPageRoute(
                               context: context,
                               settings: RouteSettings(name: "VendorPage"),
-                              builder: (_) => VendorPageWidget(vendor, currentLocation), 
+                              builder: (_) => VendorPageWidget(vendorList[position], currentLocation), 
                             );
                             Navigator.push(context,route);
                           },
-                          child: VendorCard(vendor, currentLocation)
+                          child: VendorCard(vendorList[position], currentLocation)
                         );
                       },
-                      itemCount: vendorList.data.length,
+                      itemCount: vendors.count,
                     );
                   } else {
                     return Padding(
