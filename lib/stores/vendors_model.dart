@@ -9,6 +9,7 @@ class Vendors {
   Vendors();
 
   void addVendor(Vendor newVendor){
+    print(newVendor.key);
     _vendors.add(newVendor);
     _count++;
   }
@@ -33,4 +34,6 @@ class Vendors {
   }
 
   int get count => _count;
+
+  Position get location => _location;
 }

@@ -43,6 +43,7 @@ dependencies:
     git:
       url: https://github.com/Savour-Deals/flutter_geofire.git
     # path: "../flutter_geofire"
+  rxdart: ^0.23.0
 
   app_settings: ^3.0.1
   onesignal_flutter: 2.1.0

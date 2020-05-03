@@ -106,4 +106,6 @@ class Deals {
   void setLocation(Position _location){
     this.location = _location;
   }
+
+  int get count => _deals.length;
 }

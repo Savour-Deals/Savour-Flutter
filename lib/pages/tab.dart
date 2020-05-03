@@ -14,9 +14,16 @@ import 'package:location_permissions/location_permissions.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rate_my_app/rate_my_app.dart';
-import 'package:savour_deals_flutter/blocs/vendor/vendor_bloc.dart';
+import 'package:savour_deals_flutter/blocs/deal/deal_bloc.dart';
+import 'package:savour_deals_flutter/blocs/vendor_page/vendor_bloc.dart';
 import 'package:savour_deals_flutter/pages/loginPages/onboardingPage.dart';
+import 'package:savour_deals_flutter/repositories/deals/deals_provider.dart';
+import 'package:savour_deals_flutter/repositories/deals/deals_repo.dart';
+import 'package:savour_deals_flutter/repositories/vendors/vendors_provider.dart';
+import 'package:savour_deals_flutter/repositories/vendors/vendors_repo.dart';
+import 'package:savour_deals_flutter/stores/deals_model.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
+import 'package:savour_deals_flutter/stores/vendors_model.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
 import 'package:savour_deals_flutter/utils.dart';
@@ -41,6 +48,14 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   FirebaseAnalytics analytics = FirebaseAnalytics();
 
+  final vendors = Vendors();
+  final deals = Deals();
+  DealsApiProvider _dealsApiProvider;  
+  VendorsApiProvider _vendorApiProvider; 
+  VendorRepository _vendorsRepo;
+  DealRepository _dealsRepo;
+
+
   // int lastNearbyNotificationTime;
   // FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
@@ -48,14 +63,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   AppState appState;
   ThemeData theme;
 
-  List<Widget> _children = [
-    DealsPageWidget(),
-    BlocProvider<VendorBloc>(
-      create: (context) => VendorBloc(),
-      child: VendorsPageWidget()
-    ),
-    AccountPageWidget(),
-  ];
+  List<Widget> _children;
 
 
   @override
@@ -66,6 +74,26 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
+    //inject global dependencies
+    final user = await FirebaseAuth.instance.currentUser();
+
+    _dealsApiProvider = DealsApiProvider(deals, user.uid); 
+    _vendorApiProvider = VendorsApiProvider(vendors); 
+    _vendorsRepo = VendorRepository(_vendorApiProvider);
+    _dealsRepo = DealRepository(_dealsApiProvider, _vendorApiProvider);
+
+    _children = [
+      BlocProvider<DealBloc>(
+        create: (context) => DealBloc(_dealsRepo, _vendorsRepo),
+        child: DealsPageWidget()
+        ),
+      BlocProvider<VendorBloc>(
+        create: (context) => VendorBloc(_vendorsRepo),
+        child: VendorsPageWidget()
+      ),
+      AccountPageWidget(),
+    ];
+    
     _sendCurrentTabToAnalytics(0);
     //Init app rating 
     RateMyApp rateMyApp = RateMyApp(

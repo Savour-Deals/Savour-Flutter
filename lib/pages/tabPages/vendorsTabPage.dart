@@ -14,7 +14,6 @@ enum PageType {
 class _VendorsPageState extends State<VendorsPageWidget> {
   //Location variables
   final _locationService = Geolocator();
-  Position currentLocation;
 
   //Declare contextual variables
   AppState appState;
@@ -22,17 +21,6 @@ class _VendorsPageState extends State<VendorsPageWidget> {
 
   VendorBloc _vendorsBloc;
 
-
-  //database variables 
-  // DatabaseReference vendorRef = FirebaseDatabase().reference().child("Vendors");
-  // final geo = Geofire();
-  // bool loaded = false;
-
-  // List<Vendor> vendors = [];
-
-  // bool geoFireReady = false;
-  // int keyEnteredCounter = 0;
-  
   @override
   void initState() {
     super.initState();
@@ -40,11 +28,8 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   }
 
   void initPlatform() async {
+    Position currentLocation;
     _vendorsBloc = BlocProvider.of<VendorBloc>(context);
-    //start loading timer :: 10s, if not done loading by then, display toast
-    // _startLoadingTimer();
-    //Intializing geoFire
-    // geo.initialize("Vendors_Location");
     try {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       if (serviceStatus == GeolocationStatus.granted) {
@@ -58,41 +43,14 @@ class _VendorsPageState extends State<VendorsPageWidget> {
       //If we have the location, fire off the query, otherwise we will have to wait for the stream
       _vendorsBloc.add(FetchVendors(location: currentLocation));
     }
-    // geo.onObserveReady.listen((ready){
-    //   if(this.mounted){
-    //     setState(() {
-    //       geoFireReady = true;
-    //     });
-    //   }
-    // });
-    // geo.onKeyEntered.listen((data){
-    //   if(this.mounted){
-    //     setState(() {
-    //       keyEnteredCounter++;
-    //     });          
-    //     keyEntered(data);
-    //   }
-    // });
-    // geo.onKeyExited.listen((data){
-    //   if(this.mounted){
-    //     keyExited(data);
-    //   }
-    // });
+
     _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
-      // if (this.mounted){
-      //   setState(() {
-      //     currentLocation = result;
-      //   });
-      //   if (geo.geoQueryActive){
-      //     //Query already running, update location
-      //     geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-      //   }else{
-      //     // this is our first location update. Fire off the geoquery
-      //     geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-      //   }
-      // }
-      _vendorsBloc.add(FetchVendors(location: currentLocation));
-    }).cancel();
+      currentLocation = result;
+      if (currentLocation == null){
+      }else{
+        _vendorsBloc.add(UpdateVendorsLocation(location: currentLocation));
+      }
+    });//.cancel();
   }
 
   _startLoadingTimer(){
@@ -118,42 +76,6 @@ class _VendorsPageState extends State<VendorsPageWidget> {
     //   }
     // );
   }
-
-  // void keyEntered(dynamic data) {
-  //   // print("key entered vendorsPage: " + data["key"]);
-  //   var lat = data["lat"];
-  //   var long = data["long"];
-  //   if (this.mounted){
-  //     vendorRef.child(data["key"]).onValue.listen((event) => {
-  //       if (event.snapshot != null){
-  //         setState(() {
-  //           Vendor newVendor = Vendor.fromSnapshot(event.snapshot, lat, long);
-  //           var idx = vendors.indexWhere((d) => d.key == newVendor.key);
-  //           if (idx < 0) {//Dont have vendor yet
-  //             vendors.add(newVendor);
-  //             vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
-  //           }else{//vendor present. Update vendor
-  //             vendors[idx] = newVendor;
-  //             vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
-  //           }
-  //         })
-  //       }
-  //     });
-  //   }
-  // }
-
-  // int vendorSort(Vendor v1, Vendor v2){
-  //   return v1.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(v2.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude));
-  // }
-
-  // void keyExited(dynamic data) {
-  //   // print("key exited vendorsPage: " + data["key"]);
-  //   if (this.mounted){
-  //     setState(() {
-  //       vendors.removeWhere((vendor) => vendor.key == data["key"]);
-  //     });
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -214,17 +136,16 @@ class _VendorsPageState extends State<VendorsPageWidget> {
               ),
             )
           );
-        }
-        if (state is VendorError) {
+        } else if (state is VendorError) {
           return Center(
             child: Text('An error has occured'),
           );
-        }
-        if (state is VendorLoaded) {
+        } else if (state is VendorLoaded) {
           return Stack(
             children: <Widget>[
               StreamBuilder<Vendors>(
-                stream: state.vendorStream,
+                stream: _vendorsBloc.vendorRepo.getVendorStream(),
+                initialData: Vendors(),
                 builder: (BuildContext context, AsyncSnapshot<Vendors> snap) {
                   final vendors = snap.data;
                   if (vendors!= null && vendors.count > 0){
@@ -240,11 +161,11 @@ class _VendorsPageState extends State<VendorsPageWidget> {
                             var route = platformPageRoute(
                               context: context,
                               settings: RouteSettings(name: "VendorPage"),
-                              builder: (_) => VendorPageWidget(vendorList[position], currentLocation), 
+                              builder: (_) => VendorPageWidget(vendorList[position], state.location), 
                             );
                             Navigator.push(context,route);
                           },
-                          child: VendorCard(vendorList[position], currentLocation)
+                          child: VendorCard(vendorList[position], state.location),
                         );
                       },
                       itemCount: vendors.count,
@@ -285,7 +206,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
           );
         } else {
           return Center(
-            child: Text("failed to match a state"),
+            child: Text("An error ocurred"),
           );
         }
       }

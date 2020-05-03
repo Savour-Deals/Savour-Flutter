@@ -5,7 +5,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:provider/provider.dart';
-import 'package:savour_deals_flutter/pages/loginPages/loginPage.dart';
 import 'package:savour_deals_flutter/pages/loginPages/phoneAuth.dart';
 // import 'package:savour_deals_flutter/pages/loginPages/loginPage.dart';
 // import 'package:savour_deals_flutter/pages/loginPages/phoneAuth.dart';

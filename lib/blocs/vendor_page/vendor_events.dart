@@ -15,3 +15,9 @@ class FetchVendors extends VendorEvent {
 
   const FetchVendors({@required this.location}) : assert(location != null);
 }
+
+class UpdateVendorsLocation extends VendorEvent {
+  final Position location;
+
+  const UpdateVendorsLocation({@required this.location}) : assert(location != null);
+}

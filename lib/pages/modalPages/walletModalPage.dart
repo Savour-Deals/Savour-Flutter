@@ -18,14 +18,14 @@ import 'package:savour_deals_flutter/stores/deals_model.dart';
 import 'package:savour_deals_flutter/stores/redemption_model.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
+import 'package:savour_deals_flutter/stores/vendors_model.dart';
 import 'package:flutter/services.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:savour_deals_flutter/pages/infoPages/dealPage.dart';
 
 class WalletPageWidget extends StatefulWidget {
   final Deals deals;
-  final List<Vendor> vendors;
+  final Vendors vendors;
 
   WalletPageWidget(this.deals, this.vendors);
 
@@ -285,7 +285,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
 
 class RedeemedWidget extends StatefulWidget {
   final Deals deals;
-  final List<Vendor> vendors;
+  final Vendors vendors;
   final Position location;
 
   RedeemedWidget(this.deals, this.vendors, this.location);
@@ -311,7 +311,7 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
   void initState() {
     super.initState();
     deals = widget.deals.getAllDealsPlusInactive().toList();
-    vendors = widget.vendors.toList();
+    vendors = widget.vendors.getVendorList();
     init();
   }
 
