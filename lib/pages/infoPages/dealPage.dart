@@ -364,6 +364,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   void redeemDeal(){
+    //TODO: Update to work with data in repo
     //perform redmeption actions
     print("Deal " + widget.deal.key + " redeemed!");
     var redemptionTime = widget.deal.redeemedTime = DateTime.now().millisecondsSinceEpoch~/1000;

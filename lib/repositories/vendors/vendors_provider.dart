@@ -13,7 +13,9 @@ class VendorsApiProvider {
   Stream _geoStream;
   final StreamController<Vendors> _vendorController = StreamController<Vendors>();
   Stream<Vendors> vendorStream;
-  final Vendors _vendors;
+  final Vendors _vendors = Vendors();
+
+  int _eventsFiredCount = 0;
 
   Map<String, VendorCacheItem> _vendorMap = {};
 
@@ -21,7 +23,7 @@ class VendorsApiProvider {
     return p["key"] == n["key"];
   }
 
-  VendorsApiProvider(this._vendors){
+  VendorsApiProvider(){
     _geo.initialize("Vendors_Location");
     vendorStream = _vendorController.stream.asBroadcastStream();
     _geoStream = _geoController.stream;
@@ -44,14 +46,19 @@ class VendorsApiProvider {
         });
         _vendorMap[vendorData["key"]] = VendorCacheItem(newVendor, DateTime.now());
         _vendors.addVendor(newVendor);
+        _vendors.doneLoading();
         _vendorController.add(_vendors);
       }
 
     });
     _geo.onObserveReady.listen((_) {
-      // this.initialized = true;
+      if (_eventsFiredCount == 0){
+        _vendors.doneLoading();
+        _vendorController.add(_vendors);
+      }
     });
     _geo.onKeyEntered.listen((data){
+      _eventsFiredCount++;
       _geoController.add(data);
     });
     _geo.onKeyExited.listen((data){
@@ -61,17 +68,33 @@ class VendorsApiProvider {
   }
 
   void queryByLocation(Position location) {
-    // if(_vendors.location ==  null){
+    // if(_vendors.location == null){
       _vendors.setLocation(location);
       _geo.queryAtLocation(location.latitude, location.longitude, 800.0);//kick off geoquery
     // }
+  }
+
+  Future<Vendor> getVendorByKey(String key) async {
+    if (_vendorMap.containsKey(key) && DateTime.now().difference(_vendorMap[key].timestamp).inHours < 5){
+      return _vendorMap[key].vendor;
+    }
+    final locationData = await _geo.getLocation(key);
+    final double lat = locationData["lat"];
+    final double long = locationData["long"];
+    final newVendor = await _vendorRef.child(key).once().then((snap) {
+      return Vendor.fromSnapshot(snap, lat, long);//save it for future use
+    });
+    _vendorMap[key] = VendorCacheItem(newVendor, DateTime.now());
+    _vendors.addVendor(newVendor);
+    _vendors.doneLoading();
+    _vendorController.add(_vendors);
+    return _vendorMap[key].vendor;
   }
 
   void updateLocation(Position location) {
     _vendors.setLocation(location);
     _geo.updateLocation(location.latitude, location.longitude, 800.0);//kick off geoquery
             _vendorController.add(_vendors);
-
   }
 }
 

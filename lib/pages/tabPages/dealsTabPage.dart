@@ -30,6 +30,7 @@ class _DealsPageState extends State<DealsPageWidget> {
   @override
   void initState() {
     super.initState();
+    _dealsBloc = BlocProvider.of<DealBloc>(context);
     initPlatform();
   }
 
@@ -46,7 +47,6 @@ class _DealsPageState extends State<DealsPageWidget> {
     //Intializing geoFire
     // geo.initialize("Vendors_Location");
     user = await FirebaseAuth.instance.currentUser();
-    _dealsBloc = BlocProvider.of<DealBloc>(context);
     try {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       if (serviceStatus == GeolocationStatus.granted) {
@@ -144,29 +144,29 @@ class _DealsPageState extends State<DealsPageWidget> {
     // notificationData.addListener(() => displayNotiDeal());//if not, listen for changes!
     theme = Theme.of(context);
     return BlocBuilder<DealBloc, DealState>(
-      builder: (context, state) { 
-        return ShowCaseWidget(
-          builder: Builder(
-            builder: (context) {
-              showcasecontext = context;
-              return StreamBuilder<List<dynamic>>(
-                stream: CombineLatestStream.combine2(
-                  _dealsBloc.dealsRepo.getDealsStream(),
-                  _dealsBloc.vendorsRepo.getVendorStream(),
-                  (deals, vendors) {
-                    return [deals, vendors];
-                  }
-                ),
-                builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snap) {
-                  Deals deals;
-                  Vendors vendors;
-                  if (snap.data != null){
-                    deals = snap.data[0] as Deals;
-                    vendors = snap.data[1] as Vendors;
-                  }else{
-                    deals = Deals();
-                    vendors = Vendors();
-                  }
+      builder: (context, state) {
+        return StreamBuilder<List<dynamic>>(
+          stream: CombineLatestStream.combine2(
+            _dealsBloc.dealsRepo.getDealsStream(),
+            _dealsBloc.vendorsRepo.getVendorStream(),
+            (deals, vendors) {
+              return [deals, vendors];
+            }
+          ),
+          builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snap) {
+            Deals deals;
+            Vendors vendors;
+            if (snap.data != null){
+              deals = snap.data[0] as Deals;
+              vendors = snap.data[1] as Vendors;
+            }else{
+              deals = Deals();
+              vendors = Vendors();
+            }
+            return ShowCaseWidget(
+              builder: Builder(
+                builder: (context) {
+                  showcasecontext = context;
                   return PlatformScaffold(
                     appBar: PlatformAppBar(
                       leading: Showcase(
@@ -214,7 +214,10 @@ class _DealsPageState extends State<DealsPageWidget> {
                                   context: context,
                                   settings: RouteSettings(name: "WalletPage"),
                                   builder: (BuildContext context) {
-                                    return WalletPageWidget(deals, vendors);
+                                    return BlocProvider<WalletBloc>(
+                                      create: (context) => WalletBloc(_dealsBloc.dealsRepo, _dealsBloc.vendorsRepo, RedemptionRepository()),
+                                      child:  WalletPageWidget()
+                                    );
                                   },
                                   fullscreenDialog: true
                                 )
@@ -229,138 +232,65 @@ class _DealsPageState extends State<DealsPageWidget> {
                         transitionBetweenRoutes: false,
                       ),
                     ),
-                    body: Material(child: bodyWidget(state)),
+                    body: Material(child: bodyWidget(state, deals, vendors)),
                   );
-                }
-              );
-            },
-          )
+                },
+              )
+            );
+          }
         );
       }
     );
   }
   
-  Widget bodyWidget(DealState state){
-    if (state is DealUninitialized || state is DealLoading) {
-      return Center (
-        child:  ClipRRect(
-          borderRadius: BorderRadius.circular(15),
-          child: Container(
-            color: Colors.black.withOpacity(0.5),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                PlatformCircularProgressIndicator(),
-                Container(height: 10),
-                AutoSizeText(
-                  "Loading Deals...",
-                  maxFontSize: 22,
-                  style: TextStyle(color: Colors.white),
-                ),
-              ],
-            ),
-            width: MediaQuery.of(context).size.width*0.5,
-            height: MediaQuery.of(context).size.width*0.4,
-          ),
-        )
-      );
+  Widget bodyWidget(DealState state, Deals deals, Vendors vendors){
+    if (state is DealUninitialized) {
+      return Loading(text: "Loading Deals...");
     } else if (state is DealError) {
-      return Center(
-        child: Text('An error has occured'),
-      );
+      return TextPage(text: "An error occured.");
     } else if (state is DealLoaded) {
-      return StreamBuilder<List<dynamic>>(
-        stream: CombineLatestStream.combine2(
-          _dealsBloc.dealsRepo.getDealsStream(),
-          _dealsBloc.vendorsRepo.getVendorStream(),
-          (deals, vendors) {
-            return [deals, vendors];
-          }
-        ),
-        initialData: [Deals(), Vendors()],
-        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snap) {
-          final deals = snap.data[0] as Deals;
-          final vendors = snap.data[1] as Vendors;
-          if (deals.getAllDeals().length > 0){
-            return Stack(
-              children: <Widget>[
-                getDealsWidget(deals, state),
-                Align(
-                  alignment: Alignment(-0.90, 0.90),
-                  child: Showcase(
-                    key: _three,
-                    title: 'Maps',
-                    description: "See what's nearby!",
-                    shapeBorder: CircleBorder(),
-                    showArrow: false,
-                    child:  FloatingActionButton(
-                      heroTag: null,
-                      backgroundColor: SavourColorsMaterial.savourGreen,
-                      child: Icon(Icons.pin_drop, color: Colors.white,),
-                      onPressed: (){
-                        Navigator.push(context,
-                          platformPageRoute(
-                            context: context,
-                            settings: RouteSettings(name: "MapPage"),
-                            builder: (BuildContext context) {
-                              return new MapPageWidget("Map Page", vendors.getVendorList(), state.location);
-                            },
-                            fullscreenDialog: true
-                          )
-                        );
-                      },
-                    ),
-                  )
-                ),
-              ],
-            );
-          } else if (true){
-            //If geofire has loaded but we got no deals, tell user no deals
-            return Padding(
-              padding: const EdgeInsets.all(15),
-              child: Center(
-                child: AutoSizeText(
-                  "No deals nearby!", 
-                  minFontSize: 15,
-                  maxFontSize: 22,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                )
-              ),
-            );
-          }else{
-            //Geofire not ready, show loading
-            return Center (
-              child:  ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Container(
-                  color: Colors.black.withOpacity(0.5),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      PlatformCircularProgressIndicator(),
-                      Container(height: 10),
-                      AutoSizeText(
-                        "Loading Deals...",
-                        maxFontSize: 22,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                  width: MediaQuery.of(context).size.width*0.5,
-                  height: MediaQuery.of(context).size.width*0.4,
+      if (deals.getAllDeals().length > 0){
+        return Stack(
+          children: <Widget>[
+            getDealsWidget(deals, state),
+            Align(
+              alignment: Alignment(-0.90, 0.90),
+              child: Showcase(
+                key: _three,
+                title: 'Maps',
+                description: "See what's nearby!",
+                shapeBorder: CircleBorder(),
+                showArrow: false,
+                child:  FloatingActionButton(
+                  heroTag: null,
+                  backgroundColor: SavourColorsMaterial.savourGreen,
+                  child: Icon(Icons.pin_drop, color: Colors.white,),
+                  onPressed: (){
+                    Navigator.push(context,
+                      platformPageRoute(
+                        context: context,
+                        settings: RouteSettings(name: "MapPage"),
+                        builder: (BuildContext context) {
+                          return new MapPageWidget(vendors.getVendorList(), state.location);
+                        },
+                        fullscreenDialog: true
+                      )
+                    );
+                  },
                 ),
               )
-            );
-          }
-        }
-      );
+            ),
+          ],
+        );
+      } else if (deals.isLoading){
+        //Geofire not ready, show loading
+        return Loading(text: "Loading Deals...");
+      }
+      //If geofire has loaded but we got no deals, tell user no deals
+      return TextPage(text: "No deals nearby.");
     } else {
       //did not match a state
-      return Center(
-        child: Text('An error has occured'),
-      );
+      return TextPage(text: "An error occured.");
     }
   }
 
@@ -407,11 +337,14 @@ Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carous
                   ),
                 );
               },
-              child: DealCard(
-                deal: carouselDeals[item], 
-                location: state.location, 
-                type: DealCardType.medium,
-              ),
+              // child: BlocProvider<DealCardBloc>(
+              //     create: (context) => DealCardBloc(_dealsBloc.dealsRepo, _dealsBloc.vendorsRepo),
+                  child: DealCard(
+                    deal: carouselDeals[item], 
+                    location: state.location, 
+                    type: DealCardType.medium,
+                  ),
+                // ), 
             );
           },
           itemCount: carouselDeals.length,  

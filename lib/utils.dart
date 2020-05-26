@@ -1,7 +1,12 @@
+library savour.globals; 
+
 import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/widgets.dart';
+import 'package:savour_deals_flutter/repositories/deals/deals_provider.dart';
+import 'package:savour_deals_flutter/repositories/redemptions/redemptions_provider.dart';
+import 'package:savour_deals_flutter/repositories/vendors/vendors_provider.dart';
 
 class Utils {
     static final Random _random = Random.secure();
@@ -56,3 +61,7 @@ class SizeConfig {
     _safeAreaVertical) / 100;
   }
 }
+
+final DealsApiProvider dealsApiProvider = DealsApiProvider();  
+final VendorsApiProvider vendorApiProvider = VendorsApiProvider(); 
+final RedemptionsApiProvider redemptionApiProvider = RedemptionsApiProvider(); 

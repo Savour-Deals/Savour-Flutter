@@ -11,17 +11,15 @@ import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/containers/vendorCardWidget.dart';
 import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 
 import '../../utils.dart';
 
 
 class MapPageWidget extends StatefulWidget {
-  final text;
   final List<Vendor> vendors;
   final Position location;
-  MapPageWidget(this.text, this.vendors,this.location);
+  MapPageWidget(this.vendors,this.location);
 
   @override
   _MapPageWidgetState createState() => _MapPageWidgetState();

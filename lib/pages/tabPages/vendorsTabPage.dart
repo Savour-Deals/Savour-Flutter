@@ -45,11 +45,12 @@ class _VendorsPageState extends State<VendorsPageWidget> {
     }
 
     _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
-      currentLocation = result;
       if (currentLocation == null){
+        _vendorsBloc.add(FetchVendors(location: currentLocation));
       }else{
         _vendorsBloc.add(UpdateVendorsLocation(location: currentLocation));
       }
+      currentLocation = result;
     });//.cancel();
   }
 
@@ -81,153 +82,98 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   Widget build(BuildContext context) {
     appState = Provider.of<AppState>(context);
     theme = Theme.of(context);
-    return PlatformScaffold(
-      appBar: PlatformAppBar(
-        title: Image.asset("images/Savour_White.png"),
-        leading: FlatButton(
-          child: Icon(Icons.search,
-            color: Colors.white,
-          ),
-          onPressed: () async {
-            var page = await buildPageAsync(PageType.searchPage);
-            var route = platformPageRoute(
-              context: context,
-              settings: RouteSettings(name: "SearchPage"),
-              builder: (_) => page, 
-              fullscreenDialog: true, 
-            );
-            Navigator.push(context,route);
-          },
-        ),
-        ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
-          heroTag: "vendorTab",
-          transitionBetweenRoutes: false,
-        ),
-      ),
-      body: Material(child: bodyWidget()),
-    );
-  }
-
-  Widget bodyWidget(){
     return BlocBuilder<VendorBloc, VendorState>(
       builder: (context, state) {
-        if (state is VendorUninitialized || state is VendorLoading) {
-          return Center (
-            child:  ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: Container(
-                color: Colors.black.withOpacity(0.5),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    PlatformCircularProgressIndicator(),
-                    Container(height: 10),
-                    AutoSizeText(
-                      "Loading Vendors...",
-                      maxFontSize: 22,
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-                width: MediaQuery.of(context).size.width*0.5,
-                height: MediaQuery.of(context).size.width*0.4,
-              ),
-            )
-          );
-        } else if (state is VendorError) {
-          return Center(
-            child: Text('An error has occured'),
-          );
-        } else if (state is VendorLoaded) {
-          return Stack(
-            children: <Widget>[
-              StreamBuilder<Vendors>(
-                stream: _vendorsBloc.vendorRepo.getVendorStream(),
-                initialData: Vendors(),
-                builder: (BuildContext context, AsyncSnapshot<Vendors> snap) {
-                  final vendors = snap.data;
-                  if (vendors!= null && vendors.count > 0){
-                    final vendorList = vendors.getVendorList();
-                    return ListView.builder(
-                      physics: AlwaysScrollableScrollPhysics(),
-                      padding: EdgeInsets.all(0.0),
-                      // physics: const AlwaysScrollableScrollPhysics (),
-                      itemBuilder: (context, position) {
-                        return GestureDetector(
-                          onTap: () async {
-                            print(vendorList[position].name + " clicked");
-                            var route = platformPageRoute(
-                              context: context,
-                              settings: RouteSettings(name: "VendorPage"),
-                              builder: (_) => VendorPageWidget(vendorList[position], state.location), 
-                            );
-                            Navigator.push(context,route);
-                          },
-                          child: VendorCard(vendorList[position], state.location),
-                        );
-                      },
-                      itemCount: vendors.count,
-                    );
-                  } else {
-                    return Padding(
-                      padding: const EdgeInsets.all(15),
-                      child: Center(
-                        child: AutoSizeText(
-                          "No vendors nearby!", 
-                          minFontSize: 15,
-                          maxFontSize: 22,
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        )
-                      ),
-                    );
-                  }
-                },
-              ),
-              Align(
-                alignment: Alignment(-0.90, 0.90),
-                child: FloatingActionButton(
-                  heroTag: null,
-                  backgroundColor: SavourColorsMaterial.savourGreen,
-                  child: Icon(Icons.pin_drop, color: Colors.white,),
+        return StreamBuilder<Vendors>(
+          stream: _vendorsBloc.vendorRepo.getVendorStream(),
+          initialData: Vendors(),
+          builder: (BuildContext context, AsyncSnapshot<Vendors> snap) {
+            Vendors vendors = snap.data;
+            return PlatformScaffold(
+              appBar: PlatformAppBar(
+                title: Image.asset("images/Savour_White.png"),
+                leading: FlatButton(
+                  child: Icon(Icons.search,
+                    color: Colors.white,
+                  ),
                   onPressed: () async {
-                    // var route = platformPageRoute(
-                    //   context: context,
-                    //   settings: RouteSettings(name: "MapPage"),
-                    //   builder: (_) => SearchPageWidget(vendors: state.vendorStream.,location: currentLocation), 
-                    //   fullscreenDialog: true, 
-                    // );
-                    // Navigator.push(context,route);
+                    var route = platformPageRoute(
+                      context: context,
+                      settings: RouteSettings(name: "SearchPage"),
+                      builder: (_) => SearchPageWidget(vendors: vendors.getVendorList(), location: state.location), 
+                      fullscreenDialog: true, 
+                    );
+                    Navigator.push(context,route);
                   },
                 ),
-              )
-            ],
-          );
-        } else {
-          return Center(
-            child: Text("An error ocurred"),
-          );
-        }
+                ios: (_) => CupertinoNavigationBarData(
+                  backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
+                  heroTag: "vendorTab",
+                  transitionBetweenRoutes: false,
+                ),
+              ),
+              body: Material(child: _buildBody(state, vendors)),
+            );
+          }
+        );
       }
     );
   }
 
-  Future<Widget> buildPageAsync(PageType pageType, {position: int}) async {
-    return Future.microtask(() async {
-      // switch (pageType) {
-      //   case PageType.mapPage:
-      //     return MapPageWidget("Map Page", this.vendors, currentLocation);
-      //     break;
-      //   case PageType.searchPage:
-      //     return SearchPageWidget(vendors: vendors,location: currentLocation);
-      //     break;
-      //   case PageType.vendorPage:
-      //     return VendorPageWidget(vendors[position], currentLocation);
-      //     break;
-      //   default:
-      //     return null;
-      // }
-    });
-}
+  Widget _buildBody(VendorState state, Vendors vendors){
+    if (state is VendorUninitialized) {
+      return Loading(text: "Loading Vendors...");
+    } else if (state is VendorError) {
+      return TextPage(text: "An error occured.");
+    } else if (state is VendorLoaded) {
+      if (vendors!= null && vendors.count > 0){
+        final vendorList = vendors.getVendorList();
+        return Stack(
+          children: <Widget>[
+            ListView.builder(
+              physics: AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.all(0.0),
+              // physics: const AlwaysScrollableScrollPhysics (),
+              itemBuilder: (context, position) {
+                return GestureDetector(
+                  onTap: () async {
+                    print(vendorList[position].name + " clicked");
+                    var route = platformPageRoute(
+                      context: context,
+                      settings: RouteSettings(name: "VendorPage"),
+                      builder: (_) => VendorPageWidget(vendorList[position], state.location), 
+                    );
+                    Navigator.push(context,route);
+                  },
+                  child: VendorCard(vendorList[position], state.location),
+                );
+              },
+              itemCount: vendors.count,
+            ),
+            Align(
+              alignment: Alignment(-0.90, 0.90),
+              child: FloatingActionButton(
+                heroTag: null,
+                backgroundColor: SavourColorsMaterial.savourGreen,
+                child: Icon(Icons.pin_drop, color: Colors.white,),
+                onPressed: () async {
+                  var route = platformPageRoute(
+                    context: context,
+                    settings: RouteSettings(name: "MapPage"),
+                    builder: (_) => MapPageWidget(vendorList, state.location), 
+                    fullscreenDialog: true, 
+                  );
+                  Navigator.push(context,route);
+                },
+              ),
+            )
+          ],
+        );
+      } else if (vendors.isLoading) {
+        return Loading(text: "Loading Vendors...");
+      }
+      return TextPage(text: "No Vendors Nearby!");
+    }
+    return TextPage(text: "An error ocurred");
+  }
 }
