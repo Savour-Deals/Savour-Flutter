@@ -10,6 +10,7 @@ class DealsPageWidget extends StatefulWidget {
 class _DealsPageState extends State<DealsPageWidget> {
   //Location variables
   final _locationService = Geolocator();
+  Position currentLocation;
   // Position currentLocation;
 
   //Declare contextual variables
@@ -41,9 +42,6 @@ class _DealsPageState extends State<DealsPageWidget> {
   }
 
   void initPlatform() async {
-    var currentLocation;
-    //start loading timer :: 10s, if not done loading by then, display toast
-    _startLoadingTimer();
     //Intializing geoFire
     // geo.initialize("Vendors_Location");
     user = await FirebaseAuth.instance.currentUser();
@@ -78,70 +76,31 @@ class _DealsPageState extends State<DealsPageWidget> {
     });//.cancel();
   }
 
-  _startLoadingTimer(){
-    //If we have waited for +10s and geofire has not loaded, tell user to check their interet!
-    // const tenSec = const Duration(seconds: 10);
-    // Timer.periodic(
-    //   tenSec,
-    //   (Timer timer) {
-    //     if(this.mounted){
-    //       setState(() {
-    //         timer.cancel();
-    //         if(!geoFireReady){
-    //           Fluttertoast.showToast(
-    //             msg: "We seem to be taking a while to load. Check your internet connection to make sure you're online.",
-    //             toastLength: Toast.LENGTH_LONG,
-    //             gravity: ToastGravity.BOTTOM,
-    //             timeInSecForIos: 8,
-    //             backgroundColor: Colors.black.withOpacity(0.5),
-    //           );
-    //         }
-    //       });
-    //     }
-    //   }
-    // );
+  void displayNotiDeal() async {
+    if (notificationData.isNotiDealPresent){
+      print("DealID: ${notificationData.consumeNotiDealID}");
+      Navigator.push(
+        context,
+        platformPageRoute(
+          context: context,
+          settings: RouteSettings(name: "DealPage"),
+          builder: (context) => DealPageWidget(
+            dealId: notificationData.consumeNotiDealID,
+            location: currentLocation,
+          ),
+        ),
+      );
+    }else{
+      print("No DealID");
+    }
   }
-
-  // Future<Deal> getDeal(String dealID) async {
-  //   if(!deals.containsDeal(dealID)){
-  //     return await FirebaseDatabase().reference().child("Deals").child(dealID).once().then((dealSnap) async {
-  //       var newVendor;
-  //       newVendor = await getVendor(dealSnap.value["vendor_id"]);        
-  //       var newDeal = Deal.fromSnapshot(dealSnap, newVendor, user.uid);
-  //       deals.addDeal(newDeal);//save it for future use
-  //       return newDeal;
-  //     });
-  //   }
-  //   //If the deal is already here, send it back
-  //   return deals.getDealByKey(dealID);
-  // }
-
-  // void displayNotiDeal() async {
-  //   if (notificationData.isNotiDealPresent){
-  //     Deal notiDeal = await getDeal(notificationData.consumeNotiDealID);
-  //     print("DealID: ${notiDeal.key}");
-  //     Navigator.push(
-  //       context,
-  //       platformPageRoute(
-  //         context: context,
-  //         settings: RouteSettings(name: "DealPage"),
-  //         builder: (context) => DealPageWidget(
-  //           deal: notiDeal,
-  //           location: currentLocation
-  //         ),
-  //       ),
-  //     );
-  //   }else{
-  //     print("No DealID");
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
     appState = Provider.of<AppState>(context);
     notificationData = Provider.of<NotificationData>(context);
-    // if (notificationData.isNotiDealPresent) displayNotiDeal(); //check to make sure we already are pending a notification deal
-    // notificationData.addListener(() => displayNotiDeal());//if not, listen for changes!
+    if (notificationData.isNotiDealPresent) displayNotiDeal(); //check to make sure we already are pending a notification deal
+    notificationData.addListener(() => displayNotiDeal());//if not, listen for changes!
     theme = Theme.of(context);
     return BlocBuilder<DealBloc, DealState>(
       builder: (context, state) {
@@ -303,7 +262,7 @@ class _DealsPageState extends State<DealsPageWidget> {
   }
 
 Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carouselDeals, String carouselText, DealState state) {
-  var viewportFrac = 0.9;
+  var viewportFrac = 0.75;
   var initialPage = 0;
   if(MediaQuery.of(context).size.shortestSide > 600){//this is getting into tablet range
     viewportFrac = 0.35; //make a couple fit on the page
@@ -348,14 +307,11 @@ Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carous
                   ),
                 );
               },
-              // child: BlocProvider<DealCardBloc>(
-              //     create: (context) => DealCardBloc(_dealsBloc.dealsRepo, _dealsBloc.vendorsRepo),
-                  child: DealCard(
-                    deal: carouselDeals[item], 
-                    location: state.location, 
-                    type: DealCardType.medium,
-                  ),
-                // ), 
+              child: DealCard(
+                deal: carouselDeals[item], 
+                location: state.location, 
+                type: DealCardType.medium,
+              ),
             );
           },
           itemCount: carouselDeals.length,  

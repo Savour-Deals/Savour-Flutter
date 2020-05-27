@@ -316,7 +316,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
         color: (isInRange || !deal.isActive()) ? Colors.red : (deal.redeemed && ((DateTime.now().millisecondsSinceEpoch~/1000) - deal.redeemedTime~/1000 >= 1800)) ? Colors.red : SavourColorsMaterial.savourGreen,
         child: Text(
-          isInRange ? ((deal.redeemed) ? "Deal already Redeemed":"Redeem"):"Go to Location to Redeem",
+          deal.redeemed ? "Deal already Redeemed": (isInRange ? "Redeem" :"Go to Location to Redeem"),
           style: whiteText,
         ),
         onPressed: () {
@@ -377,7 +377,6 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   void redeemDeal(Deal deal){
-    //TODO: Update to work with data in repo
     //perform redmeption actions
     print("Deal " + deal.key + " redeemed!");
     

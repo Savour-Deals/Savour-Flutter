@@ -117,6 +117,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       body: Stack(
         children: <Widget>[
           GoogleMap(
+            padding: EdgeInsets.only(bottom: cardHeight),
             mapType: MapType.normal,
             initialCameraPosition:_userPosition,
             onMapCreated: _onMapCreated,
@@ -127,7 +128,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
             alignment: Alignment.bottomCenter,
             child: Container(
               height: cardHeight,
-              padding: const EdgeInsets.only(bottom: 20.0),
+              padding: EdgeInsets.only(bottom: 20.0),
               child: PageView.builder(
                 key: PageStorageKey('vendorGroup1'), //save deal group's position when scrolling
                 controller: PageController(viewportFraction: viewportFrac, initialPage: initialPage),
@@ -171,6 +172,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   }
 
   void _onMarkerPressed(MarkerId markerId) {
+    print(markerId.value);
     for (Vendor vendor in this.widget.vendors) {
       if (markerId.value == vendor.name) {
         Navigator.push(
