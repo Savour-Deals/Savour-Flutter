@@ -96,6 +96,8 @@ class VendorsApiProvider {
     _geo.updateLocation(location.latitude, location.longitude, 800.0);//kick off geoquery
             _vendorController.add(_vendors);
   }
+
+  Vendors get vendors => _vendors;
 }
 
 class VendorCacheItem {

@@ -15,11 +15,11 @@ export 'wallet_state.dart';
 
 
 class WalletBloc extends Bloc<WalletEvent, WalletState> {
-  final DealRepository _dealsRepo;
-  final VendorRepository _vendorRepo;
-  final RedemptionRepository _redemptionRepo;
+  final DealRepository _dealsRepo = DealRepository();
+  final VendorRepository _vendorRepo = VendorRepository();
+  final RedemptionRepository _redemptionRepo = RedemptionRepository();
 
-  WalletBloc(this._dealsRepo, this._vendorRepo, this._redemptionRepo);
+  WalletBloc();
 
   @override
   WalletState get initialState => WalletUninitialized(null);
@@ -49,7 +49,4 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       }
     }
   }
-
-  DealRepository get dealsRepo => _dealsRepo;
-  RedemptionRepository get redemptionRepo => _redemptionRepo;
 }

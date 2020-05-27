@@ -3,19 +3,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:provider/provider.dart';
+import 'package:savour_deals_flutter/blocs/redemption/redemption_bloc.dart';
 import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
 import 'package:savour_deals_flutter/containers/vendorCardWidget.dart';
 import 'package:savour_deals_flutter/pages/infoPages/dealPage.dart';
 import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/stores/deals_model.dart';
-import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:flutter/services.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
 
 
 class SearchPageWidget extends StatefulWidget {
@@ -156,9 +155,12 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 platformPageRoute(
                   context: context,
                   settings: RouteSettings(name: "DealPage"),
-                  builder: (context) => DealPageWidget(
-                    deal: _filteredDeals[index], 
-                    location: currentLocation
+                  builder: (context) => BlocProvider<RedemptionBloc>(
+                    create: (context) => RedemptionBloc(),
+                    child: DealPageWidget(
+                      dealId: _filteredDeals[index].key, 
+                      location: currentLocation
+                    ),
                   ),
                 ),
               );

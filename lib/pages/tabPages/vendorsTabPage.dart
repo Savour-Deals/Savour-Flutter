@@ -84,95 +84,108 @@ class _VendorsPageState extends State<VendorsPageWidget> {
     theme = Theme.of(context);
     return BlocBuilder<VendorBloc, VendorState>(
       builder: (context, state) {
-        return StreamBuilder<Vendors>(
-          stream: _vendorsBloc.vendorRepo.getVendorStream(),
-          initialData: Vendors(),
-          builder: (BuildContext context, AsyncSnapshot<Vendors> snap) {
-            Vendors vendors = snap.data;
-            return PlatformScaffold(
-              appBar: PlatformAppBar(
-                title: Image.asset("images/Savour_White.png"),
-                leading: FlatButton(
-                  child: Icon(Icons.search,
-                    color: Colors.white,
-                  ),
-                  onPressed: () async {
-                    var route = platformPageRoute(
-                      context: context,
-                      settings: RouteSettings(name: "SearchPage"),
-                      builder: (_) => SearchPageWidget(vendors: vendors.getVendorList(), location: state.location), 
-                      fullscreenDialog: true, 
-                    );
-                    Navigator.push(context,route);
-                  },
-                ),
-                ios: (_) => CupertinoNavigationBarData(
-                  backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
-                  heroTag: "vendorTab",
-                  transitionBetweenRoutes: false,
-                ),
+        return PlatformScaffold(
+          appBar: PlatformAppBar(
+            title: Image.asset("images/Savour_White.png"),
+            leading: FlatButton(
+              child: Icon(Icons.search,
+                color: Colors.white,
               ),
-              body: Material(child: _buildBody(state, vendors)),
-            );
-          }
+              onPressed: () async {
+                var route = platformPageRoute(
+                  context: context,
+                  settings: RouteSettings(name: "SearchPage"),
+                  builder: (_) => _searchPage(state), 
+                  fullscreenDialog: true, 
+                );
+                Navigator.push(context,route);
+              },
+            ),
+            ios: (_) => CupertinoNavigationBarData(
+              backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
+              heroTag: "vendorTab",
+              transitionBetweenRoutes: false,
+            ),
+          ),
+          body: Material(child: _buildBody(state)),
         );
       }
     );
   }
 
-  Widget _buildBody(VendorState state, Vendors vendors){
+  Widget _searchPage(VendorState state){
+    if(state is VendorLoaded){
+      return StreamBuilder<Vendors>(
+        stream: state.vendorStream,
+        initialData: globals.vendorApiProvider.vendors,
+        builder: (BuildContext context, AsyncSnapshot<Vendors> snap) {
+          return SearchPageWidget(vendors: snap.data.getVendorList(), location: state.location);
+        }
+      );
+    }
+    return SearchPageWidget(vendors: [], location: state.location);
+  }
+
+  Widget _buildBody(VendorState state){
     if (state is VendorUninitialized) {
       return Loading(text: "Loading Vendors...");
     } else if (state is VendorError) {
       return TextPage(text: "An error occured.");
     } else if (state is VendorLoaded) {
-      if (vendors!= null && vendors.count > 0){
-        final vendorList = vendors.getVendorList();
-        return Stack(
-          children: <Widget>[
-            ListView.builder(
-              physics: AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.all(0.0),
-              // physics: const AlwaysScrollableScrollPhysics (),
-              itemBuilder: (context, position) {
-                return GestureDetector(
-                  onTap: () async {
-                    print(vendorList[position].name + " clicked");
-                    var route = platformPageRoute(
-                      context: context,
-                      settings: RouteSettings(name: "VendorPage"),
-                      builder: (_) => VendorPageWidget(vendorList[position], state.location), 
+      return StreamBuilder<Vendors>(
+        stream: state.vendorStream,
+        initialData: globals.vendorApiProvider.vendors,
+        builder: (BuildContext context, AsyncSnapshot<Vendors> snap) {
+          final vendors = snap.data;
+          if (vendors!= null && vendors.count > 0){
+            final vendorList = vendors.getVendorList();
+            return Stack(
+              children: <Widget>[
+                ListView.builder(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.all(0.0),
+                  // physics: const AlwaysScrollableScrollPhysics (),
+                  itemBuilder: (context, position) {
+                    return GestureDetector(
+                      onTap: () async {
+                        print(vendorList[position].name + " clicked");
+                        var route = platformPageRoute(
+                          context: context,
+                          settings: RouteSettings(name: "VendorPage"),
+                          builder: (_) => VendorPageWidget(vendorList[position], state.location), 
+                        );
+                        Navigator.push(context,route);
+                      },
+                      child: VendorCard(vendorList[position], state.location),
                     );
-                    Navigator.push(context,route);
                   },
-                  child: VendorCard(vendorList[position], state.location),
-                );
-              },
-              itemCount: vendors.count,
-            ),
-            Align(
-              alignment: Alignment(-0.90, 0.90),
-              child: FloatingActionButton(
-                heroTag: null,
-                backgroundColor: SavourColorsMaterial.savourGreen,
-                child: Icon(Icons.pin_drop, color: Colors.white,),
-                onPressed: () async {
-                  var route = platformPageRoute(
-                    context: context,
-                    settings: RouteSettings(name: "MapPage"),
-                    builder: (_) => MapPageWidget(vendorList, state.location), 
-                    fullscreenDialog: true, 
-                  );
-                  Navigator.push(context,route);
-                },
-              ),
-            )
-          ],
-        );
-      } else if (vendors.isLoading) {
-        return Loading(text: "Loading Vendors...");
-      }
-      return TextPage(text: "No Vendors Nearby!");
+                  itemCount: vendors.count,
+                ),
+                Align(
+                  alignment: Alignment(-0.90, 0.90),
+                  child: FloatingActionButton(
+                    heroTag: null,
+                    backgroundColor: SavourColorsMaterial.savourGreen,
+                    child: Icon(Icons.pin_drop, color: Colors.white,),
+                    onPressed: () async {
+                      var route = platformPageRoute(
+                        context: context,
+                        settings: RouteSettings(name: "MapPage"),
+                        builder: (_) => MapPageWidget(vendorList, state.location), 
+                        fullscreenDialog: true, 
+                      );
+                      Navigator.push(context,route);
+                    },
+                  ),
+                )
+              ],
+            );
+          } else if (vendors.isLoading) {
+            return Loading(text: "Loading Vendors...");
+          }
+          return TextPage(text: "No Vendors Nearby!");
+        }
+      );
     }
     return TextPage(text: "An error ocurred");
   }

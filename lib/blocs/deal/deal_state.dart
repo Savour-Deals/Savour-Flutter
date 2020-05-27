@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:savour_deals_flutter/stores/deals_model.dart';
+import 'package:savour_deals_flutter/stores/vendors_model.dart';
 
 abstract class DealState extends Equatable {
   final Position location; 
@@ -39,7 +41,9 @@ class DealError extends DealState {
 }
 
 class DealLoaded extends DealState {
-  const DealLoaded(location) : super(location);
+  final Stream<Deals> dealStream;
+  final Stream<Vendors> vendorStream;
+  const DealLoaded(location, this.dealStream, this.vendorStream) : super(location);
 
   @override
   List<Object> get props => [location];

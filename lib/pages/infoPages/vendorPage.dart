@@ -9,10 +9,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:savour_deals_flutter/blocs/redemption/redemption_bloc.dart';
 import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/stores/deals_model.dart';
@@ -238,10 +240,13 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
                     platformPageRoute(
                       context: context,
                       settings: RouteSettings(name: "DealPage"),
-                      builder: (context) => DealPageWidget(
-                        deal: carouselDeals[item], 
-                        location: currentLocation,
-                        displayMore: false,
+                      builder: (context) => BlocProvider<RedemptionBloc>(
+                        create: (context) => RedemptionBloc(),
+                        child: DealPageWidget(
+                          dealId: carouselDeals[item].key, 
+                          location: currentLocation,
+                          displayMore: false,
+                        ),
                       ),
                     ),
                   );

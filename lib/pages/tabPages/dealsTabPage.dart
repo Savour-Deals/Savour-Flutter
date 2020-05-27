@@ -145,149 +145,157 @@ class _DealsPageState extends State<DealsPageWidget> {
     theme = Theme.of(context);
     return BlocBuilder<DealBloc, DealState>(
       builder: (context, state) {
-        return StreamBuilder<List<dynamic>>(
-          stream: CombineLatestStream.combine2(
-            _dealsBloc.dealsRepo.getDealsStream(),
-            _dealsBloc.vendorsRepo.getVendorStream(),
-            (deals, vendors) {
-              return [deals, vendors];
-            }
-          ),
-          builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snap) {
-            Deals deals;
-            Vendors vendors;
-            if (snap.data != null){
-              deals = snap.data[0] as Deals;
-              vendors = snap.data[1] as Vendors;
-            }else{
-              deals = Deals();
-              vendors = Vendors();
-            }
-            return ShowCaseWidget(
-              builder: Builder(
-                builder: (context) {
-                  showcasecontext = context;
-                  return PlatformScaffold(
-                    appBar: PlatformAppBar(
-                      leading: Showcase(
-                        key: _one,
-                        title: 'Search',
-                        description: 'Search for deals and restaurants!',
-                        shapeBorder: CircleBorder(),
-                        showArrow: false,
-                        child: FlatButton(
-                          child: Icon(Icons.search,
-                            color: Colors.white,
-                          ),
-                          onPressed: (){
-                            Navigator.push(context,
-                              platformPageRoute(
-                                context: context,
-                                settings: RouteSettings(name: "SearchPage"),
-                                builder: (BuildContext context) {
-                                    return SearchPageWidget(deals: deals, location: state.location);                                  
-                                },
-                                fullscreenDialog: true
-                              )
-                            );
-                          },
-                        ),
+        return ShowCaseWidget(
+          builder: Builder(
+            builder: (context) {
+              showcasecontext = context;
+              return PlatformScaffold(
+                appBar: PlatformAppBar(
+                  leading: Showcase(
+                    key: _one,
+                    title: 'Search',
+                    description: 'Search for deals and restaurants!',
+                    shapeBorder: CircleBorder(),
+                    showArrow: false,
+                    child: FlatButton(
+                      child: Icon(Icons.search,
+                        color: Colors.white,
                       ),
-                      title: Image.asset("images/Savour_White.png"),
-                      trailingActions: <Widget>[
-                        Showcase(
-                          key: _two,
-                          title: 'My Wallet',
-                          description: 'View your favorite deals and past redemptions!',
-                          shapeBorder: CircleBorder(),
-                          showArrow: false,
-                          child: FlatButton(
-                            child: Image.asset('images/wallet_filled.png',
-                              color: Colors.white,
-                              width: 30,
-                              height: 30,
-                            ),
-                            color: Colors.transparent,
-                            onPressed: (){
-                              Navigator.push(context,
-                                platformPageRoute(
-                                  context: context,
-                                  settings: RouteSettings(name: "WalletPage"),
-                                  builder: (BuildContext context) {
-                                    return BlocProvider<WalletBloc>(
-                                      create: (context) => WalletBloc(_dealsBloc.dealsRepo, _dealsBloc.vendorsRepo, RedemptionRepository()),
-                                      child:  WalletPageWidget()
-                                    );
-                                  },
-                                  fullscreenDialog: true
-                                )
-                              );
+                      onPressed: (){
+                        Navigator.push(context,
+                          platformPageRoute(
+                            context: context,
+                            settings: RouteSettings(name: "SearchPage"),
+                            builder: (BuildContext context) {
+                              return _searchPage(state);
                             },
-                          ), 
-                        ),
-                      ],
-                      ios: (_) => CupertinoNavigationBarData(
-                        backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
-                        heroTag: "dealTab",
-                        transitionBetweenRoutes: false,
-                      ),
+                            fullscreenDialog: true
+                          )
+                        );
+                      },
                     ),
-                    body: Material(child: bodyWidget(state, deals, vendors)),
-                  );
-                },
-              )
-            );
-          }
+                  ),
+                  title: Image.asset("images/Savour_White.png"),
+                  trailingActions: <Widget>[
+                    Showcase(
+                      key: _two,
+                      title: 'My Wallet',
+                      description: 'View your favorite deals and past redemptions!',
+                      shapeBorder: CircleBorder(),
+                      showArrow: false,
+                      child: FlatButton(
+                        child: Image.asset('images/wallet_filled.png',
+                          color: Colors.white,
+                          width: 30,
+                          height: 30,
+                        ),
+                        color: Colors.transparent,
+                        onPressed: (){
+                          Navigator.push(context,
+                            platformPageRoute(
+                              context: context,
+                              settings: RouteSettings(name: "WalletPage"),
+                              builder: (BuildContext context) {
+                                return BlocProvider<WalletBloc>(
+                                  create: (context) => WalletBloc(),
+                                  child:  WalletPageWidget()
+                                );
+                              },
+                              fullscreenDialog: true
+                            )
+                          );
+                        },
+                      ), 
+                    ),
+                  ],
+                  ios: (_) => CupertinoNavigationBarData(
+                    backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
+                    heroTag: "dealTab",
+                    transitionBetweenRoutes: false,
+                  ),
+                ),
+                body: Material(child: bodyWidget(state)),
+              );
+            },
+          )
         );
       }
     );
   }
+
+  Widget _searchPage(DealState state){
+    if (state is DealLoaded) {
+      return StreamBuilder<Deals>(
+        stream: state.dealStream,
+        initialData: globals.dealsApiProvider.deals,
+        builder: (BuildContext context, AsyncSnapshot<Deals> snap) {
+          Deals deals = snap.data;
+          return SearchPageWidget(deals: deals, location: state.location);  
+        }
+      );
+    }
+    return SearchPageWidget(deals: Deals(), location: state.location); 
+  }
   
-  Widget bodyWidget(DealState state, Deals deals, Vendors vendors){
+  Widget bodyWidget(DealState state){
     if (state is DealUninitialized) {
       return Loading(text: "Loading Deals...");
     } else if (state is DealError) {
       return TextPage(text: "An error occured.");
     } else if (state is DealLoaded) {
-      if (deals.getAllDeals().length > 0){
-        return Stack(
-          children: <Widget>[
-            getDealsWidget(deals, state),
-            Align(
-              alignment: Alignment(-0.90, 0.90),
-              child: Showcase(
-                key: _three,
-                title: 'Maps',
-                description: "See what's nearby!",
-                shapeBorder: CircleBorder(),
-                showArrow: false,
-                child:  FloatingActionButton(
-                  heroTag: null,
-                  backgroundColor: SavourColorsMaterial.savourGreen,
-                  child: Icon(Icons.pin_drop, color: Colors.white,),
-                  onPressed: (){
-                    Navigator.push(context,
-                      platformPageRoute(
-                        context: context,
-                        settings: RouteSettings(name: "MapPage"),
-                        builder: (BuildContext context) {
-                          return new MapPageWidget(vendors.getVendorList(), state.location);
+      return StreamBuilder<List<dynamic>>(
+        stream: CombineLatestStream.combine2(
+          state.dealStream,
+          state.vendorStream,
+          (deals, vendors) {
+            return [deals, vendors];
+          }
+        ),
+        initialData: [globals.dealsApiProvider.deals, globals.vendorApiProvider.vendors],
+        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snap) {
+          final  Deals deals = snap.data[0] as Deals;
+          final Vendors vendors = snap.data[1] as Vendors;
+            if (deals.getAllDeals().length > 0){
+              return Stack(
+                children: <Widget>[
+                  getDealsWidget(deals, state),
+                  Align(
+                    alignment: Alignment(-0.90, 0.90),
+                    child: Showcase(
+                      key: _three,
+                      title: 'Maps',
+                      description: "See what's nearby!",
+                      shapeBorder: CircleBorder(),
+                      showArrow: false,
+                      child:  FloatingActionButton(
+                        heroTag: null,
+                        backgroundColor: SavourColorsMaterial.savourGreen,
+                        child: Icon(Icons.pin_drop, color: Colors.white,),
+                        onPressed: (){
+                          Navigator.push(context,
+                            platformPageRoute(
+                              context: context,
+                              settings: RouteSettings(name: "MapPage"),
+                              builder: (BuildContext context) {
+                                return new MapPageWidget(vendors.getVendorList(), state.location);
+                              },
+                              fullscreenDialog: true
+                            )
+                          );
                         },
-                        fullscreenDialog: true
-                      )
-                    );
-                  },
-                ),
-              )
-            ),
-          ],
-        );
-      } else if (deals.isLoading){
-        //Geofire not ready, show loading
-        return Loading(text: "Loading Deals...");
-      }
-      //If geofire has loaded but we got no deals, tell user no deals
-      return TextPage(text: "No deals nearby.");
+                      ),
+                    )
+                  ),
+                ],
+              );
+            } else if (deals.isLoading){
+              //Geofire not ready, show loading
+              return Loading(text: "Loading Deals...");
+            }
+            //If geofire has loaded but we got no deals, tell user no deals
+            return TextPage(text: "No deals nearby.");
+        }
+      );
     } else {
       //did not match a state
       return TextPage(text: "An error occured.");
@@ -330,9 +338,12 @@ Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carous
                   platformPageRoute(
                     context: context,
                     settings: RouteSettings(name: "DealPage"),
-                    builder: (context) => DealPageWidget(
-                      deal: carouselDeals[item], 
-                      location: state.location,
+                    builder: (context) => BlocProvider<RedemptionBloc>(
+                      create: (context) => RedemptionBloc(),
+                      child: DealPageWidget(
+                        dealId: carouselDeals[item].key, 
+                        location: state.location,
+                      ),
                     ),
                   ),
                 );

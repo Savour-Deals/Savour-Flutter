@@ -12,9 +12,9 @@ export 'vendor_state.dart';
 
 
 class VendorBloc extends Bloc<VendorEvent, VendorState> {
-  final VendorRepository _vendorsRepo;
+  final VendorRepository _vendorsRepo = VendorRepository();
 
-  VendorBloc(this._vendorsRepo);
+  VendorBloc();
 
   @override
   VendorState get initialState => VendorUninitialized(null);
@@ -24,24 +24,23 @@ class VendorBloc extends Bloc<VendorEvent, VendorState> {
     if (event is FetchVendors) {
       yield VendorLoading(event.location);
       try {
-        _vendorsRepo.getVendorsForLocation(event.location);
-        yield VendorLoaded(event.location);
+        final vendorStream = _vendorsRepo.getVendorsForLocation(event.location);
+        yield VendorLoaded(event.location, vendorStream);
       } catch (error) {
         print(error);
         yield VendorError(event.location);
       }
     }
     if (event is UpdateVendorsLocation) {
+      final previousState = (state as VendorLoaded);
       yield VendorLoading(event.location);
       try {
         _vendorsRepo.updateLocation(event.location);
-        yield VendorLoaded(event.location);
+        yield VendorLoaded(event.location, previousState.vendorStream);
       } catch (error) {
         print(error);
         yield VendorError(event.location);
       }
     }
   }
-
-  VendorRepository get vendorRepo => _vendorsRepo;
 }

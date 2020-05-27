@@ -25,7 +25,7 @@ class RedemptionsApiProvider {
         redemptionData.forEach((key,data) async {
           var newRedemption = Redemption.fromMap(key, data);
           if (newRedemption.type == "deal"){
-            var rdeal = await globals.dealsApiProvider.getDealByKey(newRedemption.dealID, globals.vendorApiProvider);
+            var rdeal = await globals.dealsApiProvider.getDealByKey(newRedemption.dealID);
             if (rdeal != null){
               newRedemption.setDeal(rdeal);
             }

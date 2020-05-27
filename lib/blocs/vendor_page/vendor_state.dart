@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:savour_deals_flutter/stores/vendors_model.dart';
 
 abstract class VendorState extends Equatable {
   final Position location; 
@@ -45,7 +46,8 @@ class VendorError extends VendorState {
 }
 
 class VendorLoaded extends VendorState {
-  VendorLoaded(Position location) : super(location);
+  final Stream<Vendors> vendorStream;
+  VendorLoaded(Position location, this.vendorStream) : super(location);
 
   @override
   List<Object> get props => [];

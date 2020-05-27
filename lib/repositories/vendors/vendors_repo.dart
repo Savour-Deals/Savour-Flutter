@@ -9,7 +9,10 @@ class VendorRepository {
 
   VendorRepository();
 
-  void getVendorsForLocation(Position location) => globals.vendorApiProvider.queryByLocation(location);
+  Stream<Vendors> getVendorsForLocation(Position location) {
+    globals.vendorApiProvider.queryByLocation(location);
+    return globals.vendorApiProvider.vendorStream;
+  }
 
   void updateLocation(Position location) => globals.vendorApiProvider.updateLocation(location);
 

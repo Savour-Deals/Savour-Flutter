@@ -11,6 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
+import 'package:savour_deals_flutter/blocs/redemption/redemption_bloc.dart';
 import 'package:savour_deals_flutter/blocs/wallet/wallet_bloc.dart';
 import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
 import 'package:savour_deals_flutter/containers/loading.dart';
@@ -21,14 +22,11 @@ import 'package:savour_deals_flutter/stores/deals_model.dart';
 import 'package:savour_deals_flutter/stores/redemption_model.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/utils.dart' as globals;
-import 'package:savour_deals_flutter/stores/vendors_model.dart';
 import 'package:flutter/services.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:savour_deals_flutter/pages/infoPages/dealPage.dart';
 
 class WalletPageWidget extends StatefulWidget {
-  // final Deals deals;
-  // final Vendors vendors;
 
   WalletPageWidget();
 
@@ -75,14 +73,7 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
       _walletBloc.add(FetchData(location: currentLocation));
     }
 
-    // if (this.mounted && currentLocation != null){
-    //   _createTabs();
-    // }
     _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
-      // if(tabs.length  < 1){
-      //   //tabs have not been initialized yet, call the setup function
-      //   _createTabs();
-      // }
       _walletBloc.add(UpdateWalletLocation(location: currentLocation));
     });
   }
@@ -92,25 +83,6 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
     _tabController.dispose();
     super.dispose();
   }
-
-  // void _createTabs(){
-  //   setState(() {
-  //     tabs.clear();
-  //     tabs.add(
-  //       FavoritesPageWidget(
-  //         favorites: widget.deals.getFavorites(), 
-  //         location: currentLocation,
-  //       )
-  //     );
-  //     tabs.add(
-  //       RedeemedWidget(
-  //         widget.deals,
-  //         widget.vendors, 
-  //         currentLocation
-  //       )
-  //     );
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -252,7 +224,7 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
                       context: context,
                       settings: RouteSettings(name: "DealPage"),
                       builder: (context) => DealPageWidget(
-                        deal: favorites[position-1], 
+                        dealId: favorites[position-1].key, 
                         location: widget.location
                       ),
                     ),
@@ -387,9 +359,12 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
                               context: context,
                               settings: RouteSettings(name: "DealPage"),
                               builder: (BuildContext context) {
-                                return DealPageWidget(
-                                  deal: redemptions[position-1].deal, 
-                                  location: widget.location
+                                return BlocProvider<RedemptionBloc>(
+                                  create: (context) => RedemptionBloc(),
+                                  child: DealPageWidget(
+                                    dealId: redemptions[position-1].deal.key, 
+                                    location: widget.location
+                                  ),
                                 );
                               },
                             )

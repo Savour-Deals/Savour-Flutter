@@ -73,11 +73,11 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
     _children = [
       BlocProvider<DealBloc>(
-        create: (context) => DealBloc(_dealsRepo, _vendorsRepo),
+        create: (context) => DealBloc(),
         child: DealsPageWidget()
       ),
       BlocProvider<VendorBloc>(
-        create: (context) => VendorBloc(_vendorsRepo),
+        create: (context) => VendorBloc(),
         child: VendorsPageWidget()
       ),
       AccountPageWidget(),

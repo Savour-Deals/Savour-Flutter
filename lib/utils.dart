@@ -5,8 +5,10 @@ import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 import 'package:savour_deals_flutter/repositories/deals/deals_provider.dart';
+import 'package:savour_deals_flutter/repositories/deals/deals_repo.dart';
 import 'package:savour_deals_flutter/repositories/redemptions/redemptions_provider.dart';
 import 'package:savour_deals_flutter/repositories/vendors/vendors_provider.dart';
+import 'package:savour_deals_flutter/repositories/vendors/vendors_repo.dart';
 
 class Utils {
     static final Random _random = Random.secure();
@@ -65,3 +67,5 @@ class SizeConfig {
 final DealsApiProvider dealsApiProvider = DealsApiProvider();  
 final VendorsApiProvider vendorApiProvider = VendorsApiProvider(); 
 final RedemptionsApiProvider redemptionApiProvider = RedemptionsApiProvider(); 
+final DealRepository dealRepository = DealRepository();
+final VendorRepository vendorRepository = VendorRepository();

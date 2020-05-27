@@ -4,10 +4,10 @@ import 'dart:collection';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:savour_deals_flutter/repositories/vendors/vendors_provider.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/stores/deals_model.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
+import 'package:savour_deals_flutter/utils.dart' as globals;
 
 class DealsApiProvider {
   HashMap _vendorMap = HashMap<String, Vendor>();
@@ -79,12 +79,12 @@ class DealsApiProvider {
     });
   }
 
-  Future<Deal> getDealByKey(String key, VendorsApiProvider vendorsApiProvider) async {
+  Future<Deal> getDealByKey(String key) async {
     if (_deals.containsDeal(key)){
       return _deals.getDealByKey(key);
     }
     return await _dealsRef.child(key).once().then((snap) async {
-      final vendor = await vendorsApiProvider.getVendorByKey(snap.value["vendor_id"]);
+      final vendor = await globals.vendorApiProvider.getVendorByKey(snap.value["vendor_id"]);
       Deal newDeal = new Deal.fromSnapshot(snap, vendor, _userId);
       newDeal.favorited = favorites.contains(newDeal.key);
       _deals.addDeal(newDeal);
@@ -112,6 +112,10 @@ class DealsApiProvider {
     } else {
       throw("Deal not found when trying to favorite."); 
     }
+  }
+
+  void updateDeal(Deal deal) {
+    _deals.addDeal(deal);
   }
 
   Deals get deals => _deals;
