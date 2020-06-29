@@ -26,6 +26,7 @@ import 'package:savour_deals_flutter/pages/infoPages/dealPage.dart';
 import 'package:savour_deals_flutter/pages/modalPages/mapModalPage.dart';
 import 'package:savour_deals_flutter/pages/modalPages/searchModalPage.dart';
 import 'package:savour_deals_flutter/pages/modalPages/walletModalPage.dart';
+import 'package:savour_deals_flutter/themes/SavourCarouselScrollPhysics.dart';
 import 'package:savour_deals_flutter/utils.dart' as globals;
 import 'package:savour_deals_flutter/stores/deals_model.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';

@@ -262,12 +262,13 @@ class _DealsPageState extends State<DealsPageWidget> {
   }
 
 Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carouselDeals, String carouselText, DealState state) {
-  var viewportFrac = 0.75;
+  var viewportFrac = 0.7;
   var initialPage = 0;
   if(MediaQuery.of(context).size.shortestSide > 600){//this is getting into tablet range
     viewportFrac = 0.35; //make a couple fit on the page
     initialPage = 1;
   }
+  var cardSize = viewportFrac * MediaQuery.of(context).size.width;
   return Column(
     mainAxisSize: MainAxisSize.max,
     children: <Widget>[
@@ -284,10 +285,10 @@ Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carous
       ),
       SizedBox(
         height: 300,
-        child: (carouselDeals.length <= 0)? Container():PageView.builder(
+        child: (carouselDeals.length <= 0)? Container():ListView.builder(
           key: PageStorageKey('dealGroup$carouselIndex'), //save deal group's position when scrolling
-          controller: PageController(viewportFraction: viewportFrac, initialPage: initialPage),
-          physics: AlwaysScrollableScrollPhysics(),
+          scrollDirection: Axis.horizontal,
+          physics: SavourCarouselScrollPhysics(itemDimension: cardSize),
           itemBuilder: (BuildContext context, int item) {
             return GestureDetector(
               onTap: () {
@@ -307,10 +308,13 @@ Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carous
                   ),
                 );
               },
-              child: DealCard(
-                deal: carouselDeals[item], 
-                location: state.location, 
-                type: DealCardType.medium,
+              child: Container(
+                width: cardSize,
+                child: DealCard(
+                  deal: carouselDeals[item], 
+                  location: state.location, 
+                  type: DealCardType.medium,
+                ),
               ),
             );
           },
