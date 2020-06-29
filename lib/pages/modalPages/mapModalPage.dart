@@ -11,17 +11,15 @@ import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/containers/vendorCardWidget.dart';
 import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 
 import '../../utils.dart';
 
 
 class MapPageWidget extends StatefulWidget {
-  final text;
   final List<Vendor> vendors;
   final Position location;
-  MapPageWidget(this.text, this.vendors,this.location);
+  MapPageWidget(this.vendors,this.location);
 
   @override
   _MapPageWidgetState createState() => _MapPageWidgetState();
@@ -121,19 +119,15 @@ class _MapPageWidgetState extends State<MapPageWidget> {
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
           actionsForegroundColor: Colors.white,
-          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
+          backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
           heroTag: "favTab",
           transitionBetweenRoutes: false,
-        ),
-        android: (_) => MaterialAppBarData(
-          iconTheme: IconThemeData(color: Colors.white),
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          brightness: Brightness.dark,
         ),
       ),
       body: Stack(
         children: <Widget>[
           GoogleMap(
+            padding: EdgeInsets.only(bottom: cardHeight),
             mapType: MapType.normal,
             initialCameraPosition:_userPosition,
             onMapCreated: _onMapCreated,
@@ -144,7 +138,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
             alignment: Alignment.bottomCenter,
             child: Container(
               height: cardHeight,
-              padding: const EdgeInsets.only(bottom: 20.0),
+              padding: EdgeInsets.only(bottom: 20.0),
               child: PageView.builder(
                 key: PageStorageKey('vendorGroup1'), //save deal group's position when scrolling
                 controller: _pageController,

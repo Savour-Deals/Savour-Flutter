@@ -1,8 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
-import 'package:firebase_database/firebase_database.dart';
-
+import 'package:savour_deals_flutter/utils.dart' as globals;
 
 class LikeButton extends StatefulWidget{
   final Deal deal;
@@ -40,16 +38,10 @@ class _LikeButtonState extends State<LikeButton> {
   }
 
   void setFavorite(bool value) async {
-    final user = await FirebaseAuth.instance.currentUser();
-    final favoriteRef = FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").child(widget.deal.key);
-    if (value){
-      favoriteRef.set(widget.deal.key);
-    }else{
-      favoriteRef.remove();
-    }
     setState(() {
       widget.deal.favorited = value;
     });
-    widget.onFavoriteChanged(widget.deal.key, value);
+    globals.dealsApiProvider.setFavorite(widget.deal.key, value);
+    // widget.onFavoriteChanged(widget.deal.key, value);
   }
 }

@@ -7,6 +7,7 @@ class Deals {
   // Map<String,List<Deal>> _filteredDeals = {};
   List<String> filters = [];
   Position location;
+  bool _isLoading = true;
 
   Deals();
 
@@ -83,7 +84,7 @@ class Deals {
   }
 
   Deal getDealByKey(String key){
-    return _deals.firstWhere((deal) => deal.key == key);
+    return _deals.firstWhere((deal) => deal.key == key, orElse: () => null,);
   }
 
   List<Deal> getFavorites(){
@@ -102,4 +103,12 @@ class Deals {
   void setLocation(Position _location){
     this.location = _location;
   }
+
+  void doneLoading(){
+    this._isLoading = false;
+  }
+
+  bool get isLoading => _isLoading;
+
+  int get count => _deals.length;
 }

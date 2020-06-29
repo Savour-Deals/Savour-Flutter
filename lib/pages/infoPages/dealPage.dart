@@ -6,27 +6,29 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rate_my_app/rate_my_app.dart';
+import 'package:savour_deals_flutter/blocs/redemption/redemption_bloc.dart';
+import 'package:savour_deals_flutter/containers/loading.dart';
+import 'package:savour_deals_flutter/containers/textPage.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/pulsator.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:savour_deals_flutter/utils.dart';
 
 class DealPageWidget extends StatefulWidget {
-  final Deal deal;
+  final String dealId;
   final Position location;
   final bool displayMore;
 
-  DealPageWidget({@required this.deal, @required this.location, this.displayMore = true});
+  DealPageWidget({@required this.dealId, @required this.location, this.displayMore = true});
 
   @override
   _DealPageWidgetState createState() => _DealPageWidgetState();
@@ -37,9 +39,8 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   Timer _timer;
   int _start = 0;
   String timerString= "";
-  DatabaseReference redemptionRef;
-  DatabaseReference userRef;
-  DatabaseReference vendorRef;
+  RedemptionBloc _redemptionBloc;
+
 
   //Declare contextual variables
   AppState appState;
@@ -49,8 +50,10 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   FirebaseAnalytics analytics = FirebaseAnalytics();
 
   @override
-  void initState() {
+  void initState() {    
     super.initState();
+    _redemptionBloc = BlocProvider.of<RedemptionBloc>(context);
+    _redemptionBloc.add(FetchDeal(id: widget.dealId));
     initialization();
     _controller = new AnimationController(
       vsync: this,
@@ -59,13 +62,10 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   void initialization() async{
-    user = await FirebaseAuth.instance.currentUser();
-    redemptionRef = FirebaseDatabase().reference().child("Deals").child(widget.deal.key).child("redeemed").child(user.uid);
-    userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
-    vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.deal.vendor.key);
+
     await analytics.logViewItem(
-      itemId: widget.deal.key,
-      itemName: widget.deal.description,
+      itemId: widget.dealId,
+      itemName: widget.dealId,
       itemCategory: 'deal',
     );
   }
@@ -96,135 +96,145 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
           leading: CupertinoNavigationBarBackButton(color: Colors.white,),
-          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
+          backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
           heroTag: "dealPage",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           leading: BackButton(color: Colors.white,),
-          brightness: Brightness.dark,
           centerTitle: true,
         ),
       ),
       body: Material(
-          child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              ListTile(
-                title: Text(
-                  widget.deal.vendor.name, 
-                  style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal*4),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                ),
-                subtitle: Text(
-                  widget.deal.description, 
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeConfig.safeBlockHorizontal*6), 
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                ),
-              ),
-              Stack(
-                overflow: Overflow.visible,
-                alignment: AlignmentDirectional.center,
-                children: <Widget>[ 
-                  CustomPaint(
-                    painter: SpritePainter(_controller, 
-                      _pulsatorColor(),
+        child: BlocBuilder<RedemptionBloc, RedemptionState>(
+          builder: (context, state) {
+            if (state is RedemptionLoading || state is RedemptionUninitialized) {
+              return Loading(text: "Loading Deal...");
+            } else if (state is RedemptionError) {
+              return TextPage(text: "An error occured.");
+            } else if (state is RedemptionLoaded) {
+              return Material(
+                child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    ListTile(
+                      title: Text(
+                        state.deal.vendor.name, 
+                        style: TextStyle(fontSize: SizeConfig.safeBlockHorizontal*4),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                      ),
+                      subtitle: Text(
+                        state.deal.description, 
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeConfig.safeBlockHorizontal*6), 
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                      ),
                     ),
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.height*0.45,
-                      height: MediaQuery.of(context).size.height*0.45,
+                    Stack(
+                      overflow: Overflow.visible,
+                      alignment: AlignmentDirectional.center,
+                      children: <Widget>[ 
+                        CustomPaint(
+                          painter: SpritePainter(_controller, 
+                            _pulsatorColor(state.deal),
+                          ),
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.height*0.45,
+                            height: MediaQuery.of(context).size.height*0.45,
+                          ),
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.height*0.3,
+                          height: MediaQuery.of(context).size.height*0.3,
+                          decoration: new BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: new DecorationImage(
+                              fit: BoxFit.cover,
+                              image: new AdvancedNetworkImage(
+                                  state.deal.photo,
+                                  useDiskCache: true,
+                              ),
+                            )
+                          )
+                        ),
+                      ],
                     ),
-                  ),
-                  Container(
-                    width: MediaQuery.of(context).size.height*0.3,
-                    height: MediaQuery.of(context).size.height*0.3,
-                    decoration: new BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: new DecorationImage(
-                        fit: BoxFit.cover,
-                        image: new AdvancedNetworkImage(
-                            widget.deal.photo,
-                            useDiskCache: true,
+                    Container(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        alignment: Alignment.center,
+                        child: (state.deal.redeemed) ? getTimer(state.deal) : getDetailsText(),
+                      ),
+                    ),
+                    (widget.displayMore)? 
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: SizedBox(
+                          width: double.infinity, // match_parent
+                          height: MediaQuery.of(context).size.height*0.05,
+                          child: FlatButton(
+                            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
+                            color: SavourColorsMaterial.savourGreen,
+                            child: Text("See More from " + state.deal.vendor.name,
+                              style: whiteText,
+                            ), 
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                platformPageRoute(
+                                  context: context,
+                                  settings: RouteSettings(name: "VendorPage"),
+                                  builder: (context) => VendorPageWidget(state.deal.vendor, widget.location), 
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       )
-                    )
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  alignment: Alignment.center,
-                  child: (widget.deal.redeemed) ? getTimer() : getDetailsText(),
-                ),
-              ),
-              (widget.displayMore)? 
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    width: double.infinity, // match_parent
-                    height: MediaQuery.of(context).size.height*0.05,
-                    child: FlatButton(
-                      shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-                      color: SavourColorsMaterial.savourGreen,
-                      child: Text("See More from " + widget.deal.vendor.name,
-                        style: whiteText,
-                      ), 
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          platformPageRoute(
-                            context: context,
-                            settings: RouteSettings(name: "VendorPage"),
-                            builder: (context) => VendorPageWidget(widget.deal.vendor, widget.location), 
-                          ),
-                        );
-                      },
+                      : 
+                      Container(height: MediaQuery.of(context).size.height*0.05,),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        width: double.infinity, // match_parent
+                        height: MediaQuery.of(context).size.height*0.05,
+                        child: redemptionButton(state.deal)
+                      ),
                     ),
-                  ),
-                )
-                : 
-                Container(height: MediaQuery.of(context).size.height*0.05,),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SizedBox(
-                  width: double.infinity, // match_parent
-                  height: MediaQuery.of(context).size.height*0.05,
-                  child: redemptionButton()
+                  ]
                 ),
               ),
-            ]
-          ),
-        ),
+            );
+            } 
+            return TextPage(text: "An error occured.");
+        }),
       ),
     );
   }
 
-  openMap() async {
-    print("Navigation to " + widget.deal.vendor.address + " initiated!");
+  openMap(String address) async {
+    print("Navigation to " + address + " initiated!");
     Map<String,String> mapURLs = {};
     if(Platform.isIOS){
-      var gURL = Uri.encodeFull('comgooglemaps://?daddr='+widget.deal.vendor.address);
+      var gURL = Uri.encodeFull('comgooglemaps://?daddr='+  address);
       if (await canLaunch(gURL)) {
         mapURLs["Google Maps"] =  gURL;
       }
-      var aURl =  Uri.encodeFull('http://maps.apple.com/?q='+widget.deal.vendor.address);
+      var aURl =  Uri.encodeFull('http://maps.apple.com/?q='+ address);
       if (await canLaunch(aURl)) {
         mapURLs["Apple Maps"] =  aURl;
       }
     }else if (Platform.isAndroid){
       // Android
-      var gURL =  Uri.encodeFull('geo:'+widget.deal.vendor.address);
+      var gURL =  Uri.encodeFull('geo:'+ address);
       if (await canLaunch(gURL)) {
         mapURLs["Google Maps"] =  gURL;
       }
     }
-    var wURL = Uri.encodeFull('https://waze.com/ul?q='+widget.deal.vendor.address);
+    var wURL = Uri.encodeFull('https://waze.com/ul?q='+ address);
     if (await canLaunch(wURL)) {
       mapURLs["Waze"] =  wURL;
     }
@@ -295,27 +305,28 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
     }
   }
 
-  bool inRange(){
-    return (widget.deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude) < 0.1);//100.1); //Chnage to large radius for testing
+  bool inRange(Deal deal){
+    return (deal.vendor.distanceMilesFrom(widget.location.latitude, widget.location.longitude) < 0.1);//100.1); //Chnage to large radius for testing
   }
 
-  Widget redemptionButton(){
-    if (widget.deal.isActive()){
+  Widget redemptionButton(Deal deal){
+    if (deal.isActive()){
+      final isInRange = inRange(deal);
       return FlatButton(
         shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-        color: (!inRange() || !widget.deal.isActive()) ? Colors.red : (widget.deal.redeemed && ((DateTime.now().millisecondsSinceEpoch~/1000) - widget.deal.redeemedTime~/1000 >= 1800)) ? Colors.red : SavourColorsMaterial.savourGreen,
+        color: (isInRange || !deal.isActive()) ? Colors.red : (deal.redeemed && ((DateTime.now().millisecondsSinceEpoch~/1000) - deal.redeemedTime~/1000 >= 1800)) ? Colors.red : SavourColorsMaterial.savourGreen,
         child: Text(
-          (inRange()) ? ((widget.deal.redeemed) ? "Deal already Redeemed":"Redeem"):"Go to Location to Redeem",
+          deal.redeemed ? "Deal already Redeemed": (isInRange ? "Redeem" :"Go to Location to Redeem"),
           style: whiteText,
         ),
         onPressed: () {
-          if (!widget.deal.redeemed){
-            analytics.logEvent(name: "redeem_initiated", parameters: {'deal': widget.deal.key});
-            if (inRange()){
-              promptRedemption();
+          if (!deal.redeemed){
+            analytics.logEvent(name: "redeem_initiated", parameters: {'deal': deal.key});
+            if (isInRange){
+              promptRedemption(deal);
             }else{
-              analytics.logEvent(name: "redeem_incomplete", parameters: {"reason": 'not_within_distances', 'deal': widget.deal.key});
-              openMap();
+              analytics.logEvent(name: "redeem_incomplete", parameters: {"reason": 'not_within_distances', 'deal': deal.key});
+              openMap(deal.vendor.address);
             }
           }
         },
@@ -329,13 +340,13 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         style: whiteText,
       ),
       onPressed: (){
-        analytics.logEvent(name: "redeem_initiated", parameters: {'deal': widget.deal.key});
-        analytics.logEvent(name: "redeem_incomplete", parameters: {"reason": 'not_active', 'deal': widget.deal.key});
+        analytics.logEvent(name: "redeem_initiated", parameters: {'deal': deal.key});
+        analytics.logEvent(name: "redeem_incomplete", parameters: {"reason": 'not_active', 'deal': deal.key});
       },
     );
   }
 
-  void promptRedemption(){
+  void promptRedemption(Deal deal){
     showPlatformDialog(
       context: context,
       builder: (BuildContext context) {
@@ -346,16 +357,16 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
             new PlatformDialogAction(
               child: PlatformText("Approve", style: TextStyle(color: Color.fromARGB(255, 0, 255, 0)),),
               onPressed: () {
-                redeemDeal();
-                analytics.logEvent(name: "redeem_completed", parameters: {'deal': widget.deal.key});
+                redeemDeal(deal);
+                analytics.logEvent(name: "redeem_completed", parameters: {'deal': deal.key});
                 Navigator.of(context).pop();
               },
             ),
             PlatformDialogAction(
               child: PlatformText("Not Now", style: TextStyle(color: Colors.red),),
               onPressed: () {
-                analytics.logEvent(name: "redeem_incomplete", parameters: {"reason": 'canceled', 'deal': widget.deal.key});
-                print("Deal " + widget.deal.key + " redemption canceled.");
+                analytics.logEvent(name: "redeem_incomplete", parameters: {"reason": 'canceled', 'deal': deal.key});
+                print("Deal " + deal.key + " redemption canceled.");
                 Navigator.of(context).pop();
               },
             ),
@@ -365,27 +376,11 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
     );
   }
 
-  void redeemDeal(){
+  void redeemDeal(Deal deal){
     //perform redmeption actions
-    print("Deal " + widget.deal.key + " redeemed!");
-    var redemptionTime = widget.deal.redeemedTime = DateTime.now().millisecondsSinceEpoch~/1000;
-    redemptionRef.set(redemptionTime);
-
-    //notification subscriptions
-    userRef.child("following").child(widget.deal.vendor.key).set(true);
-    // OneSignal.shared.sendTag(widget.deal.vendor.key, true);
-    OneSignal.shared.getPermissionSubscriptionState().then((status){
-      if (status.subscriptionStatus.subscribed){
-        vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
-      }else{
-        // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
-        vendorRef.child("followers").child(user.uid).set(user.uid);
-      }
-    });
-    setState(() {
-      widget.deal.redeemed = true;
-      widget.deal.redeemedTime = redemptionTime*1000;
-    });
+    print("Deal " + deal.key + " redeemed!");
+    
+    _redemptionBloc.add(RedeemDeal(deal: deal));
 
     //Prompt user for rating!
     RateMyApp rateMyApp = RateMyApp(
@@ -414,9 +409,9 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
     });
   }
 
-  void startTimer() {
+  void startTimer(Deal deal) {
     const oneSec = const Duration(seconds: 1);
-    _start = (DateTime.now().millisecondsSinceEpoch~/1000) - widget.deal.redeemedTime~/1000;
+    _start = (DateTime.now().millisecondsSinceEpoch~/1000) - deal.redeemedTime~/1000;
     _timer = new Timer.periodic(
       oneSec,
       (Timer timer) => setState(() {
@@ -433,10 +428,10 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
     );
   }
   var first = true;
-  Widget getTimer(){
+  Widget getTimer(Deal deal){
     if (first){
       first = false;
-      startTimer();
+      startTimer(deal);
     }
     return Text(timerString, style: TextStyle(color: (_timer.isActive) ? Colors.green: Colors.red),);
   }
@@ -451,9 +446,9 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
     );
   }
 
-  Color _pulsatorColor(){
-    if (widget.deal.isActive()){
-      if (widget.deal.redeemed){
+  Color _pulsatorColor(Deal deal){
+    if (deal.isActive()){
+      if (deal.redeemed){
         if (_start > 1800){
           //deal redeemed over half hour ago
           return Colors.red;

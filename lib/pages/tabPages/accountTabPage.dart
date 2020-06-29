@@ -51,14 +51,12 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
       appBar: PlatformAppBar(
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
+          backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
           heroTag: "dealTab",
           transitionBetweenRoutes: false,
         ),
         android: (_) => MaterialAppBarData(
           elevation: 0.0,
-          brightness: Brightness.dark,
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
         ),
         trailingActions: <Widget>[
           FlatButton(
@@ -82,25 +80,20 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
         child: Material(
           child: ListView(
             children: <Widget>[
-              Container(height: 20.0,),
+              Container(height: 50.0,),
               Text(
                 "Total Estimated Savings: \$" + totalSavings.toString(), 
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
-              Container(height: 20.0,),
+              Container(height: 50.0,),
               Container(
                 child: ListTile(
                   leading: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.people,
-                      color: appState.isDark? Colors.white:Colors.black,
-                    ),
+                    child: Icon(Icons.people),
                   ),
-                  title: Text(
-                    "Click to invite more friends!",
-                    style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
-                  ),
+                  title: Text("Click to invite more friends!"),
                   contentPadding: EdgeInsets.all(4.0),
                   onTap: () =>{
                     Share.share("Check out Savour to get deals from local restaurants! https://www.savourdeals.com/getsavour")
@@ -114,14 +107,9 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 child: ListTile(
                   leading: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.mail,
-                      color: appState.isDark? Colors.white:Colors.black,
-                    ),
+                    child: Icon(Icons.mail),
                   ),
-                  title: Text(
-                    "Contact Us",
-                    style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
-                  ),
+                  title: Text("Contact Us"),
                   contentPadding: EdgeInsets.all(4.0),
                   onTap: ()=> _launchURL('https://www.savourdeals.com/contact/'),
                 ),
@@ -133,23 +121,16 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 child: ListTile(
                   leading: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.notifications_active,
-                      color: appState.isDark? Colors.white:Colors.black,
-                    ),
+                    child: Icon(Icons.notifications_active),
                   ),
-                  title: Text(
-                    "Notifications",
-                    style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
-                  ),
+                  title: Text("Notifications"),
                   trailing: PlatformSwitch(
                     value: notificationSettings.isNotificationsEnabled,
                     onChanged: (value) {
                       _toggleNotifications();
                     },
-                    // activeTrackColor: theme.primaryColor, 
-                    activeColor: theme.primaryColor,
+                    activeColor: SavourColorsMaterial.savourGreen,
                   ),
-                  // onTap: () => _toggleNotifications(),
                   contentPadding: EdgeInsets.all(4.0),
                 ),
                 decoration: BoxDecoration(
@@ -160,39 +141,11 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                 child: ListTile(
                   leading: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.people,
-                      color: appState.isDark? Colors.white:Colors.black,
-                    ),
+                    child: Icon(Icons.people),
                   ),
-                  title: Text(
-                    "Learn more about becoming a vendor!",
-                    style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
-                  ),
+                  title: Text("Learn more about becoming a vendor!"),
                   contentPadding: EdgeInsets.all(4.0),
                   onTap: ()=> _launchURL('https://www.savourdeals.com/vendorsinfo'),
-                ),
-                decoration: BoxDecoration(
-                  border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1)),
-                ),
-              ),
-              Container(
-                child: ListTile(
-                  leading: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.lightbulb_outline,
-                      color: appState.isDark? Colors.white:Colors.black,
-                    ),
-                  ),
-                  title: Text(
-                    "Switch to " + (appState.isDark? "light":"dark") + " mode",
-                    style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
-                  ),
-                  contentPadding: EdgeInsets.all(4.0),
-                  onTap: () {
-                    setState(() {
-                      appState.setDarkMode(!appState.isDark);
-                    });
-                  },
                 ),
                 decoration: BoxDecoration(
                   border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1)),

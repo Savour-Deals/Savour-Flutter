@@ -11,24 +11,14 @@ class _DealsPageState extends State<DealsPageWidget> {
   //Location variables
   final _locationService = Geolocator();
   Position currentLocation;
+  // Position currentLocation;
 
   //Declare contextual variables
   AppState appState;
   NotificationData notificationData;
   ThemeData theme;
 
-  //database variables 
-  DatabaseReference vendorRef = FirebaseDatabase().reference().child("Vendors");
-  DatabaseReference dealRef = FirebaseDatabase().reference().child("Deals");
-  final geo = Geofire();
   FirebaseUser user;
-
-  List<Vendor> vendors = [];
-  Deals deals = Deals();
-  Map<String,String> favorites = Map();
-  
-  bool geoFireReady = false;
-  int keyEnteredCounter = 0;
 
   SharedPreferences prefs;
   BuildContext showcasecontext;
@@ -36,9 +26,12 @@ class _DealsPageState extends State<DealsPageWidget> {
   GlobalKey _two = GlobalKey();
   GlobalKey _three = GlobalKey();
 
+  DealBloc _dealsBloc;
+
   @override
   void initState() {
     super.initState();
+    _dealsBloc = BlocProvider.of<DealBloc>(context);
     initPlatform();
   }
 
@@ -49,21 +42,21 @@ class _DealsPageState extends State<DealsPageWidget> {
   }
 
   void initPlatform() async {
-    //start loading timer :: 10s, if not done loading by then, display toast
-    _startLoadingTimer();
     //Intializing geoFire
-    geo.initialize("Vendors_Location");
+    // geo.initialize("Vendors_Location");
     user = await FirebaseAuth.instance.currentUser();
     try {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       if (serviceStatus == GeolocationStatus.granted) {
         currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium); //this may be null! Thats ok!
-        if(currentLocation != null){
-          deals.setLocation(currentLocation);
-        }
       }
     } on PlatformException catch (e) {
       print(e.message);
+    }
+
+    if (currentLocation != null){
+      //If we have the location, fire off the query, otherwise we will have to wait for the stream
+      _dealsBloc.add(FetchDeals(location: currentLocation));
     }
 
     //Do we need to show help for new app flow?
@@ -73,174 +66,27 @@ class _DealsPageState extends State<DealsPageWidget> {
       presentShowcase();
     }
 
-    if (currentLocation != null){
-      //If we have the location, fire off the query, otherwise we will have to wait for the stream
-      geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 800.0);
-    }
-    geo.onObserveReady.listen((ready){
-      if(this.mounted){
-        setState(() {
-          geoFireReady = true;
-        });      
-      }
-    });
-    geo.onKeyEntered.listen((data){
-      if (this.mounted){
-        setState(() {
-          keyEnteredCounter++;
-        });
-        keyEntered(data);
-      }
-    });
-    geo.onKeyExited.listen((data){
-      if (this.mounted){
-        keyExited(data);  
-      }
-    });
     _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
-      if (this.mounted){
-        setState(() {
-          currentLocation = result;
-          deals.setLocation(currentLocation);
-        });
-        if (geo.geoQueryActive){
-          //Query already running, update location
-          geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 800.0);
-        }else{
-          // this is our first location update. Fire off the geoquery
-          geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 800.0);
-        }      
+      currentLocation = result;
+      if (currentLocation == null){
+        _dealsBloc.add(FetchDeals(location: currentLocation));
+      }else{
+        _dealsBloc.add(UpdateDealsLocation(location: currentLocation));
       }
-    });
-
-    FirebaseDatabase().reference().child("appData").child("filters").onValue.listen((datasnapshot) {
-      if (this.mounted){
-        if (datasnapshot.snapshot.value != null) {
-          for (var filter in datasnapshot.snapshot.value){
-            setState(() {
-              deals.addFilter(filter);
-            });
-          }
-        }
-      }
-    });
-
-    FirebaseDatabase().reference().child("Users").child(user.uid).child("favorites").onValue.listen((datasnapshot) {
-      if (this.mounted){
-        if (datasnapshot.snapshot.value != null) {
-          setState(() {
-            favorites = new Map<String, String>.from(datasnapshot.snapshot.value);
-            for (var deal in deals.getAllDeals()){
-              deals.setFavoriteByKey(deal.key, favorites.containsKey(deal.key));
-            }
-          });
-        }
-      }
-    });
-  }
-
-  _startLoadingTimer(){
-    //If we have waited for +10s and geofire has not loaded, tell user to check their interet!
-    const tenSec = const Duration(seconds: 10);
-    Timer.periodic(
-      tenSec,
-      (Timer timer) {
-        if(this.mounted){
-          setState(() {
-            timer.cancel();
-            if(!geoFireReady){
-              Fluttertoast.showToast(
-                msg: "We seem to be taking a while to load. Check your internet connection to make sure you're online.",
-                toastLength: Toast.LENGTH_LONG,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIos: 8,
-                backgroundColor: Colors.black.withOpacity(0.5),
-              );
-            }
-          });
-        }
-      }
-    );
-  }
-
-  void keyEntered(dynamic data){
-    // print("key entered dealsPage: " + data["key"]);
-    var lat = data["lat"];
-    var long = data["long"];
-    if (this.mounted){
-      vendorRef.child(data["key"]).onValue.listen((vendorEvent) => {
-        if (vendorEvent.snapshot != null){
-          setState(() {
-            Vendor newVendor = Vendor.fromSnapshot(vendorEvent.snapshot, lat, long);
-            if (!vendors.contains(newVendor)){
-              vendors.add(newVendor); 
-              dealRef.orderByChild("vendor_id").equalTo(newVendor.key).onValue.listen((dealEvent) {
-                if (this.mounted && dealEvent.snapshot != null && dealEvent.snapshot.value != null){
-                  setState(() {
-                    Map<String, dynamic> dealDataMap = new Map<String, dynamic>.from(dealEvent.snapshot.value);
-                    dealDataMap.forEach((key,data){
-                      var thisVendor = vendors.firstWhere((v)=> v.key == data["vendor_id"]);
-                      Deal newDeal = new Deal.fromMap(key, data, thisVendor, user.uid);
-                      newDeal.favorited = favorites.containsKey(newDeal.key);
-                      deals.addDeal(newDeal);
-                    });
-                  });
-                }
-              });
-            }
-          })
-        }
-      });
-    }
-  }
-
-  void keyExited(dynamic data){
-    // print("key exited dealsPage: " + data["key"]);
-    if (this.mounted){
-      setState(() {
-        deals.removeDealWithVendorKey(data["key"]);
-      });
-    }
-  }
-
-  Future<Deal> getDeal(String dealID) async {
-    if(!deals.containsDeal(dealID)){
-      return await FirebaseDatabase().reference().child("Deals").child(dealID).once().then((dealSnap) async {
-        var newVendor;
-        newVendor = await getVendor(dealSnap.value["vendor_id"]);        
-        var newDeal = Deal.fromSnapshot(dealSnap, newVendor, user.uid);
-        deals.addDeal(newDeal);//save it for future use
-        return newDeal;
-      });
-    }
-    //If the deal is already here, send it back
-    return deals.getDealByKey(dealID);
-  }
-
-  Future<Vendor> getVendor(String vendorID) async {
-    if(vendors.indexWhere((vendor) => vendor.key == vendorID) < 0){
-      return await FirebaseDatabase().reference().child("Vendors").child(vendorID).once().then((vendorSnap) {
-        var newVendor = Vendor.fromSnapshot(vendorSnap, currentLocation.latitude, currentLocation.longitude);
-        vendors.add(newVendor);
-        return newVendor;//save it for future use
-      });
-    }
-    //If the vendor is already here, send it back
-    return vendors.firstWhere((vendor) => vendor.key == vendorID);
+    });//.cancel();
   }
 
   void displayNotiDeal() async {
     if (notificationData.isNotiDealPresent){
-      Deal notiDeal = await getDeal(notificationData.consumeNotiDealID);
-      print("DealID: ${notiDeal.key}");
+      print("DealID: ${notificationData.consumeNotiDealID}");
       Navigator.push(
         context,
         platformPageRoute(
           context: context,
           settings: RouteSettings(name: "DealPage"),
           builder: (context) => DealPageWidget(
-            deal: notiDeal,
-            location: currentLocation
+            dealId: notificationData.consumeNotiDealID,
+            location: currentLocation,
           ),
         ),
       );
@@ -256,241 +102,269 @@ class _DealsPageState extends State<DealsPageWidget> {
     if (notificationData.isNotiDealPresent) displayNotiDeal(); //check to make sure we already are pending a notification deal
     notificationData.addListener(() => displayNotiDeal());//if not, listen for changes!
     theme = Theme.of(context);
-    return ShowCaseWidget(
-      builder: Builder(
-        builder: (context) {
-          showcasecontext = context;
-          return PlatformScaffold(
-            appBar: PlatformAppBar(
-              leading: Showcase(
-                key: _one,
-                title: 'Search',
-                description: 'Search for deals and restaurants!',
-                shapeBorder: CircleBorder(),
-                showArrow: false,
-                child: FlatButton(
-                  child: Icon(Icons.search,
-                    color: Colors.white,
-                  ),
-                  onPressed: (){
-                    Navigator.push(context,
-                      platformPageRoute(
-                        context: context,
-                        settings: RouteSettings(name: "SearchPage"),
-                        builder: (BuildContext context) {
-                          return SearchPageWidget(deals: deals, location: currentLocation,);
-                        },
-                        fullscreenDialog: true
-                      )
-                    );
-                  },
-                ),
-              ),
-              title: Image.asset("images/Savour_White.png"),
-              trailingActions: <Widget>[
-                Showcase(
-                  key: _two,
-                  title: 'My Wallet',
-                  description: 'View your favorite deals and past redemptions!',
-                  shapeBorder: CircleBorder(),
-                  showArrow: false,
-                  child: FlatButton(
-                    child: Image.asset('images/wallet_filled.png',
-                      color: Colors.white,
-                      width: 30,
-                      height: 30,
-                    ),
-                    color: Colors.transparent,
-                    onPressed: (){
-                      Navigator.push(context,
-                        platformPageRoute(
-                          context: context,
-                          settings: RouteSettings(name: "WalletPage"),
-                          builder: (BuildContext context) {
-                            return WalletPageWidget(deals,vendors);
-                          },
-                          fullscreenDialog: true
-                        )
-                      );
-                    },
-                  ), 
-                ),
-              ],
-              ios: (_) => CupertinoNavigationBarData(
-                backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
-                heroTag: "dealTab",
-                transitionBetweenRoutes: false,
-              ),
-              android: (_) => MaterialAppBarData(
-                backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-                brightness: Brightness.dark,
-              ),
-            ),
-            body: Material(child: bodyWidget()),
-          );
-        },
-      )
-    );
-  }
-  
-  Widget bodyWidget(){
-    if (deals.getAllDeals().length > 0){
-      Fluttertoast.cancel();
-      return Stack(
-        children: <Widget>[
-          ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics (),
-            padding: EdgeInsets.only(top: 10.0),
-            itemBuilder: (context, position) {
-              List<Deal> filterDeals = [];
-              var filterText = "";
-              switch (position) {
-                case 0:
-                  filterDeals = deals.getDealsByFilter(0);
-                  filterText = deals.filters[0] + " Deals";
-                  break;
-                case 1: 
-                  filterDeals = deals.getDealsByValue();
-                  filterText = "Deals By Value";
-                  break;
-                case 2:
-                  filterDeals = deals.getDealsByDistance();
-                  filterText = "Deals By Distance";
-                  break;
-                default:
-                  filterDeals = deals.getDealsByFilter(position-2);
-                  filterText = deals.filters[position-2] + " Deals";
-              }
-              return (filterDeals.length > 0)? _buildCarousel(context, position, filterDeals, filterText): Container();
-            },
-            itemCount: deals.filters.length+2,
-          ),
-          Align(
-            alignment: Alignment(-0.90, 0.90),
-            child: Showcase(
-              key: _three,
-              title: 'Maps',
-              description: "See what's nearby!",
-              shapeBorder: CircleBorder(),
-              showArrow: false,
-              child:  FloatingActionButton(
-                heroTag: null,
-                backgroundColor: SavourColorsMaterial.savourGreen,
-                child: Icon(Icons.pin_drop, color: Colors.white,),
-                onPressed: (){
-                  Navigator.push(context,
-                    platformPageRoute(
-                      context: context,
-                      settings: RouteSettings(name: "MapPage"),
-                      builder: (BuildContext context) {
-                        return new MapPageWidget("Map Page", this.vendors, currentLocation);
+    return BlocBuilder<DealBloc, DealState>(
+      builder: (context, state) {
+        return ShowCaseWidget(
+          builder: Builder(
+            builder: (context) {
+              showcasecontext = context;
+              return PlatformScaffold(
+                appBar: PlatformAppBar(
+                  leading: Showcase(
+                    key: _one,
+                    title: 'Search',
+                    description: 'Search for deals and restaurants!',
+                    shapeBorder: CircleBorder(),
+                    showArrow: false,
+                    child: FlatButton(
+                      child: Icon(Icons.search,
+                        color: Colors.white,
+                      ),
+                      onPressed: (){
+                        Navigator.push(context,
+                          platformPageRoute(
+                            context: context,
+                            settings: RouteSettings(name: "SearchPage"),
+                            builder: (BuildContext context) {
+                              return _searchPage(state);
+                            },
+                            fullscreenDialog: true
+                          )
+                        );
                       },
-                      fullscreenDialog: true
-                    )
-                  );
-                },
-              ),
-            )
-          ),
-        ],
-      );
-    } else {
-      if (geoFireReady && keyEnteredCounter == 0){
-        //If geofire has loaded but we got no deals, tell user no deals
-        return Padding(
-          padding: const EdgeInsets.all(15),
-          child: Center(
-            child: AutoSizeText(
-              "No deals nearby!", 
-              minFontSize: 15,
-              maxFontSize: 22,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            )
-          ),
-        );
-      }else{
-        //Geofire not ready, show loading
-        return Center (
-          child:  ClipRRect(
-            borderRadius: BorderRadius.circular(15),
-            child: Container(
-              color: Colors.black.withOpacity(0.5),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  PlatformCircularProgressIndicator(),
-                  Container(height: 10),
-                  AutoSizeText(
-                    "Loading Deals...",
-                    maxFontSize: 22,
-                    style: TextStyle(color: Colors.white),
+                    ),
                   ),
-                ],
-              ),
-              width: MediaQuery.of(context).size.width*0.5,
-              height: MediaQuery.of(context).size.width*0.4,
-            ),
+                  title: Image.asset("images/Savour_White.png"),
+                  trailingActions: <Widget>[
+                    Showcase(
+                      key: _two,
+                      title: 'My Wallet',
+                      description: 'View your favorite deals and past redemptions!',
+                      shapeBorder: CircleBorder(),
+                      showArrow: false,
+                      child: FlatButton(
+                        child: Image.asset('images/wallet_filled.png',
+                          color: Colors.white,
+                          width: 30,
+                          height: 30,
+                        ),
+                        color: Colors.transparent,
+                        onPressed: (){
+                          Navigator.push(context,
+                            platformPageRoute(
+                              context: context,
+                              settings: RouteSettings(name: "WalletPage"),
+                              builder: (BuildContext context) {
+                                return BlocProvider<WalletBloc>(
+                                  create: (context) => WalletBloc(),
+                                  child:  WalletPageWidget()
+                                );
+                              },
+                              fullscreenDialog: true
+                            )
+                          );
+                        },
+                      ), 
+                    ),
+                  ],
+                  ios: (_) => CupertinoNavigationBarData(
+                    backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
+                    heroTag: "dealTab",
+                    transitionBetweenRoutes: false,
+                  ),
+                ),
+                body: Material(child: bodyWidget(state)),
+              );
+            },
           )
         );
       }
+    );
+  }
+
+  Widget _searchPage(DealState state){
+    if (state is DealLoaded) {
+      return StreamBuilder<Deals>(
+        stream: state.dealStream,
+        initialData: globals.dealsApiProvider.deals,
+        builder: (BuildContext context, AsyncSnapshot<Deals> snap) {
+          Deals deals = snap.data;
+          return SearchPageWidget(deals: deals, location: state.location);  
+        }
+      );
+    }
+    return SearchPageWidget(deals: Deals(), location: state.location); 
+  }
+  
+  Widget bodyWidget(DealState state){
+    if (state is DealUninitialized) {
+      return Loading(text: "Loading Deals...");
+    } else if (state is DealError) {
+      return TextPage(text: "An error occured.");
+    } else if (state is DealLoaded) {
+      return StreamBuilder<List<dynamic>>(
+        stream: CombineLatestStream.combine2(
+          state.dealStream,
+          state.vendorStream,
+          (deals, vendors) {
+            return [deals, vendors];
+          }
+        ),
+        initialData: [globals.dealsApiProvider.deals, globals.vendorApiProvider.vendors],
+        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snap) {
+          final  Deals deals = snap.data[0] as Deals;
+          final Vendors vendors = snap.data[1] as Vendors;
+            if (deals.getAllDeals().length > 0){
+              return Stack(
+                children: <Widget>[
+                  getDealsWidget(deals, state),
+                  Align(
+                    alignment: Alignment(-0.90, 0.90),
+                    child: Showcase(
+                      key: _three,
+                      title: 'Maps',
+                      description: "See what's nearby!",
+                      shapeBorder: CircleBorder(),
+                      showArrow: false,
+                      child:  FloatingActionButton(
+                        heroTag: null,
+                        backgroundColor: SavourColorsMaterial.savourGreen,
+                        child: Icon(Icons.pin_drop, color: Colors.white,),
+                        onPressed: (){
+                          Navigator.push(context,
+                            platformPageRoute(
+                              context: context,
+                              settings: RouteSettings(name: "MapPage"),
+                              builder: (BuildContext context) {
+                                return new MapPageWidget(vendors.getVendorList(), state.location);
+                              },
+                              fullscreenDialog: true
+                            )
+                          );
+                        },
+                      ),
+                    )
+                  ),
+                ],
+              );
+            } else if (deals.isLoading){
+              //Geofire not ready, show loading
+              return Loading(text: "Loading Deals...");
+            }
+            //If geofire has loaded but we got no deals, tell user no deals
+            return TextPage(text: "No deals nearby.");
+        }
+      );
+    } else {
+      //did not match a state
+      return TextPage(text: "An error occured.");
     }
   }
 
-  Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carouselDeals, String carouselText) {
-    var viewportFrac = 0.9;
-    var initialPage = 0;
-    if(MediaQuery.of(context).size.shortestSide > 600){//this is getting into tablet range
-      viewportFrac = 0.35; //make a couple fit on the page
-      initialPage = 1;
-    }
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      children: <Widget>[
-        Container(
-          padding: EdgeInsets.only(left: 15.0),
-          width: MediaQuery.of(context).size.width,
-          child: Text(carouselText, 
-            textAlign: TextAlign.left, 
-            style: TextStyle(
-              fontSize: 25.0,
-              fontWeight: FontWeight.bold,
-            ),
+Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carouselDeals, String carouselText, DealState state) {
+  var viewportFrac = 0.7;
+  var initialPage = 0;
+  if(MediaQuery.of(context).size.shortestSide > 600){//this is getting into tablet range
+    viewportFrac = 0.35; //make a couple fit on the page
+    initialPage = 1;
+  }
+  var cardSize = viewportFrac * MediaQuery.of(context).size.width;
+  return Column(
+    mainAxisSize: MainAxisSize.max,
+    children: <Widget>[
+      Container(
+        padding: EdgeInsets.only(left: 15.0),
+        width: MediaQuery.of(context).size.width,
+        child: Text(carouselText, 
+          textAlign: TextAlign.left, 
+          style: TextStyle(
+            fontSize: 25.0,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(
-          height: 300,
-          child: (carouselDeals.length <= 0)? Container():PageView.builder(
-            key: PageStorageKey('dealGroup$carouselIndex'), //save deal group's position when scrolling
-            controller: PageController(viewportFraction: viewportFrac, initialPage: initialPage),
-            physics: AlwaysScrollableScrollPhysics(),
-            itemBuilder: (BuildContext context, int item) {
-              return GestureDetector(
-                onTap: () {
-                  print(carouselDeals[item].key + " clicked");
-                  Navigator.push(
-                    context,
-                    platformPageRoute(
-                      context: context,
-                      settings: RouteSettings(name: "DealPage"),
-                      builder: (context) => DealPageWidget(
-                        deal: carouselDeals[item], 
-                        location: currentLocation,
+      ),
+      SizedBox(
+        height: 300,
+        child: (carouselDeals.length <= 0)? Container():ListView.builder(
+          key: PageStorageKey('dealGroup$carouselIndex'), //save deal group's position when scrolling
+          scrollDirection: Axis.horizontal,
+          physics: SavourCarouselScrollPhysics(itemDimension: cardSize),
+          itemBuilder: (BuildContext context, int item) {
+            return GestureDetector(
+              onTap: () {
+                print(carouselDeals[item].key + " clicked");
+                Navigator.push(
+                  context,
+                  platformPageRoute(
+                    context: context,
+                    settings: RouteSettings(name: "DealPage"),
+                    builder: (context) => BlocProvider<RedemptionBloc>(
+                      create: (context) => RedemptionBloc(),
+                      child: DealPageWidget(
+                        dealId: carouselDeals[item].key, 
+                        location: state.location,
                       ),
                     ),
-                  );
-                },
+                  ),
+                );
+              },
+              child: Container(
+                width: cardSize,
                 child: DealCard(
                   deal: carouselDeals[item], 
-                  location: currentLocation, 
+                  location: state.location, 
                   type: DealCardType.medium,
                 ),
-              );
-            },
-            itemCount: carouselDeals.length,  
-          ),
+              ),
+            );
+          },
+          itemCount: carouselDeals.length,  
+        ),
+      )
+    ],
+  );
+}
+
+  Widget getDealsWidget(Deals deals, DealState state){
+    if (deals!= null && deals.count > 0){
+      return ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics (),
+        padding: EdgeInsets.only(top: 10.0),
+        itemBuilder: (context, position) {
+          List<Deal> filterDeals = [];
+          var filterText = "";
+          switch (position) {
+            case 0:
+              filterDeals = deals.getDealsByFilter(0);
+              filterText = deals.filters[0] + " Deals";
+              break;
+            case 1: 
+              filterDeals = deals.getDealsByValue();
+              filterText = "Deals By Value";
+              break;
+            case 2:
+              filterDeals = deals.getDealsByDistance();
+              filterText = "Deals By Distance";
+              break;
+            default:
+              filterDeals = deals.getDealsByFilter(position-2);
+              filterText = deals.filters[position-2] + " Deals";
+          }
+          return (filterDeals.length > 0)? _buildCarousel(context, position, filterDeals, filterText, state): Container();
+        },
+        itemCount: deals.filters.length+2,
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.all(15),
+      child: Center(
+        child: AutoSizeText(
+          "No deals nearby!", 
+          minFontSize: 15,
+          maxFontSize: 22,
+          style: TextStyle(fontWeight: FontWeight.bold),
         )
-      ],
+      ),
     );
   }
 }
