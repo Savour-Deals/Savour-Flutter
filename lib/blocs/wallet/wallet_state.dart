@@ -1,7 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:savour_deals_flutter/stores/deals_model.dart';
-import 'package:savour_deals_flutter/stores/redemption_model.dart';
 
 abstract class WalletState extends Equatable {
   final Position location; 

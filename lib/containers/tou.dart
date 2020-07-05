@@ -15,7 +15,7 @@ class TermsOfUse extends StatelessWidget {
               children: [
                 TextSpan(
                   text: 'By logging in you agree to our',
-                  style: Theme.of(context).textTheme.body1,
+                  style: Theme.of(context).textTheme.bodyText1,
                 ),
               ],
             ),
@@ -35,7 +35,7 @@ class TermsOfUse extends StatelessWidget {
                 ),
                 TextSpan(
                   text: ' and ',
-                  style: Theme.of(context).textTheme.body1,
+                  style: Theme.of(context).textTheme.bodyText1,
                 ),
                 TextSpan(
                   text: 'Privacy Policy',

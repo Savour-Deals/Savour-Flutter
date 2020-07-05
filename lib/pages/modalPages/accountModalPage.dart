@@ -1,5 +1,19 @@
-part of tab_lib;
+import 'dart:async';
+import 'dart:io';
 
+import 'package:app_settings/app_settings.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:savour_deals_flutter/stores/settings.dart';
+import 'package:savour_deals_flutter/themes/theme.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:share/share.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class AccountPageWidget extends StatefulWidget {
@@ -47,28 +61,19 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
     appState = Provider.of<AppState>(context);
     notificationSettings = Provider.of<NotificationSettings>(context);
     theme = Theme.of(context);
-    return PlatformScaffold(
-      appBar: PlatformAppBar(
-        title: Image.asset("images/Savour_White.png"),
-        ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
-          heroTag: "dealTab",
-          transitionBetweenRoutes: false,
-        ),
-        android: (_) => MaterialAppBarData(
-          elevation: 0.0,
-        ),
-        trailingActions: <Widget>[
-          FlatButton(
-            child: Text("Logout", style: TextStyle(color: Colors.red) ),
-            color: Colors.transparent,
-            onPressed: (){
-              _auth.signOut();
-            },
-          )
-        ],
-      ),
-      body: (user == null) ? Column(
+    return Material(child: _bodyWidget());
+  }
+
+  _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  Widget _bodyWidget(){
+    return (user == null) ? Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
@@ -99,9 +104,6 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                     Share.share("Check out Savour to get deals from local restaurants! https://www.savourdeals.com/getsavour")
                   }
                 ),
-                decoration: BoxDecoration(
-                  border: Border(top: BorderSide(width: 0.1))
-                ),
               ),
               Container(
                 child: ListTile(
@@ -112,9 +114,6 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                   title: Text("Contact Us"),
                   contentPadding: EdgeInsets.all(4.0),
                   onTap: ()=> _launchURL('https://www.savourdeals.com/contact/'),
-                ),
-                decoration: BoxDecoration(
-                  border: Border(top: BorderSide(width: 0.1))
                 ),
               ),
               Container(
@@ -133,9 +132,6 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                   ),
                   contentPadding: EdgeInsets.all(4.0),
                 ),
-                decoration: BoxDecoration(
-                  border: Border(top: BorderSide(width: 0.1))
-                ),
               ),
               Container(
                 child: ListTile(
@@ -147,23 +143,11 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
                   contentPadding: EdgeInsets.all(4.0),
                   onTap: ()=> _launchURL('https://www.savourdeals.com/vendorsinfo'),
                 ),
-                decoration: BoxDecoration(
-                  border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1)),
-                ),
               ),
             ],
           ),
         )
-      )
-    );
-  }
-
-  _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
+      );
   }
 
   // ImageProvider getPhoto(){
@@ -213,7 +197,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
     if (accepted){
       print("Notifications turned on!");
       var user = await FirebaseAuth.instance.currentUser();
-      Provider.of<NotificationSettings>(context).setNotificationsSetting(true);
+      notificationSettings.setNotificationsSetting(true);
       OneSignal.shared.setSubscription(true);
       if (user.email != null){
         OneSignal.shared.setEmail(email: user.email);

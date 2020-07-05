@@ -26,6 +26,8 @@ import 'package:flutter/services.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:savour_deals_flutter/pages/infoPages/dealPage.dart';
 
+import 'accountModalPage.dart';
+
 class WalletPageWidget extends StatefulWidget {
 
   WalletPageWidget();
@@ -35,6 +37,8 @@ class WalletPageWidget extends StatefulWidget {
 }
 
 class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerProviderStateMixin{
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   //Location variables
   final _locationService = Geolocator();
   Position currentLocation;
@@ -98,13 +102,23 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
         centerTitle: true,
         brightness: Brightness.dark,
         iconTheme: IconThemeData(color: Colors.white),
+        actions: <Widget>[
+          FlatButton(
+            child: Text("Logout", style: TextStyle(color: Colors.red) ),
+            color: Colors.transparent,
+            onPressed: (){
+              Navigator.pop(context);
+              _auth.signOut();
+            },
+          )
+        ],
         bottom: Platform.isAndroid? 
         TabBar(
           labelStyle: TextStyle(fontSize: 25),
           controller: _tabController,
           tabs: <Widget>[
             Text("Favorites"),
-            Text("Redeemed"),
+            Text("Account"),
           ],
           onTap: (value) {
             setState(() {
@@ -133,7 +147,7 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
                       },
                       children: <int, Widget>{
                         0: Text("Favorites"),
-                        1: Text("Redeemed"),
+                        1: Text("Account"),
                       },
                     ),
                   ),
@@ -155,7 +169,7 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
             if (tabIndex == 0){
               return FavoritesPageWidget(location: state.location);
             } else if (tabIndex == 1){
-              return RedeemedWidget(location: state.location);
+              return AccountPageWidget();
             }
             return TextPage(text: "An error occured."); //should not happen
           }
@@ -223,10 +237,15 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
                     platformPageRoute(
                       context: context,
                       settings: RouteSettings(name: "DealPage"),
-                      builder: (context) => DealPageWidget(
-                        dealId: favorites[position-1].key, 
-                        location: widget.location
-                      ),
+                      builder: (BuildContext context) {
+                        return BlocProvider<RedemptionBloc>(
+                          create: (context) => RedemptionBloc(),
+                          child: DealPageWidget(
+                            dealId: favorites[position-1].key, 
+                            location: widget.location
+                          ),
+                        );
+                      },
                     ),
                   );
                 },
@@ -253,24 +272,11 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
   }
 
   Widget getCard(Deal deal){
-    // if (deal.isLive()){
-      return DealCard(
-        deal: deal, 
-        location: widget.location, 
-        type: DealCardType.large,
-        // onFavoriteChanged: removeFavoriteAndRefresh,
-      );
-    // }
-    // return Container();
-  }
-
-  void removeFavoriteAndRefresh(String dealID, bool favorited){
-    // TODO: This should be changed when we redo the data handling of the app
-    // if(!favorited){
-    //   setState(() {
-    //     favorites.removeWhere((deal) => deal.key == dealID);
-    //   });
-    // }
+    return DealCard(
+      deal: deal, 
+      location: widget.location, 
+      type: DealCardType.large,
+    );
   }
 }
 

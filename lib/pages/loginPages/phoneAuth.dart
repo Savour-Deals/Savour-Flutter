@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -67,7 +66,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                               Image(image: AssetImage("images/Savour_Deals_FullColor.png")),
                               Container(
                                 child: Text('Sign-in with your phone number:', 
-                                  style: Theme.of(context).textTheme.title,
+                                  style: Theme.of(context).textTheme.headline3,
                                 ),
                                 padding: EdgeInsets.all(16),
                                 alignment: Alignment.center,
@@ -110,7 +109,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                               Image(image: AssetImage("images/Savour_Deals_FullColor.png")),
                               Container(
                                 child: Text('Enter the code you recieved',
-                                  style: Theme.of(context).textTheme.title,
+                                  style: Theme.of(context).textTheme.headline3,
                                 ),
                                 padding: EdgeInsets.all(16),
                                 alignment: Alignment.center,
@@ -148,7 +147,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                 child: RichText(
                                   text: TextSpan(
                                     text: "Re-Send Text",
-                                    style: Theme.of(context).textTheme.body1,
+                                    style: Theme.of(context).textTheme.bodyText1,
                                     recognizer: TapGestureRecognizer()..onTap = () {
                                       _verifyPhoneNumber();
                                     },
@@ -161,7 +160,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                 child: RichText(
                                   text: TextSpan(
                                     text: 'Back',
-                                    style: Theme.of(context).textTheme.body1,
+                                    style: Theme.of(context).textTheme.bodyText1,
                                     recognizer: TapGestureRecognizer()..onTap = () {
                                       _pageViewController.animateToPage(0, duration: Duration(milliseconds: 500), curve: Curves.ease);
                                     },
@@ -199,7 +198,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
     );
   }
 
-  // Example code of how to verify phone number
   void _verifyPhoneNumber() async {
     _onLoading();
     FocusScope.of(context).unfocus();
@@ -209,7 +207,9 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
     final PhoneVerificationFailed verificationFailed = (AuthException authException) {
       _endLoading();
-      displayError("Phone number verification failed", 'Code: ${authException.code}. Message: ${authException.message}', 'Okay');
+      if (!authException.message.contains("cancelled")){
+        displayError("Phone number verification failed", 'Something happened. Please try again later.', 'Okay');
+      }
     };
 
     final PhoneCodeSent codeSent = (String verificationId, [int forceResendingToken]) async {
@@ -235,7 +235,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
   // Example code of how to sign in with phone.
   void _signInWithPhoneNumber(AuthCredential credential) async {
-    _auth.signInWithCredential(credential).then((authResult) async {
+       _auth.signInWithCredential(credential).then((authResult) async {
       final FirebaseUser user = authResult.user;
       final FirebaseUser currentUser = await _auth.currentUser();
       assert(user.uid == currentUser.uid);
@@ -252,7 +252,16 @@ class _PhoneAuthState extends State<PhoneAuth> {
         analytics.setUserId(authResult.user.uid);
         _endLoading();
       }
+    }).catchError((e) {
+      PlatformException error = e;
+      print(error.code);
+      if (error.code == "ERROR_INVALID_VERIFICATION_CODE"){
+        displayError("Invalid Code", "Please check the code and try again", "Okay");
+      } else {
+        displayError("Login Failed", "Login failed. Please try again. If this persists, contact us for help.", "Okay");
+      }
     });
+   
   }
 
   void displayError(title, message, buttonText){

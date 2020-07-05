@@ -29,60 +29,62 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget build(BuildContext context) {
     return PlatformScaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        alignment: AlignmentDirectional.bottomCenter,
-        children: <Widget>[
-          PageView.builder(
-            physics: ClampingScrollPhysics(),
-            itemCount: introWidgetsList.length,
-            onPageChanged: (int page){
-              getChangedPageAndMoveBar(page);
-            },
-            controller: controller,
-            itemBuilder: (context,index){
-              return introWidgetsList[index];
-            },
-          ),
-          (introWidgetsList.length > 1)?
-          Stack(
-            alignment: AlignmentDirectional.topStart,
-            children: <Widget>[
-              Container(
-                margin: EdgeInsets.only(bottom: 35),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    for (int i = 0; i < introWidgetsList.length; i++)
-                      (i == currentPage)? circleBar(true): circleBar(false),
-                  ],
+      body: Material(
+        child: Stack(
+          alignment: AlignmentDirectional.bottomCenter,
+          children: <Widget>[
+            PageView.builder(
+              physics: ClampingScrollPhysics(),
+              itemCount: introWidgetsList.length,
+              onPageChanged: (int page){
+                getChangedPageAndMoveBar(page);
+              },
+              controller: controller,
+              itemBuilder: (context,index){
+                return introWidgetsList[index];
+              },
+            ),
+            (introWidgetsList.length > 1)?
+            Stack(
+              alignment: AlignmentDirectional.topStart,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.only(bottom: 35),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      for (int i = 0; i < introWidgetsList.length; i++)
+                        (i == currentPage)? circleBar(true): circleBar(false),
+                    ],
+                  ),
+                )
+              ],
+            )
+            :
+            Container(),
+            Container(
+              alignment: AlignmentDirectional.bottomEnd,
+              margin: EdgeInsets.only(bottom: 35, right: 15),
+              child: Visibility(
+                visible: (currentPage == introWidgetsList.length - 1),
+                child: FloatingActionButton(
+                  backgroundColor: SavourColorsMaterial.savourGreen,
+                  onPressed: (){
+                    //request permissions here incase they didn't press the buttons
+                    _requestNotificationPermission();
+                    _requestLocationPermission();
+                    Navigator.pop(context);
+                  },
+                  shape: BeveledRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(26))
+                  ),
+                  child: Icon(Icons.arrow_forward, color: Colors.white,),
                 ),
-              )
-            ],
-          )
-          :
-          Container(),
-          Container(
-            alignment: AlignmentDirectional.bottomEnd,
-            margin: EdgeInsets.only(bottom: 35, right: 15),
-            child: Visibility(
-              visible: (currentPage == introWidgetsList.length - 1),
-              child: FloatingActionButton(
-                backgroundColor: SavourColorsMaterial.savourGreen,
-                onPressed: (){
-                  //request permissions here incase they didn't press the buttons
-                  _requestNotificationPermission();
-                  _requestLocationPermission();
-                  Navigator.pop(context);
-                },
-                shape: BeveledRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(26))
-                ),
-                child: Icon(Icons.arrow_forward, color: Colors.white,),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       )
     );
   }

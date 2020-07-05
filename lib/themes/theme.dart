@@ -17,9 +17,9 @@ final ThemeData savourMaterialLightThemeData = new ThemeData(
     color: SavourColorsMaterial.savourGreen
   ),
   textTheme: TextTheme(
-      headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
-      title: TextStyle(fontSize: 20.0),
-      body1: TextStyle(fontSize: 14.0),
+      headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
+      headline3: TextStyle(fontSize: 20.0),
+      bodyText1: TextStyle(fontSize: 14.0),
   ),
 );
 
@@ -42,9 +42,9 @@ final ThemeData savourMaterialDarkThemeData = new ThemeData(
   tabBarTheme: TabBarTheme(labelColor: Colors.white),
   buttonTheme: ButtonThemeData(colorScheme: ColorScheme.light()),
     textTheme: TextTheme(
-      headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
-      title: TextStyle(fontSize: 20.0),
-      body1: TextStyle(fontSize: 14.0),
+      headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
+      headline3: TextStyle(fontSize: 20.0),
+      bodyText1: TextStyle(fontSize: 14.0),
   ),
 );
 

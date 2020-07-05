@@ -54,30 +54,6 @@ class _VendorsPageState extends State<VendorsPageWidget> {
     });//.cancel();
   }
 
-  _startLoadingTimer(){
-    //If we have waited for +10s and geofire has not loaded, tell user to check their interet!
-    // const tenSec = const Duration(seconds: 10);
-    // Timer.periodic(
-    //   tenSec,
-    //   (Timer timer) {
-    //     if(this.mounted){
-    //       setState(() {
-    //         timer.cancel();
-    //         if(!geoFireReady){
-    //           Fluttertoast.showToast(
-    //             msg: "We seem to be taking a while to load. Check your internet connection to make sure you're online.",
-    //             toastLength: Toast.LENGTH_LONG,
-    //             gravity: ToastGravity.BOTTOM,
-    //             timeInSecForIos: 8,
-    //             backgroundColor: Colors.black.withOpacity(0.5),
-    //           );
-    //         }
-    //       });
-    //     }
-    //   }
-    // );
-  }
-
   @override
   Widget build(BuildContext context) {
     appState = Provider.of<AppState>(context);
@@ -106,6 +82,31 @@ class _VendorsPageState extends State<VendorsPageWidget> {
               heroTag: "vendorTab",
               transitionBetweenRoutes: false,
             ),
+            trailingActions: <Widget>[
+              FlatButton(
+                child: Image.asset('images/wallet_filled.png',
+                  color: Colors.white,
+                  width: 30,
+                  height: 30,
+                ),
+                color: Colors.transparent,
+                onPressed: (){
+                  Navigator.push(context,
+                    platformPageRoute(
+                      context: context,
+                      settings: RouteSettings(name: "WalletPage"),
+                      builder: (BuildContext context) {
+                        return BlocProvider<WalletBloc>(
+                          create: (context) => WalletBloc(),
+                          child:  WalletPageWidget()
+                        );
+                      },
+                      fullscreenDialog: true
+                    )
+                  );
+                },
+              ), 
+            ],
           ),
           body: Material(child: _buildBody(state)),
         );

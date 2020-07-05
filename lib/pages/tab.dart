@@ -17,13 +17,11 @@ import 'package:rate_my_app/rate_my_app.dart';
 import 'package:savour_deals_flutter/blocs/deal/deal_bloc.dart';
 import 'package:savour_deals_flutter/blocs/vendor_page/vendor_bloc.dart';
 import 'package:savour_deals_flutter/pages/loginPages/onboardingPage.dart';
-import 'package:savour_deals_flutter/utils.dart' as globals;
-import 'package:savour_deals_flutter/repositories/deals/deals_repo.dart';
-import 'package:savour_deals_flutter/repositories/vendors/vendors_repo.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
 import 'package:savour_deals_flutter/utils.dart';
+
 
 class SavourTabPage extends StatefulWidget {
   SavourTabPage({Key key, this.uid}) : super(key: key);
@@ -45,9 +43,6 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   FirebaseAnalytics analytics = FirebaseAnalytics();
 
-  VendorRepository _vendorsRepo;
-  DealRepository _dealsRepo;
-
 
   // int lastNearbyNotificationTime;
   // FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
@@ -67,11 +62,11 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    //inject global dependencies
-    _vendorsRepo = VendorRepository();
-    _dealsRepo = DealRepository();
-
     _children = [
+      BlocProvider<DealBloc>(
+        create: (context) => DealBloc(),
+        child: DealsPageWidget()
+      ),
       BlocProvider<DealBloc>(
         create: (context) => DealBloc(),
         child: DealsPageWidget()
@@ -80,7 +75,6 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         create: (context) => VendorBloc(),
         child: VendorsPageWidget()
       ),
-      AccountPageWidget(),
     ];
     
     _sendCurrentTabToAnalytics(0);
@@ -280,35 +274,35 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
               )
             ),
             BottomNavigationBarItem(
+              icon: Image.asset('images/diamond.png',
+                color: Color.fromARGB(255, 212, 175, 55),
+                width: 30,
+                height: 30,
+              ),
+              activeIcon: Image.asset('images/diamond_filled.png',
+                color: Color.fromARGB(255, 212, 175, 55),
+                width: 30,
+                height: 30,
+              ),
+              title: Text('Savour Gold',
+                style: TextStyle(color: Color.fromARGB(255, 212, 175, 55)),//Colors.yellow),
+              )
+            ),
+            BottomNavigationBarItem(
               icon: Image.asset('images/vendor.png',
-                color: theme.accentColor,
+                color: this.getTabOutlineColor(),
                 width: 30,
                 height: 30,
               ),
               activeIcon: Image.asset('images/vendor_filled.png',
-                color: theme.accentColor,
+                color: this.getTabOutlineColor(),
                 width: 30,
                 height: 30,
               ),
               title: Text('Vendors',
-                style: TextStyle(color: theme.accentColor),
+                style: TextStyle(color: this.getTabOutlineColor()),
               )
             ),
-            BottomNavigationBarItem(
-              icon: Image.asset('images/user.png',
-                color: theme.accentColor,
-                width: 30,
-                height: 30,
-              ),
-              activeIcon: Image.asset('images/user_filled.png',
-                color: theme.accentColor,
-                width: 30,
-                height: 30,
-              ),
-              title: Text('Account',
-                style: TextStyle(color: theme.accentColor),
-              )
-            )
           ],
         ),
       );

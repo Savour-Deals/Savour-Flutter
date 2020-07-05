@@ -263,10 +263,8 @@ class _DealsPageState extends State<DealsPageWidget> {
 
 Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carouselDeals, String carouselText, DealState state) {
   var viewportFrac = 0.7;
-  var initialPage = 0;
   if(MediaQuery.of(context).size.shortestSide > 600){//this is getting into tablet range
     viewportFrac = 0.35; //make a couple fit on the page
-    initialPage = 1;
   }
   var cardSize = viewportFrac * MediaQuery.of(context).size.width;
   return Column(
