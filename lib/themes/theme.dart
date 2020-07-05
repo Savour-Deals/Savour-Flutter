@@ -13,6 +13,14 @@ final ThemeData savourMaterialLightThemeData = new ThemeData(
   cardTheme: CardTheme(color: Colors.white),
   dialogTheme: DialogTheme(backgroundColor: Colors.white),
   buttonTheme: ButtonThemeData(colorScheme: ColorScheme.light()),
+  appBarTheme: AppBarTheme(
+    color: SavourColorsMaterial.savourGreen
+  ),
+  textTheme: TextTheme(
+      headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
+      headline3: TextStyle(fontSize: 20.0),
+      bodyText1: TextStyle(fontSize: 14.0),
+  ),
 );
 
 final ThemeData savourMaterialDarkThemeData = new ThemeData(
@@ -27,7 +35,17 @@ final ThemeData savourMaterialDarkThemeData = new ThemeData(
   splashFactory: NoSplashFactory(),
   dialogBackgroundColor: Color(0xff4C4C4C),
   cardTheme: CardTheme(color: Color(0xff4C4C4C)),
+  appBarTheme: AppBarTheme(
+    color: Color(0xff4C4C4C)
+  ),
+  bottomAppBarColor: Color(0xff4C4C4C),
+  tabBarTheme: TabBarTheme(labelColor: Colors.white),
   buttonTheme: ButtonThemeData(colorScheme: ColorScheme.light()),
+    textTheme: TextTheme(
+      headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
+      headline3: TextStyle(fontSize: 20.0),
+      bodyText1: TextStyle(fontSize: 14.0),
+  ),
 );
 
 class SavourColorsMaterial {

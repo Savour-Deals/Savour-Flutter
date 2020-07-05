@@ -26,7 +26,6 @@ class AppState with ChangeNotifier {
 
 class NotificationData with ChangeNotifier {
   String _notiDealID;  
-  bool _notificationsEnabled = false;
   
   NotificationData();
 
@@ -45,7 +44,7 @@ class NotificationData with ChangeNotifier {
 }
 
 class NotificationSettings with ChangeNotifier {
-  bool _notificationsEnabled;
+  bool _notificationsEnabled = false;
   SharedPreferences prefs;
   
   NotificationSettings(){
@@ -64,6 +63,6 @@ class NotificationSettings with ChangeNotifier {
     notifyListeners();
   }
 
-  bool get isNotificationsEnabled => _notificationsEnabled;
+  bool get isNotificationsEnabled => this._notificationsEnabled;
 }
 

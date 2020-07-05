@@ -14,22 +14,13 @@ enum PageType {
 class _VendorsPageState extends State<VendorsPageWidget> {
   //Location variables
   final _locationService = Geolocator();
-  Position currentLocation;
 
   //Declare contextual variables
   AppState appState;
   ThemeData theme;
 
-  //database variables 
-  DatabaseReference vendorRef = FirebaseDatabase().reference().child("Vendors");
-  final geo = Geofire();
-  bool loaded = false;
+  VendorBloc _vendorsBloc;
 
-  List<Vendor> vendors = [];
-
-  bool geoFireReady = false;
-  int keyEnteredCounter = 0;
-  
   @override
   void initState() {
     super.initState();
@@ -37,10 +28,8 @@ class _VendorsPageState extends State<VendorsPageWidget> {
   }
 
   void initPlatform() async {
-    //start loading timer :: 10s, if not done loading by then, display toast
-    _startLoadingTimer();
-    //Intializing geoFire
-    geo.initialize("Vendors_Location");
+    Position currentLocation;
+    _vendorsBloc = BlocProvider.of<VendorBloc>(context);
     try {
       var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
       if (serviceStatus == GeolocationStatus.granted) {
@@ -52,267 +41,153 @@ class _VendorsPageState extends State<VendorsPageWidget> {
 
     if (currentLocation != null){
       //If we have the location, fire off the query, otherwise we will have to wait for the stream
-      geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
+      _vendorsBloc.add(FetchVendors(location: currentLocation));
     }
-    geo.onObserveReady.listen((ready){
-      if(this.mounted){
-        setState(() {
-          geoFireReady = true;
-        });
-      }
-    });
-    geo.onKeyEntered.listen((data){
-      if(this.mounted){
-        setState(() {
-          keyEnteredCounter++;
-        });          
-        keyEntered(data);
-      }
-    });
-    geo.onKeyExited.listen((data){
-      if(this.mounted){
-        keyExited(data);
-      }
-    });
+
     _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
-      if (this.mounted){
-        setState(() {
-          currentLocation = result;
-        });
-        if (geo.geoQueryActive){
-          //Query already running, update location
-          geo.updateLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-        }else{
-          // this is our first location update. Fire off the geoquery
-          geo.queryAtLocation(currentLocation.latitude, currentLocation.longitude, 80.0);
-        }
+      if (currentLocation == null){
+        _vendorsBloc.add(FetchVendors(location: currentLocation));
+      }else{
+        _vendorsBloc.add(UpdateVendorsLocation(location: currentLocation));
       }
-    });
-  }
-
-  _startLoadingTimer(){
-    //If we have waited for +10s and geofire has not loaded, tell user to check their interet!
-    const tenSec = const Duration(seconds: 10);
-    Timer.periodic(
-      tenSec,
-      (Timer timer) {
-        if(this.mounted){
-          setState(() {
-            timer.cancel();
-            if(!geoFireReady){
-              Fluttertoast.showToast(
-                msg: "We seem to be taking a while to load. Check your internet connection to make sure you're online.",
-                toastLength: Toast.LENGTH_LONG,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIos: 8,
-                backgroundColor: Colors.black.withOpacity(0.5),
-              );
-            }
-          });
-        }
-      }
-    );
-  }
-
-  void keyEntered(dynamic data) {
-    // print("key entered vendorsPage: " + data["key"]);
-    var lat = data["lat"];
-    var long = data["long"];
-    if (this.mounted){
-      vendorRef.child(data["key"]).onValue.listen((event) => {
-        if (event.snapshot != null){
-          setState(() {
-            Vendor newVendor = Vendor.fromSnapshot(event.snapshot, lat, long);
-            var idx = vendors.indexWhere((d) => d.key == newVendor.key);
-            if (idx < 0) {//Dont have vendor yet
-              vendors.add(newVendor);
-              vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
-            }else{//vendor present. Update vendor
-              vendors[idx] = newVendor;
-              vendors.sort((v1,v2) { return vendorSort(v1, v2); } );
-            }
-          })
-        }
-      });
-    }
-  }
-
-  int vendorSort(Vendor v1, Vendor v2){
-    return v1.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude).compareTo(v2.distanceMilesFrom(currentLocation.latitude, currentLocation.longitude));
-  }
-
-  void keyExited(dynamic data) {
-    // print("key exited vendorsPage: " + data["key"]);
-    if (this.mounted){
-      setState(() {
-        vendors.removeWhere((vendor) => vendor.key == data["key"]);
-      });
-    }
+      currentLocation = result;
+    });//.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
     appState = Provider.of<AppState>(context);
     theme = Theme.of(context);
-    return PlatformScaffold(
-      appBar: PlatformAppBar(
-        title: Image.asset("images/Savour_White.png"),
-        leading: FlatButton(
-          child: Icon(Icons.search,
-            color: Colors.white,
-          ),
-          onPressed: () async {
-            var page = await buildPageAsync(PageType.searchPage);
-            var route = platformPageRoute(
-              context: context,
-              settings: RouteSettings(name: "SearchPage"),
-              builder: (_) => page, 
-              fullscreenDialog: true, 
-            );
-            Navigator.push(context,route);
-          },
-        ),
-        ios: (_) => CupertinoNavigationBarData(
-          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
-          heroTag: "vendorTab",
-          transitionBetweenRoutes: false,
-        ),
-        android: (_) => MaterialAppBarData(
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          brightness: Brightness.dark,
-        ),
-        trailingActions: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(left: 20.0, right: 10.0),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                  platformPageRoute(
-                    context: context,
-                    settings: RouteSettings(name: "AccountOAge"),
-                    builder: (BuildContext context) {
-                      return AccountPageWidget();
-                    },
-                    fullscreenDialog: true
-                  )
-                );
-              },
-              child: Image.asset('images/menu-dots.png',
+    return BlocBuilder<VendorBloc, VendorState>(
+      builder: (context, state) {
+        return PlatformScaffold(
+          appBar: PlatformAppBar(
+            title: Image.asset("images/Savour_White.png"),
+            leading: FlatButton(
+              child: Icon(Icons.search,
                 color: Colors.white,
-                width: 30,
-                height: 30,
               ),
-            )
-          ),  
-        ],
-      ),
-      body: Material(child: bodyWidget()),
-    );
-  }
-
-  Widget bodyWidget(){
-    if (vendors.length > 0) {
-      return Stack(
-        children: <Widget>[
-          ListView.builder(
-            physics: AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.all(0.0),
-            // physics: const AlwaysScrollableScrollPhysics (),
-            itemBuilder: (context, position) {
-              return GestureDetector(
-                onTap: () async {
-                  print(vendors[position].name + " clicked");
-                  var page = await buildPageAsync(PageType.vendorPage, position: position);
-                  var route = platformPageRoute(
-                    context: context,
-                    settings: RouteSettings(name: "VendorPage"),
-                    builder: (_) => page, 
-                  );
-                  Navigator.push(context,route);
-                },
-                child: VendorCard(vendors[position], currentLocation)
-              );
-            },
-            itemCount: vendors.length,
-          ),
-          Align(
-            alignment: Alignment(-0.90, 0.90),
-            child: FloatingActionButton(
-              heroTag: null,
-              backgroundColor: SavourColorsMaterial.savourGreen,
-              child: Icon(Icons.pin_drop, color: Colors.white,),
               onPressed: () async {
-                var page = await buildPageAsync(PageType.mapPage);
                 var route = platformPageRoute(
                   context: context,
-                  settings: RouteSettings(name: "MapPage"),
-                  builder: (_) => page, 
+                  settings: RouteSettings(name: "SearchPage"),
+                  builder: (_) => _searchPage(state), 
                   fullscreenDialog: true, 
                 );
                 Navigator.push(context,route);
               },
             ),
-          )
-        ],
-      );
-    }else {
-      if (geoFireReady && keyEnteredCounter == 0){
-        //If geofire has loaded but we got no deals, tell user no deals
-        return Padding(
-          padding: const EdgeInsets.all(15),
-          child: Center(
-            child: AutoSizeText(
-              "No vendors nearby!", 
-              minFontSize: 15,
-              maxFontSize: 22,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            )
-          ),
-        );
-      }else{
-        //Geofire not ready, show loading
-        return Center (
-          child:  ClipRRect(
-            borderRadius: BorderRadius.circular(15),
-            child: Container(
-              color: Colors.black.withOpacity(0.5),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  PlatformCircularProgressIndicator(),
-                  Container(height: 10),
-                  AutoSizeText(
-                    "Loading Vendors...",
-                    maxFontSize: 22,
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-              width: MediaQuery.of(context).size.width*0.5,
-              height: MediaQuery.of(context).size.width*0.4,
+            ios: (_) => CupertinoNavigationBarData(
+              backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
+              heroTag: "vendorTab",
+              transitionBetweenRoutes: false,
             ),
-          )
+            trailingActions: <Widget>[
+              FlatButton(
+                child: Image.asset('images/wallet_filled.png',
+                  color: Colors.white,
+                  width: 30,
+                  height: 30,
+                ),
+                color: Colors.transparent,
+                onPressed: (){
+                  Navigator.push(context,
+                    platformPageRoute(
+                      context: context,
+                      settings: RouteSettings(name: "WalletPage"),
+                      builder: (BuildContext context) {
+                        return BlocProvider<WalletBloc>(
+                          create: (context) => WalletBloc(),
+                          child:  WalletPageWidget()
+                        );
+                      },
+                      fullscreenDialog: true
+                    )
+                  );
+                },
+              ), 
+            ],
+          ),
+          body: Material(child: _buildBody(state)),
         );
       }
-    }
+    );
   }
 
-  Future<Widget> buildPageAsync(PageType pageType, {position: int}) async {
-    return Future.microtask(() async {
-      switch (pageType) {
-        case PageType.mapPage:
-          return MapPageWidget("Map Page", this.vendors, currentLocation);
-          break;
-        case PageType.searchPage:
-          return SearchPageWidget(vendors: vendors,location: currentLocation);
-          break;
-        case PageType.vendorPage:
-          return VendorPageWidget(vendors[position], currentLocation);
-          break;
-        default:
-          return null;
-      }
-    });
-}
+  Widget _searchPage(VendorState state){
+    if(state is VendorLoaded){
+      return StreamBuilder<Vendors>(
+        stream: state.vendorStream,
+        initialData: globals.vendorApiProvider.vendors,
+        builder: (BuildContext context, AsyncSnapshot<Vendors> snap) {
+          return SearchPageWidget(vendors: snap.data.getVendorList(), location: state.location);
+        }
+      );
+    }
+    return SearchPageWidget(vendors: [], location: state.location);
+  }
+
+  Widget _buildBody(VendorState state){
+    if (state is VendorUninitialized) {
+      return Loading(text: "Loading Vendors...");
+    } else if (state is VendorError) {
+      return TextPage(text: "An error occured.");
+    } else if (state is VendorLoaded) {
+      return StreamBuilder<Vendors>(
+        stream: state.vendorStream,
+        initialData: globals.vendorApiProvider.vendors,
+        builder: (BuildContext context, AsyncSnapshot<Vendors> snap) {
+          final vendors = snap.data;
+          if (vendors!= null && vendors.count > 0){
+            final vendorList = vendors.getVendorList();
+            return Stack(
+              children: <Widget>[
+                ListView.builder(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.all(0.0),
+                  // physics: const AlwaysScrollableScrollPhysics (),
+                  itemBuilder: (context, position) {
+                    return GestureDetector(
+                      onTap: () async {
+                        print(vendorList[position].name + " clicked");
+                        var route = platformPageRoute(
+                          context: context,
+                          settings: RouteSettings(name: "VendorPage"),
+                          builder: (_) => VendorPageWidget(vendorList[position], state.location), 
+                        );
+                        Navigator.push(context,route);
+                      },
+                      child: VendorCard(vendorList[position], state.location),
+                    );
+                  },
+                  itemCount: vendors.count,
+                ),
+                Align(
+                  alignment: Alignment(-0.90, 0.90),
+                  child: FloatingActionButton(
+                    heroTag: null,
+                    backgroundColor: SavourColorsMaterial.savourGreen,
+                    child: Icon(Icons.pin_drop, color: Colors.white,),
+                    onPressed: () async {
+                      var route = platformPageRoute(
+                        context: context,
+                        settings: RouteSettings(name: "MapPage"),
+                        builder: (_) => MapPageWidget(vendorList, state.location), 
+                        fullscreenDialog: true, 
+                      );
+                      Navigator.push(context,route);
+                    },
+                  ),
+                )
+              ],
+            );
+          } else if (vendors.isLoading) {
+            return Loading(text: "Loading Vendors...");
+          }
+          return TextPage(text: "No Vendors Nearby!");
+        }
+      );
+    }
+    return TextPage(text: "An error ocurred");
+  }
 }

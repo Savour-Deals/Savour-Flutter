@@ -100,15 +100,7 @@ class DealCardFull extends StatelessWidget {
                       scale: 0.2,
                       printError: true,
                     ),
-                    fit: BoxFit.cover,
-                    // loadingWidget: Container(
-                    //   color: Colors.transparent,
-                    //   child: const Icon(Icons.local_dining, 
-                    //     color: Colors.white,
-                    //     size: 150.0,
-                    //   ),
-                    // ),   
-                    // forceRebuildWidget: true,                 
+                    fit: BoxFit.cover,                 
                   ),
                   decoration: BoxDecoration(
                     color: Colors.grey,

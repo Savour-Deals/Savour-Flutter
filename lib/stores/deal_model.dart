@@ -181,6 +181,7 @@ class Deal {
   Deal.fromMap(String _key, dynamic data, Vendor _vendor, String uid){
     redeemed = false;
     redeemedTime = 0;
+    // print(data["redeemed"]);
     if (data["redeemed"] != null){
       if (data["redeemed"][uid] != null){//if there is a redemption time
         var now = DateTime.now().millisecondsSinceEpoch;

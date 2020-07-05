@@ -5,7 +5,6 @@ import 'package:app_settings/app_settings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +14,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:share/share.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../utils.dart';
 
 
 class AccountPageWidget extends StatefulWidget {
@@ -63,33 +61,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
     appState = Provider.of<AppState>(context);
     notificationSettings = Provider.of<NotificationSettings>(context);
     theme = Theme.of(context);
-    return PlatformScaffold(
-      appBar: PlatformAppBar(
-        title: Image.asset("images/Savour_White.png"),
-        ios: (_) => CupertinoNavigationBarData(
-          actionsForegroundColor: Colors.white,
-          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
-          heroTag: "dealTab",
-          transitionBetweenRoutes: false,
-        ),
-        android: (_) => MaterialAppBarData(
-          iconTheme: IconThemeData(color: Colors.white),
-          elevation: 0.0,
-          brightness: Brightness.dark,
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-        ),
-        trailingActions: <Widget>[
-          FlatButton(
-            child: Text("Logout", style: TextStyle(color: Colors.red) ),
-            color: Colors.transparent,
-            onPressed: (){
-              _auth.signOut();
-            },
-          )
-        ],
-      ),
-      body: Material(child: _bodyWidget())
-    );
+    return Material(child: _bodyWidget());
   }
 
   _launchURL(String url) async {
@@ -110,125 +82,70 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
           ),
         ],
       ):Center(
-        child: ListView(
-          children: <Widget>[
-            Container(height: 20.0,),
-            Text(
-              "Total Estimated Savings: \$" + totalSavings.toString(), 
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-            ),
-            Container(height: 20.0,),
-            Container(
-              child: ListTile(
-                leading: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.people,
-                    color: appState.isDark? Colors.white:Colors.black,
+        child: Material(
+          child: ListView(
+            children: <Widget>[
+              Container(height: 50.0,),
+              Text(
+                "Total Estimated Savings: \$" + totalSavings.toString(), 
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              ),
+              Container(height: 50.0,),
+              Container(
+                child: ListTile(
+                  leading: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(Icons.people),
                   ),
+                  title: Text("Click to invite more friends!"),
+                  contentPadding: EdgeInsets.all(4.0),
+                  onTap: () =>{
+                    Share.share("Check out Savour to get deals from local restaurants! https://www.savourdeals.com/getsavour")
+                  }
                 ),
-                title: Text(
-                  "Click to invite more friends!",
-                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
-                ),
-                contentPadding: EdgeInsets.all(4.0),
-                onTap: () =>{
-                  Share.share("Check out Savour to get deals from local restaurants! https://www.savourdeals.com/getsavour")
-                }
               ),
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(width: 0.1))
-              ),
-            ),
-            Container(
-              child: ListTile(
-                leading: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.mail,
-                    color: appState.isDark? Colors.white:Colors.black,
+              Container(
+                child: ListTile(
+                  leading: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(Icons.mail),
                   ),
+                  title: Text("Contact Us"),
+                  contentPadding: EdgeInsets.all(4.0),
+                  onTap: ()=> _launchURL('https://www.savourdeals.com/contact/'),
                 ),
-                title: Text(
-                  "Contact Us",
-                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
-                ),
-                contentPadding: EdgeInsets.all(4.0),
-                onTap: ()=> _launchURL('https://www.savourdeals.com/contact/'),
               ),
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(width: 0.1))
-              ),
-            ),
-            Container(
-              child: ListTile(
-                leading: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.notifications_active,
-                    color: appState.isDark? Colors.white:Colors.black,
+              Container(
+                child: ListTile(
+                  leading: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(Icons.notifications_active),
                   ),
-                ),
-                title: Text(
-                  "Notifications",
-                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
-                ),
-                trailing: PlatformSwitch(
-                  value: notificationSettings.isNotificationsEnabled,
-                  onChanged: (value) {
-                    _toggleNotifications();
-                  },
-                  // activeTrackColor: theme.primaryColor, 
-                  activeColor: theme.primaryColor,
-                ),
-                // onTap: () => _toggleNotifications(),
-                contentPadding: EdgeInsets.all(4.0),
-              ),
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(width: 0.1))
-              ),
-            ),
-            Container(
-              child: ListTile(
-                leading: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.people,
-                    color: appState.isDark? Colors.white:Colors.black,
+                  title: Text("Notifications"),
+                  trailing: PlatformSwitch(
+                    value: notificationSettings.isNotificationsEnabled,
+                    onChanged: (value) {
+                      _toggleNotifications();
+                    },
+                    activeColor: SavourColorsMaterial.savourGreen,
                   ),
+                  contentPadding: EdgeInsets.all(4.0),
                 ),
-                title: Text(
-                  "Learn more about becoming a vendor!",
-                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
-                ),
-                contentPadding: EdgeInsets.all(4.0),
-                onTap: ()=> _launchURL('https://www.savourdeals.com/vendorsinfo'),
               ),
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1)),
-              ),
-            ),
-            Container(
-              child: ListTile(
-                leading: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.lightbulb_outline,
-                    color: appState.isDark? Colors.white:Colors.black,
+              Container(
+                child: ListTile(
+                  leading: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(Icons.people),
                   ),
+                  title: Text("Learn more about becoming a vendor!"),
+                  contentPadding: EdgeInsets.all(4.0),
+                  onTap: ()=> _launchURL('https://www.savourdeals.com/vendorsinfo'),
                 ),
-                title: Text(
-                  "Switch to " + (appState.isDark? "light":"dark") + " mode",
-                  style: TextStyle(color: appState.isDark? Colors.white:Colors.black),
-                ),
-                contentPadding: EdgeInsets.all(4.0),
-                onTap: () {
-                  setState(() {
-                    appState.setDarkMode(!appState.isDark);
-                  });
-                },
               ),
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(width: 0.1), bottom: BorderSide(width: 0.1)),
-              ),
-            ),
-          ],
+            ],
+          ),
         )
       );
   }
@@ -280,7 +197,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
     if (accepted){
       print("Notifications turned on!");
       var user = await FirebaseAuth.instance.currentUser();
-      Provider.of<NotificationSettings>(context).setNotificationsSetting(true);
+      notificationSettings.setNotificationsSetting(true);
       OneSignal.shared.setSubscription(true);
       if (user.email != null){
         OneSignal.shared.setEmail(email: user.email);

@@ -7,19 +7,21 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:location_permissions/location_permissions.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rate_my_app/rate_my_app.dart';
+import 'package:savour_deals_flutter/blocs/deal/deal_bloc.dart';
+import 'package:savour_deals_flutter/blocs/vendor_page/vendor_bloc.dart';
 import 'package:savour_deals_flutter/pages/loginPages/onboardingPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
 import 'package:savour_deals_flutter/utils.dart';
 
-import 'modalPages/accountModalPage.dart';
 
 class SavourTabPage extends StatefulWidget {
   SavourTabPage({Key key, this.uid}) : super(key: key);
@@ -41,6 +43,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   FirebaseAnalytics analytics = FirebaseAnalytics();
 
+
   // int lastNearbyNotificationTime;
   // FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
@@ -48,11 +51,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   AppState appState;
   ThemeData theme;
 
-  List<Widget> _children = [
-    DealsPageWidget(),
-    AccountPageWidget(),
-    VendorsPageWidget(),
-  ];
+  List<Widget> _children;
 
 
   @override
@@ -63,6 +62,21 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
+    _children = [
+      BlocProvider<DealBloc>(
+        create: (context) => DealBloc(),
+        child: DealsPageWidget()
+      ),
+      BlocProvider<DealBloc>(
+        create: (context) => DealBloc(),
+        child: DealsPageWidget()
+      ),
+      BlocProvider<VendorBloc>(
+        create: (context) => VendorBloc(),
+        child: VendorsPageWidget()
+      ),
+    ];
+    
     _sendCurrentTabToAnalytics(0);
     //Init app rating 
     RateMyApp rateMyApp = RateMyApp(
@@ -205,14 +219,12 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         appBar: PlatformAppBar(
           title: Image.asset("images/Savour_White.png"),
           ios: (_) => CupertinoNavigationBarData(
-            backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
+            backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
             heroTag: "dealTab",
             transitionBetweenRoutes: false,
           ),
           android: (_) => MaterialAppBarData(
             elevation: 0.0,
-            brightness: Brightness.light,
-            backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           ),
         ),
         body: Center(
@@ -243,22 +255,22 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
           currentIndex: _currentIndex,
           itemChanged: onTabTapped,
           ios: (_) => CupertinoTabBarData(
-            backgroundColor: theme.bottomAppBarColor.withOpacity(1),//SavourColorsMaterial.savourGreen,
+            backgroundColor: theme.bottomAppBarColor.withOpacity(1),
           ),
           items: [
             BottomNavigationBarItem(
               icon: Image.asset('images/tags.png',
-                color: this.getTabOutlineColor(),
+                color: theme.accentColor,
                 width: 30,
                 height: 30,
               ),
               activeIcon: Image.asset('images/tags_filled.png',
-                color: this.getTabOutlineColor(),
+                color: theme.accentColor,
                 width: 30,
                 height: 30,
               ),
               title: Text('Deals',
-                style: TextStyle(color: this.getTabOutlineColor()),
+                style: TextStyle(color: theme.accentColor),
               )
             ),
             BottomNavigationBarItem(
@@ -272,7 +284,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
                 width: 30,
                 height: 30,
               ),
-              title: Text('Savour+',
+              title: Text('Savour Gold',
                 style: TextStyle(color: Color.fromARGB(255, 212, 175, 55)),//Colors.yellow),
               )
             ),
@@ -299,14 +311,12 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         appBar: PlatformAppBar(
           title: Image.asset("images/Savour_White.png"),
           ios: (_) => CupertinoNavigationBarData(
-            backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
+            backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
             heroTag: "dealTab",
             transitionBetweenRoutes: false,
           ),
           android: (_) => MaterialAppBarData(
             elevation: 0.0,
-            brightness: Brightness.light,
-            backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
           ),
         ),
         body: Column(
@@ -384,13 +394,13 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   Future _notificationPermissionHandler(bool accepted) async {
     if (accepted){
       var user = await FirebaseAuth.instance.currentUser();
-      Provider.of<NotificationSettings>(context).setNotificationsSetting(true);
+      Provider.of<NotificationSettings>(context, listen: false).setNotificationsSetting(true);
       OneSignal.shared.setSubscription(true);
       if (user.email != null){
         OneSignal.shared.setEmail(email: user.email);
       }
     }else{
-      Provider.of<NotificationSettings>(context).setNotificationsSetting(false);
+      Provider.of<NotificationSettings>(context, listen: false).setNotificationsSetting(false);
       OneSignal.shared.setSubscription(false);
     }
   }

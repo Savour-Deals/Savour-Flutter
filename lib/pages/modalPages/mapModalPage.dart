@@ -8,19 +8,18 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:savour_deals_flutter/containers/vendorCardWidget.dart';
 import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 
 import '../../utils.dart';
 
 
 class MapPageWidget extends StatefulWidget {
-  final text;
   final List<Vendor> vendors;
   final Position location;
-  MapPageWidget(this.text, this.vendors,this.location);
+  MapPageWidget(this.vendors,this.location);
 
   @override
   _MapPageWidgetState createState() => _MapPageWidgetState();
@@ -30,8 +29,13 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   FirebaseUser user;
   final _locationService = Geolocator();
   Completer<GoogleMapController> _controller = Completer();
+  PageController _pageController;
   CameraPosition _userPosition;
-  Map<MarkerId,Marker> _markers = new Map<MarkerId,Marker>();
+  Position _position;
+  Map<String,Marker> _markers = new Map<String,Marker>();
+  List<Vendor> sortedVendors;
+
+  bool _moving = false;
 
   //Declare contextual variables
   AppState appState;
@@ -41,7 +45,16 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   void initState()  {
     super.initState();
     this._userPosition = new CameraPosition(target: LatLng(widget.location.latitude, widget.location.longitude), zoom: 12);
+    this._position = widget.location;
+    this.sortedVendors = widget.vendors;
+    this.sortedVendors.sort((a, b) {
+      return compareDistance(a,b);
+    });
     initPlatform();
+  }
+
+  int compareDistance(Vendor a, Vendor b){
+    return a.distanceMilesFrom(widget.location.latitude,widget.location.longitude).compareTo(b.distanceMilesFrom(widget.location.latitude,widget.location.longitude));
   }
 
   initPlatform() async {
@@ -54,6 +67,8 @@ class _MapPageWidgetState extends State<MapPageWidget> {
         if (serviceStatus == GeolocationStatus.granted) {
           _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
             this._userPosition = new CameraPosition(target: LatLng(result.latitude,result.longitude), zoom: 12);
+            this._position = result;
+
           });
         }
       }
@@ -61,7 +76,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       print(e.message);
     }
 
-    for (Vendor vendor in this.widget.vendors) {
+    for (Vendor vendor in this.sortedVendors) {
       MarkerId markerId = new MarkerId(vendor.name);
       Marker marker = new Marker(
         markerId: markerId,
@@ -70,19 +85,33 @@ class _MapPageWidgetState extends State<MapPageWidget> {
           title: vendor.name + "  ⓘ",
           // snippet: vendor.name + "  ⓘ",
           onTap: () {
-            _onMarkerPressed(markerId);
+            _onMarkerWindowPressed(markerId);
           }
         ),
+        onTap: () {
+          _moving = true;
+          _pageController.animateToPage(this.sortedVendors.indexOf(vendor), duration: Duration(milliseconds: 500), curve: Curves.ease).then((_) {
+            _moving = false;
+          });
+        }
       );
 
       setState(() {
-        _markers[markerId] = marker;
+        _markers[vendor.key] = marker;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    var cardHeight = MediaQuery.of(context).size.height*0.22;
+    var viewportFrac = 0.7;
+    var initialPage = 0;
+    if(MediaQuery.of(context).size.shortestSide > 600){//this is getting into tablet range
+      viewportFrac = 0.35; //make a couple fit on the page
+      initialPage = 1;
+    }
+    _pageController = PageController(viewportFraction: viewportFrac, initialPage: initialPage);
     appState = Provider.of<AppState>(context);
     theme = Theme.of(context);
     return PlatformScaffold(
@@ -90,32 +119,74 @@ class _MapPageWidgetState extends State<MapPageWidget> {
         title: Image.asset("images/Savour_White.png"),
         ios: (_) => CupertinoNavigationBarData(
           actionsForegroundColor: Colors.white,
-          backgroundColor: ColorWithFakeLuminance(appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen, withLightLuminance: true),
+          backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
           heroTag: "favTab",
           transitionBetweenRoutes: false,
         ),
-        android: (_) => MaterialAppBarData(
-          iconTheme: IconThemeData(color: Colors.white),
-          backgroundColor: appState.isDark? theme.bottomAppBarColor:SavourColorsMaterial.savourGreen,
-          brightness: Brightness.dark,
-        ),
       ),
-      body: GoogleMap(
-        mapType: MapType.normal,
-        initialCameraPosition:_userPosition,
-        onMapCreated: _onMapCreated,
-        myLocationEnabled: true,
-        markers: Set<Marker>.of(_markers.values),
+      body: Stack(
+        children: <Widget>[
+          GoogleMap(
+            padding: EdgeInsets.only(bottom: cardHeight),
+            mapType: MapType.normal,
+            initialCameraPosition:_userPosition,
+            onMapCreated: _onMapCreated,
+            myLocationEnabled: true,
+            markers: Set<Marker>.of(_markers.values),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: cardHeight,
+              padding: EdgeInsets.only(bottom: 20.0),
+              child: PageView.builder(
+                key: PageStorageKey('vendorGroup1'), //save deal group's position when scrolling
+                controller: _pageController,
+                physics: AlwaysScrollableScrollPhysics(),
+                onPageChanged: (int item) {
+                  this._goToLocation(this.sortedVendors[item].lat, this.sortedVendors[item].long, this.sortedVendors[item].key);
+                },
+                itemBuilder: (BuildContext context, int item) {
+                  return GestureDetector(
+                    onTap: () {
+                      print(this.sortedVendors[item].key + " clicked");
+                      Navigator.push(
+                        context,
+                        platformPageRoute(
+                          context: context,
+                          settings: RouteSettings(name: "VendorPage"),
+                          builder: (context) => VendorPageWidget(this.sortedVendors[item], this._position)
+                        ),
+                      );
+                    },
+                    child: VendorCard(this.sortedVendors[item], this._position),
+                  );
+                },
+                itemCount: this.sortedVendors.length,  
+              ),
+            ),
+          ),
+        ],
       ),
     );
-
-
   }
+
   _onMapCreated(GoogleMapController controller) {
     _controller.complete(controller);
   }
 
-  void _onMarkerPressed(MarkerId markerId) {
+  Future<void> _goToLocation(double lat, double long, String id) async {
+    if (!_moving){//make sure not to update focused marker if we are already moving
+      _moving = true;
+      final GoogleMapController controller = await _controller.future;
+      controller.animateCamera(CameraUpdate.newCameraPosition(new CameraPosition(target: LatLng(lat, long), zoom: 12))).then((_) {
+        controller.showMarkerInfoWindow(this._markers[id].markerId);
+        _moving = false;
+      });
+    }
+  }
+
+  void _onMarkerWindowPressed(MarkerId markerId) {
     for (Vendor vendor in this.widget.vendors) {
       if (markerId.value == vendor.name) {
         Navigator.push(
