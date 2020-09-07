@@ -47,19 +47,30 @@ class Deals {
     // this._filteredDeals[filter] = [];
   }
 
+    List<Deal> getAllDeals(){
+      var now = DateTime.now().millisecondsSinceEpoch~/1000;
+      var halfhour = 1800*3;
+      return this._deals.where((deal) => (!deal.redeemed || (now-deal.redeemedTime~/1000 < halfhour) ) && deal.isLive).toList();
+    }
+
+  /////////////////////////////////////////////////////////
+  ///                                                   ///
+  ///           Getters for all non-gold deals          ///    
+  ///                                                   ///
+  /////////////////////////////////////////////////////////
   //These getter functions will filter out inactive or redeemed deals so they dont mess up the display of the deal "pages"
-  List<Deal> getAllDeals(){
+  List<Deal> getAllStandardDeals(){
     var now = DateTime.now().millisecondsSinceEpoch~/1000;
     var halfhour = 1800*3;
-    return this._deals.where((deal)=> (!deal.redeemed || (now-deal.redeemedTime~/1000 < halfhour) )&& deal.isLive()).toList();
+    return this._deals.where((deal) => !deal.isGold && (!deal.redeemed || (now-deal.redeemedTime~/1000 < halfhour) ) && deal.isLive).toList();
   }
 
-  List<Deal> getAllDealsPlusInactive(){
+  List<Deal> getAllStandardDealsPlusInactive(){
     return this._deals;
   }
 
-  List<Deal> getDealsByValue(){
-    var sortedDeals = getAllDeals();
+  List<Deal> getStandardDealsByValue(){
+    var sortedDeals = getAllStandardDeals();
     sortedDeals.sort((a, b) {
       var comp = b.value.compareTo(a.value);
       if (comp == 0){
@@ -70,12 +81,49 @@ class Deals {
     return sortedDeals;
   }
 
-  List<Deal> getDealsByDistance(){    
-    return sortByDistance(getAllDeals());
+  List<Deal> getStandardDealsByDistance(){    
+    return sortByDistance(getAllStandardDeals());
   }
 
-  List<Deal> getDealsByFilter(int idx){
-    var filtDeals = getAllDeals().where((deal) => deal.filters.contains(filters[idx].toLowerCase())).toList();
+  List<Deal> getStandardDealsByFilter(int idx){
+    var filtDeals = getAllStandardDeals().where((deal) => deal.filters.contains(filters[idx].toLowerCase())).toList();
+    return sortByDistance(filtDeals);
+  }
+
+    /////////////////////////////////////////////////////////
+  ///                                                   ///
+  ///           Getters for all gold deals              ///    
+  ///                                                   ///
+  /////////////////////////////////////////////////////////
+  //These getter functions will filter out inactive or redeemed deals so they dont mess up the display of the deal "pages"
+  List<Deal> getAllGoldDeals(){
+    var now = DateTime.now().millisecondsSinceEpoch~/1000;
+    var halfhour = 1800*3;
+    return this._deals.where((deal) => deal.isGold && (!deal.redeemed || (now-deal.redeemedTime~/1000 < halfhour) ) && deal.isLive).toList();
+  }
+
+  List<Deal> getAllGoldDealsPlusInactive(){
+    return this._deals.where((deal) => deal.isGold).toList();
+  }
+
+  List<Deal> getGoldDealsByValue(){
+    var sortedDeals = getAllGoldDeals();
+    sortedDeals.sort((a, b) {
+      var comp = b.value.compareTo(a.value);
+      if (comp == 0){
+        return compareDistance(a, b);
+      }
+      return comp;
+    });
+    return sortedDeals;
+  }
+
+  List<Deal> getGoldDealsByDistance(){    
+    return sortByDistance(getAllGoldDeals());
+  }
+
+  List<Deal> getGoldDealsByFilter(int idx){
+    var filtDeals = getAllGoldDeals().where((deal) => deal.filters.contains(filters[idx].toLowerCase())).toList();
     return sortByDistance(filtDeals);
   }
 

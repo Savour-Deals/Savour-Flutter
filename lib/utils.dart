@@ -69,3 +69,5 @@ final VendorsApiProvider vendorApiProvider = VendorsApiProvider();
 final RedemptionsApiProvider redemptionApiProvider = RedemptionsApiProvider(); 
 final DealRepository dealRepository = DealRepository();
 final VendorRepository vendorRepository = VendorRepository();
+
+final Random random = new Random();

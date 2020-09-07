@@ -13,7 +13,8 @@
 *.iml
 *.ipr
 *.iws
-.idea/
+**/.idea/
+
 
 # Visual Studio Code related
 .vscode/
@@ -81,3 +82,7 @@ android/app/google-services-dev.json
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 .flutter-plugins-dependencies
+
+!.idea/
+/android_bck/
+/ios_bck/

@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -11,13 +12,12 @@ import 'package:savour_deals_flutter/pages/tab.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'stores/settings.dart';
 
-void main() async { 
+void main() async {
   // Set `enableInDevMode` to true to see reports while in debug mode
   // This is only to be used for confirming that reports are being
   // submitted as expected. It is not intended to be used for everyday
   // development.
   Crashlytics.instance.enableInDevMode = false;
-
   // Pass all uncaught errors from the framework to Crashlytics.
   FlutterError.onError = Crashlytics.instance.recordFlutterError;
   runApp(
@@ -35,7 +35,7 @@ void main() async {
       ],
       child: SavourApp(),
     )
-  ); 
+  );
 }
 
 class SavourApp extends StatefulWidget {
@@ -51,25 +51,40 @@ class _SavourDealsState extends State<SavourApp> {
   @override
   initState() {
     super.initState();
+    Firebase.initializeApp().whenComplete(() {
+      print("completed");
+      setState(() {});
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Savour Deals',
-      theme: savourMaterialLightThemeData,
-      darkTheme: savourMaterialDarkThemeData,
-      debugShowCheckedModeBanner: false,
-      home: _handleCurrentScreen(),
-      navigatorObservers: [
-        FirebaseAnalyticsObserver(analytics: analytics),
-      ],
+    return FutureBuilder(
+      // Initialize FlutterFire
+      future: Firebase.initializeApp(),
+      builder: (_, snapshot) {
+        // Once complete, show your application
+        if (snapshot.connectionState == ConnectionState.done) {
+          return MaterialApp(
+            title: 'Savour Deals',
+            theme: savourMaterialLightThemeData,
+            darkTheme: savourMaterialDarkThemeData,
+            debugShowCheckedModeBanner: false,
+            home: _handleCurrentScreen(),
+            navigatorObservers: [
+              FirebaseAnalyticsObserver(analytics: analytics),
+            ],
+          );
+        }
+        return MaterialApp(home: Scaffold());
+      },
     );
+
   }
 
   Widget _handleCurrentScreen() {
-    return StreamBuilder<FirebaseUser>(
-      stream: FirebaseAuth.instance.onAuthStateChanged,
+    return StreamBuilder<User>(
+      stream: FirebaseAuth.instance.authStateChanges(),
       builder: (BuildContext context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold();
@@ -86,7 +101,6 @@ class _SavourDealsState extends State<SavourApp> {
               ); 
             }
           }
-          FirebaseDatabase.instance.goOffline(); //If logged out, disbale db connection
           return MediaQuery(
             child: PhoneAuth(),
             data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
@@ -96,7 +110,7 @@ class _SavourDealsState extends State<SavourApp> {
     );
   }
 
-  verifyUser(FirebaseUser user){
+  verifyUser(User user){
     for (var provider in user.providerData){
       if (provider.providerId == "phone"){
         return true;

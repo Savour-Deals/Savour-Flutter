@@ -12,6 +12,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:rate_my_app/rate_my_app.dart';
 import 'package:savour_deals_flutter/blocs/redemption/redemption_bloc.dart';
+import 'package:savour_deals_flutter/containers/custom_title.dart';
 import 'package:savour_deals_flutter/containers/loading.dart';
 import 'package:savour_deals_flutter/containers/textPage.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
@@ -46,7 +47,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   AppState appState;
   ThemeData theme;
 
-  FirebaseUser user;
+  User user;
   FirebaseAnalytics analytics = FirebaseAnalytics();
 
   @override
@@ -93,14 +94,14 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
     theme = Theme.of(context);
     return PlatformScaffold(
       appBar: PlatformAppBar(
-        title: Image.asset("images/Savour_White.png"),
-        ios: (_) => CupertinoNavigationBarData(
+        title: SavourTitle(),
+        cupertino: (_,__) => CupertinoNavigationBarData(
           leading: CupertinoNavigationBarBackButton(color: Colors.white,),
           backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
           heroTag: "dealPage",
           transitionBetweenRoutes: false,
         ),
-        android: (_) => MaterialAppBarData(
+        material: (_,__) => MaterialAppBarData(
           leading: BackButton(color: Colors.white,),
           centerTitle: true,
         ),
@@ -128,7 +129,11 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
                       ),
                       subtitle: Text(
                         state.deal.description, 
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeConfig.safeBlockHorizontal*6), 
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold, 
+                          fontSize: SizeConfig.safeBlockHorizontal*6,
+                          color: state.deal.isGold? SavourColorsMaterial.savourGold: null,
+                        ), 
                         textAlign: TextAlign.center,
                         maxLines: 2,
                       ),
@@ -310,11 +315,11 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   Widget redemptionButton(Deal deal){
-    if (deal.isActive()){
+    if (deal.isActive){
       final isInRange = inRange(deal);
       return FlatButton(
         shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(30.0)),
-        color: (isInRange || !deal.isActive()) ? Colors.red : (deal.redeemed && ((DateTime.now().millisecondsSinceEpoch~/1000) - deal.redeemedTime~/1000 >= 1800)) ? Colors.red : SavourColorsMaterial.savourGreen,
+        color: (isInRange || !deal.isActive) ? Colors.red : (deal.redeemed && ((DateTime.now().millisecondsSinceEpoch~/1000) - deal.redeemedTime~/1000 >= 1800)) ? Colors.red : deal.isGold? SavourColorsMaterial.savourGold : SavourColorsMaterial.savourGreen,
         child: Text(
           deal.redeemed ? "Deal already Redeemed": (isInRange ? "Redeem" :"Go to Location to Redeem"),
           style: whiteText,
@@ -355,7 +360,10 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
           content: Text("This deal is intended for one person only.\n\nShow this message to the vendor to redeem your coupon.\n\nThe deal is not guaranteed if the vendor does not see this message."),
           actions: <Widget>[
             new PlatformDialogAction(
-              child: PlatformText("Approve", style: TextStyle(color: Color.fromARGB(255, 0, 255, 0)),),
+              child: PlatformText("Approve", style: TextStyle(
+                  color: deal.isGold? SavourColorsMaterial.savourGold : Color.fromARGB(255, 0, 255, 0),
+                ),
+              ),
               onPressed: () {
                 redeemDeal(deal);
                 analytics.logEvent(name: "redeem_completed", parameters: {'deal': deal.key});
@@ -402,7 +410,6 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
           rateButton: 'Rate',
           noButton: 'No',
           laterButton: 'Later',
-          ignoreIOS: false,
           dialogStyle: DialogStyle(),
         );
       }
@@ -447,7 +454,7 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
   }
 
   Color _pulsatorColor(Deal deal){
-    if (deal.isActive()){
+    if (deal.isActive){
       if (deal.redeemed){
         if (_start > 1800){
           //deal redeemed over half hour ago

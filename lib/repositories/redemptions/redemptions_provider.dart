@@ -18,7 +18,7 @@ class RedemptionsApiProvider {
   }
 
   Future<Stream<List<Redemption>>> getRedemptions() async {
-    final user = await FirebaseAuth.instance.currentUser();
+    final user = FirebaseAuth.instance.currentUser;
     _redemptionRef.orderByChild("user_id").equalTo(user.uid).onValue.listen((datasnapshot) {
       if (datasnapshot.snapshot.value != null) {
         Map<String, dynamic> redemptionData = new Map<String, dynamic>.from(datasnapshot.snapshot.value);

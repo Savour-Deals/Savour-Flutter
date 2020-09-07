@@ -5,7 +5,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
-import 'package:savour_deals_flutter/stores/deals_model.dart';
 import 'package:savour_deals_flutter/stores/vendors_model.dart';
 import 'package:savour_deals_flutter/utils.dart' as globals;
 
@@ -13,11 +12,28 @@ class DealRepository {
 
   DealRepository();
 
-  Map<String, dynamic> getDealsForLocation(Position location) {
+  Map<String, dynamic> queryDealsForLocation(Position location) {
     globals.dealsApiProvider.updateLocation(location);
     globals.vendorApiProvider.vendorStream.listen((vendors) => processVendors(vendors));
 
     globals.vendorApiProvider.queryByLocation(location);
+    if (globals.dealsApiProvider.deals.count > 0){
+      globals.dealsApiProvider.doneLoading();//if deals have already been loaded, done flag should be set
+    }
+    return {
+      "DEAL" : globals.dealsApiProvider.dealsStream,
+      "VENDOR" : globals.vendorApiProvider.vendorStream
+    };
+  }
+
+  Map<String, dynamic> getDeals() {
+    return {
+      "DEAL" : globals.dealsApiProvider.dealsStream,
+      "VENDOR" : globals.vendorApiProvider.vendorStream
+    };
+  }
+
+  Map<String, dynamic> getPremiumDeals() {
     return {
       "DEAL" : globals.dealsApiProvider.dealsStream,
       "VENDOR" : globals.vendorApiProvider.vendorStream
@@ -38,7 +54,7 @@ class DealRepository {
       });
     
     if (!vendors.isLoading && vendors.count == 0){
-      globals.dealsApiProvider.noVendorsFound();
+      globals.dealsApiProvider.doneLoading();
     }
     vendors.getVendorList().forEach((vendor) {
       if (!globals.dealsApiProvider.containsDealsFor(vendor)){
@@ -52,7 +68,7 @@ class DealRepository {
   }
 
   Future<Deal> redeemDeal(Deal deal) async {
-    final user = await FirebaseAuth.instance.currentUser();
+    final user = FirebaseAuth.instance.currentUser;
     final redemptionRef = FirebaseDatabase().reference().child("Deals").child(deal.key).child("redeemed").child(user.uid);
     final userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
     final vendorRef = FirebaseDatabase().reference().child("Vendors").child(deal.vendor.key);
@@ -77,6 +93,6 @@ class DealRepository {
     return deal;
   }
 
-  Stream<Vendors> getVendorStream() => globals.vendorApiProvider.vendorStream;
-  Stream<Deals> getDealsStream() => globals.dealsApiProvider.dealsStream;
+  // Stream<Vendors> getVendorStream() => globals.vendorApiProvider.vendorStream;
+  // Stream<Deals> getDealsStream() => globals.dealsApiProvider.dealsStream;
 }

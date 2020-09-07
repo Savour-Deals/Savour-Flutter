@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -79,10 +80,10 @@ class _PhoneAuthState extends State<PhoneAuth> {
                               ),
                               Container(height: 40),
                               PlatformButton(
-                                ios: (_) => CupertinoButtonData(
+                                cupertino: (_,__) => CupertinoButtonData(
                                   pressedOpacity: 0.7,
                                 ),
-                                android: (_) => MaterialRaisedButtonData(
+                                material: (_,__) => MaterialRaisedButtonData(
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20),
                                   ),
@@ -122,10 +123,10 @@ class _PhoneAuthState extends State<PhoneAuth> {
                               ),
                               Container(height: 40),
                               PlatformButton(
-                                ios: (_) => CupertinoButtonData(
+                                cupertino: (_,__) => CupertinoButtonData(
                                   pressedOpacity: 0.7,
                                 ),
-                                android: (_) => MaterialRaisedButtonData(
+                                material: (_,__) => MaterialRaisedButtonData(
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20),
                                   ),
@@ -205,7 +206,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
       this._signInWithPhoneNumber(phoneAuthCredential);
     };
 
-    final PhoneVerificationFailed verificationFailed = (AuthException authException) {
+    final PhoneVerificationFailed verificationFailed = (FirebaseAuthException authException) {
       _endLoading();
       if (!authException.message.contains("cancelled")){
         displayError("Phone number verification failed", 'Something happened. Please try again later.', 'Okay');
@@ -233,16 +234,16 @@ class _PhoneAuthState extends State<PhoneAuth> {
         codeAutoRetrievalTimeout: codeAutoRetrievalTimeout);
   }
 
-  // Example code of how to sign in with phone.
   void _signInWithPhoneNumber(AuthCredential credential) async {
-       _auth.signInWithCredential(credential).then((authResult) async {
-      final FirebaseUser user = authResult.user;
-      final FirebaseUser currentUser = await _auth.currentUser();
+     _auth.signInWithCredential(credential).then((authResult) async {
+      final User user = authResult.user;
+      final User currentUser = _auth.currentUser;
       assert(user.uid == currentUser.uid);
       if (user == null){
         displayError("Login Failed", "An unknown problem occured. Please try again later. If this persists, contact us for help.", "Okay");
       }else{
         // this removes the loading bar
+        FirebaseDatabase().reference().child("Users").child(user.uid).child("phone_number").set(user.phoneNumber);
         if(authResult.additionalUserInfo.isNewUser){
           await analytics.logSignUp(
             signUpMethod: 'PhoneAuth',

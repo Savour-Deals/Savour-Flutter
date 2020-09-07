@@ -13,6 +13,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/blocs/redemption/redemption_bloc.dart';
 import 'package:savour_deals_flutter/blocs/wallet/wallet_bloc.dart';
+import 'package:savour_deals_flutter/containers/custom_title.dart';
 import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
 import 'package:savour_deals_flutter/containers/loading.dart';
 import 'package:savour_deals_flutter/containers/textPage.dart';
@@ -40,7 +41,6 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   //Location variables
-  final _locationService = Geolocator();
   Position currentLocation;
 
   WalletBloc _walletBloc;
@@ -64,10 +64,10 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
 
   void initPlatform() async {
     try {
-      var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
+      var serviceStatus = await  checkPermission();
       print("Service status: $serviceStatus");
-      if (serviceStatus == GeolocationStatus.granted) {
-        currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
+      if (serviceStatus == LocationPermission.always || serviceStatus == LocationPermission.whileInUse) {
+        currentLocation = await getLastKnownPosition();
       }
     } on PlatformException catch (e) {
       print(e);
@@ -77,7 +77,7 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
       _walletBloc.add(FetchData(location: currentLocation));
     }
 
-    _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
+    getPositionStream().listen((Position result) async {
       _walletBloc.add(UpdateWalletLocation(location: currentLocation));
     });
   }
@@ -94,11 +94,7 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
     theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Image.asset(
-          "images/Savour_White.png",
-          fit: BoxFit.cover,
-          height: 45.0,
-        ),
+        title: SavourTitle(),
         centerTitle: true,
         brightness: Brightness.dark,
         iconTheme: IconThemeData(color: Colors.white),
@@ -107,6 +103,7 @@ class _WalletPageWidgetState extends State<WalletPageWidget> with SingleTickerPr
             child: Text("Logout", style: TextStyle(color: Colors.red) ),
             color: Colors.transparent,
             onPressed: (){
+              FirebaseDatabase.instance.goOffline(); //If logged out, disable db connection
               Navigator.pop(context);
               _auth.signOut();
             },
@@ -196,22 +193,17 @@ class _FavoritesPageWidgetState extends State<FavoritesPageWidget> {
   @override
   void initState() {
     super.initState();
-    init();
-  }
-
-  void init() async {
-    var user = await FirebaseAuth.instance.currentUser();
-    FirebaseDatabase().reference().child("Users").child(user.uid).child("total_savings").onValue.listen((datasnapshot) {
+    FirebaseDatabase().reference().child("Users").child(FirebaseAuth.instance.currentUser.uid).child("total_savings").onValue.listen((datasnapshot) {
       if (this.mounted){
         setState(() {
-          totalSavings = datasnapshot.snapshot.value ?? 0; 
+          totalSavings = datasnapshot.snapshot.value ?? 0;
         });
       }
     });
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext _) {
     return StreamBuilder<Deals>(
       stream: globals.dealsApiProvider.dealsStream,
       initialData: globals.dealsApiProvider.deals,
@@ -290,7 +282,7 @@ class RedeemedWidget extends StatefulWidget {
 
 class _RedeemedWidgetState extends State<RedeemedWidget> {
   //database variables 
-  FirebaseUser user;
+  User user;
   int totalSavings = 0;
 
   //Declare contextual variables
@@ -300,21 +292,14 @@ class _RedeemedWidgetState extends State<RedeemedWidget> {
   @override
   void initState() {
     super.initState();
-    init();
-  }
-
-  void init() async {
-    user = await FirebaseAuth.instance.currentUser();
-    FirebaseDatabase().reference().child("Users").child(user.uid).child("total_savings").onValue.listen((datasnapshot) {
+    FirebaseDatabase().reference().child("Users").child(FirebaseAuth.instance.currentUser.uid).child("total_savings").onValue.listen((datasnapshot) {
       if (this.mounted){
         setState(() {
-          totalSavings = datasnapshot.snapshot.value ?? 0; 
+          totalSavings = datasnapshot.snapshot.value ?? 0;
         });
       }
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {

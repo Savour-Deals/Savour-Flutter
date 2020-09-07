@@ -8,6 +8,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:savour_deals_flutter/containers/custom_title.dart';
 import 'package:savour_deals_flutter/containers/vendorCardWidget.dart';
 import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
@@ -26,8 +27,7 @@ class MapPageWidget extends StatefulWidget {
 }
 
 class _MapPageWidgetState extends State<MapPageWidget> {
-  FirebaseUser user;
-  final _locationService = Geolocator();
+  User user;
   Completer<GoogleMapController> _controller = Completer();
   PageController _pageController;
   CameraPosition _userPosition;
@@ -58,17 +58,16 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   }
 
   initPlatform() async {
-    user = await FirebaseAuth.instance.currentUser();
+    user = FirebaseAuth.instance.currentUser;
 
-    GeolocationStatus serviceStatus;
+    LocationPermission serviceStatus;
     try {
-      serviceStatus = await _locationService.checkGeolocationPermissionStatus();
+      serviceStatus = await checkPermission();
       if (serviceStatus != null) {
-        if (serviceStatus == GeolocationStatus.granted) {
-          _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
+        if (serviceStatus == LocationPermission.always || serviceStatus == LocationPermission.whileInUse) {
+          getPositionStream(desiredAccuracy: LocationAccuracy.medium, distanceFilter: 400).listen((Position result) async {
             this._userPosition = new CameraPosition(target: LatLng(result.latitude,result.longitude), zoom: 12);
             this._position = result;
-
           });
         }
       }
@@ -116,8 +115,8 @@ class _MapPageWidgetState extends State<MapPageWidget> {
     theme = Theme.of(context);
     return PlatformScaffold(
       appBar: PlatformAppBar(
-        title: Image.asset("images/Savour_White.png"),
-        ios: (_) => CupertinoNavigationBarData(
+        title: SavourTitle(),
+        cupertino: (_,__) => CupertinoNavigationBarData(
           actionsForegroundColor: Colors.white,
           backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
           heroTag: "favTab",

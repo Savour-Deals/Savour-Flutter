@@ -25,7 +25,7 @@ class AccountPageWidget extends StatefulWidget {
 
 class _AccountPageWidgetState extends State<AccountPageWidget> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  FirebaseUser user;
+  User user;
   SharedPreferences prefs;
 
   //Declare contextual variables
@@ -38,21 +38,13 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
   @override
   void initState() { 
     super.initState();
-    initialize();
-  }
-
-  void initialize() async {
-    _auth.currentUser().then((_userData) {
-      setState(() {
-        user = _userData;
-        FirebaseDatabase().reference().child("Users").child(user.uid).child("total_savings").onValue.listen((datasnapshot) {
-          if (this.mounted){
-            setState(() {
-              totalSavings = datasnapshot.snapshot.value ?? 0; 
-            });
-          }
+    user = _auth.currentUser;
+    FirebaseDatabase().reference().child("Users").child(user.uid).child("total_savings").onValue.listen((datasnapshot) {
+      if (this.mounted){
+        setState(() {
+          totalSavings = datasnapshot.snapshot.value ?? 0;
         });
-      });
+      }
     });
   }
 
@@ -196,7 +188,7 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
   Future _notificationPermissionHandler(bool accepted) async {
     if (accepted){
       print("Notifications turned on!");
-      var user = await FirebaseAuth.instance.currentUser();
+      var user = FirebaseAuth.instance.currentUser;
       notificationSettings.setNotificationsSetting(true);
       OneSignal.shared.setSubscription(true);
       if (user.email != null){

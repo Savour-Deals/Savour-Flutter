@@ -82,6 +82,23 @@ class SavourColorsMaterial {
       900: const Color.fromRGBO(223, 157, 29, 1.0)
     },
   );
+  static const _savourGold = 0xFFD4AF37;
+  static const MaterialColor savourGold = MaterialColor (
+    _savourGold,
+    const <int, Color>{
+      50: const Color.fromRGBO(212, 175, 55, .1),
+      100: const Color.fromRGBO(212, 175, 55, .2),
+      200: const Color.fromRGBO(212, 175, 55, .3),
+      300: const Color.fromRGBO(212, 175, 55, .4),
+      400: const Color.fromRGBO(212, 175, 55, .5),
+      500: const Color.fromRGBO(212, 175, 55, .6),
+      600: const Color.fromRGBO(212, 175, 55, .7),
+      700: const Color.fromRGBO(212, 175, 55, .8),
+      800: const Color.fromRGBO(212, 175, 55, .9),
+      900: const Color.fromRGBO(212, 175, 55, 1.0)
+    },
+  );
+
 }
 
 final TextStyle whiteTitle = new TextStyle(
@@ -120,5 +137,4 @@ class NoSplash extends InteractiveInkFeature {
   @override
   void paintFeature(Canvas canvas, Matrix4 transform) {}
 }
-
 

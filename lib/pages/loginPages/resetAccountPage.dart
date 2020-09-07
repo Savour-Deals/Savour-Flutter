@@ -58,10 +58,10 @@ class _ResetAccountPageState extends State<ResetAccountPage> {
                       ),
                       Container(padding: EdgeInsets.all(5)),
                       PlatformButton(
-                        ios: (_) => CupertinoButtonData(
+                        cupertino: (_,__) => CupertinoButtonData(
                           pressedOpacity: 0.7,
                         ),
-                        android: (_) => MaterialRaisedButtonData(
+                        material: (_,__) => MaterialRaisedButtonData(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),

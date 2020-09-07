@@ -9,10 +9,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:savour_deals_flutter/blocs/deal/deal_bloc.dart';
+import 'package:savour_deals_flutter/blocs/deals/deals_bloc.dart';
 import 'package:savour_deals_flutter/blocs/redemption/redemption_bloc.dart';
 import 'package:savour_deals_flutter/blocs/vendor_page/vendor_bloc.dart';
 import 'package:savour_deals_flutter/blocs/wallet/wallet_bloc.dart';
+import 'package:savour_deals_flutter/containers/custom_title.dart';
 import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
 import 'package:savour_deals_flutter/containers/loading.dart';
 import 'package:savour_deals_flutter/containers/textPage.dart';
@@ -37,3 +38,4 @@ import '../../utils.dart';
 
 part "dealsTabPage.dart";
 part "vendorsTabPage.dart";
+part "goldDealsTabPage.dart";

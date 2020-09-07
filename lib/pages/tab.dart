@@ -4,7 +4,6 @@ import 'dart:io';
 //TODO: When data handling is restructured, setup local notifications
 
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,8 +13,9 @@ import 'package:location_permissions/location_permissions.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rate_my_app/rate_my_app.dart';
-import 'package:savour_deals_flutter/blocs/deal/deal_bloc.dart';
+import 'package:savour_deals_flutter/blocs/deals/deals_bloc.dart';
 import 'package:savour_deals_flutter/blocs/vendor_page/vendor_bloc.dart';
+import 'package:savour_deals_flutter/containers/custom_title.dart';
 import 'package:savour_deals_flutter/pages/loginPages/onboardingPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/themes/theme.dart';
@@ -36,7 +36,6 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   int _currentIndex = 0;
   PermissionStatus locationStatus = PermissionStatus.unknown;
-  // final _locationService = Geolocator();
   final geo = Geofire();
   int vendorsNearby = 0;
   bool onboardFinished = false;
@@ -63,14 +62,14 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     _children = [
-      BlocProvider<DealBloc>(
-        create: (context) => DealBloc(),
+      BlocProvider<DealsBloc>(
+        create: (context) => DealsBloc(),
         child: DealsPageWidget()
       ),
-      BlocProvider<DealBloc>(
-        create: (context) => DealBloc(),
-        child: DealsPageWidget()
-      ),
+//      BlocProvider<DealsBloc>(
+//        create: (context) => DealsBloc(),
+//        child: GoldDealsPageWidget()
+//      ),
       BlocProvider<VendorBloc>(
         create: (context) => VendorBloc(),
         child: VendorsPageWidget()
@@ -137,12 +136,15 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
     OneSignal.shared.setInFocusDisplayType(OSNotificationDisplayType.notification);
 
-    //Request Permissions here too incase for some reason we still have not asked 
-    LocationPermissions().requestPermissions(permissionLevel: LocationPermissionLevel.locationAlways).then((permissionStatus){
-      setState(() {
-        locationStatus = permissionStatus;
+    //Request Permissions here too incase for some reason we still have not asked
+    if (locationStatus == PermissionStatus.unknown) {
+      LocationPermissions().requestPermissions(permissionLevel: LocationPermissionLevel.locationAlways).then((permissionStatus){
+        setState(() {
+          locationStatus = permissionStatus;
+        });
       });
-    });
+    }
+
     if(Platform.isIOS){
       OneSignal.shared.getPermissionSubscriptionState().then((state) async {
         var accepted = false;
@@ -207,23 +209,23 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   
   @override
   Widget build(BuildContext context) {
-    return buildTabWidget();
+    return buildTabWidget(context);
   }
 
-  Widget buildTabWidget(){
+  Widget buildTabWidget(BuildContext context){
     SizeConfig().init(context);
     appState = Provider.of<AppState>(context);
     theme = Theme.of(context);
     if (locationStatus == PermissionStatus.unknown){
       return PlatformScaffold(
         appBar: PlatformAppBar(
-          title: Image.asset("images/Savour_White.png"),
-          ios: (_) => CupertinoNavigationBarData(
+          title: SavourTitle(),
+          cupertino: (_,__) => CupertinoNavigationBarData(
             backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
             heroTag: "dealTab",
             transitionBetweenRoutes: false,
           ),
-          android: (_) => MaterialAppBarData(
+          material: (_,__) => MaterialAppBarData(
             elevation: 0.0,
           ),
         ),
@@ -231,7 +233,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
           child: PlatformCircularProgressIndicator(),
         ),
       ); 
-    }else if (locationStatus == PermissionStatus.granted && onboardFinished == true){
+    } else if (locationStatus == PermissionStatus.granted && onboardFinished == true){
       // _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
       //   geo.queryAtLocation(result.latitude, result.longitude, 0.25);
       //   geo.onKeyEntered.listen((data){
@@ -254,7 +256,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         bottomNavBar: PlatformNavBar(
           currentIndex: _currentIndex,
           itemChanged: onTabTapped,
-          ios: (_) => CupertinoTabBarData(
+          cupertino: (_,__) => CupertinoTabBarData(
             backgroundColor: theme.bottomAppBarColor.withOpacity(1),
           ),
           items: [
@@ -273,21 +275,21 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
                 style: TextStyle(color: theme.accentColor),
               )
             ),
-            BottomNavigationBarItem(
-              icon: Image.asset('images/diamond.png',
-                color: Color.fromARGB(255, 212, 175, 55),
-                width: 30,
-                height: 30,
-              ),
-              activeIcon: Image.asset('images/diamond_filled.png',
-                color: Color.fromARGB(255, 212, 175, 55),
-                width: 30,
-                height: 30,
-              ),
-              title: Text('Savour Gold',
-                style: TextStyle(color: Color.fromARGB(255, 212, 175, 55)),//Colors.yellow),
-              )
-            ),
+//            BottomNavigationBarItem(
+//              icon: Image.asset('images/dollar.png',
+//                color: SavourColorsMaterial.savourGold,
+//                width: 30,
+//                height: 30,
+//              ),
+//              activeIcon: Image.asset('images/dollar_filled.png',
+//                color: SavourColorsMaterial.savourGold,
+//                width: 30,
+//                height: 30,
+//              ),
+//              title: Text('Savour Gold',
+//                style: TextStyle(color: SavourColorsMaterial.savourGold),
+//              )
+//            ),
             BottomNavigationBarItem(
               icon: Image.asset('images/vendor.png',
                 color: this.getTabOutlineColor(),
@@ -309,13 +311,15 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     }else{
       return PlatformScaffold(
         appBar: PlatformAppBar(
-          title: Image.asset("images/Savour_White.png"),
-          ios: (_) => CupertinoNavigationBarData(
+          title: Image.asset(
+            "images/Savour_White.png",
+          ),
+          cupertino: (_,__) => CupertinoNavigationBarData(
             backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
             heroTag: "dealTab",
             transitionBetweenRoutes: false,
           ),
-          android: (_) => MaterialAppBarData(
+          material: (_,__) => MaterialAppBarData(
             elevation: 0.0,
           ),
         ),
@@ -393,12 +397,9 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
 
   Future _notificationPermissionHandler(bool accepted) async {
     if (accepted){
-      var user = await FirebaseAuth.instance.currentUser();
+//      var user = await FirebaseAuth.instance.currentUser();
       Provider.of<NotificationSettings>(context, listen: false).setNotificationsSetting(true);
       OneSignal.shared.setSubscription(true);
-      if (user.email != null){
-        OneSignal.shared.setEmail(email: user.email);
-      }
     }else{
       Provider.of<NotificationSettings>(context, listen: false).setNotificationsSetting(false);
       OneSignal.shared.setSubscription(false);

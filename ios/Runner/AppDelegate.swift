@@ -1,16 +1,15 @@
 import UIKit
 import Flutter
+import Firebase
 import GoogleMaps
-import FirebaseAuth
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
-    
-  override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
       GMSServices.provideAPIKey("AIzaSyAhtyxgDSU4aJnUjk5zyLvt7s1qSvY8UDQ")
       GeneratedPluginRegistrant.register(with: self)
       if #available(iOS 10.0, *) {
-        UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
+        UNUserNotificationCenter.current().delegate = self
       }
       return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -28,5 +27,4 @@ import FirebaseAuth
     }
     // This notification is not auth related, developer should handle it.
   }
-    
 }
