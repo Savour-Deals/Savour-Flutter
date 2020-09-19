@@ -27,7 +27,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
   FirebaseAnalytics analytics = FirebaseAnalytics();
 
-  bool _loading = false;
+  bool _isLoading = false;
 
   String _verificationId;
 
@@ -193,7 +193,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
               ],
             ),
           ),
-          visible: _loading,
+          visible: _isLoading,
         )
       ],
     );
@@ -209,6 +209,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
     final PhoneVerificationFailed verificationFailed = (FirebaseAuthException authException) {
       _endLoading();
       if (!authException.message.contains("cancelled")){
+        print(authException.code);
+        print(authException.message);
         displayError("Phone number verification failed", 'Something happened. Please try again later.', 'Okay');
       }
     };
@@ -254,8 +256,9 @@ class _PhoneAuthState extends State<PhoneAuth> {
         _endLoading();
       }
     }).catchError((e) {
-      PlatformException error = e;
+      FirebaseAuthException error = e;
       print(error.code);
+      print(error.message);
       if (error.code == "ERROR_INVALID_VERIFICATION_CODE"){
         displayError("Invalid Code", "Please check the code and try again", "Okay");
       } else {
@@ -290,7 +293,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
     void _onLoading(){
     setState(() {
       if(this.mounted){
-        _loading = true;
+        _isLoading = true;
       }
     });
   }
@@ -298,7 +301,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
   void _endLoading(){
     setState(() {
       if(this.mounted){
-        _loading = false;
+        _isLoading = false;
       }
     });
   }

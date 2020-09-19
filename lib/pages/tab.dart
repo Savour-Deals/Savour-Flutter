@@ -109,7 +109,10 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
           fullscreenDialog: true
         )
       );
+      //recheck permissions
+      var newState = await LocationPermissions().checkPermissionStatus();
       setState(() {
+        locationStatus = newState;
         onboardFinished = true;//onboarding complete, we can move on and build tabs
       });
       await analytics.logTutorialComplete();

@@ -117,10 +117,16 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       appBar: PlatformAppBar(
         title: SavourTitle(),
         cupertino: (_,__) => CupertinoNavigationBarData(
-          actionsForegroundColor: Colors.white,
           backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
           heroTag: "favTab",
           transitionBetweenRoutes: false,
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.clear, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        material: (_,__) => MaterialAppBarData(
+          centerTitle: true,
         ),
       ),
       body: Stack(

@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Savour Deals</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -47,6 +49,7 @@
 			<string>google firebase</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
+				<string>com.googleusercontent.apps.165647122349-mk0mjtmkclnsk6cgn53i4qef69kboek5</string>
 				<string>com.googleusercontent.apps.864438367973-81u3jtl4j3v2hnf7ti374chefanas3p9</string>
 			</array>
 		</dict>

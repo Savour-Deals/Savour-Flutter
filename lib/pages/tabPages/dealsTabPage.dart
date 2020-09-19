@@ -105,7 +105,7 @@ class _DealsPageState extends State<DealsPageWidget> {
       builder: (context, state) {
         return ShowCaseWidget(
           builder: Builder(
-            builder: (_) {
+            builder: (context) {
               showcasecontext = context;
               return PlatformScaffold(
                 appBar: PlatformAppBar(

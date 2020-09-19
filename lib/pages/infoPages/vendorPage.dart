@@ -83,7 +83,7 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
 
     //Check if the user following this vendor
     _userRef.child("following").onValue.listen((data){
-      if (data.snapshot != null){
+      if (data.snapshot != null && data.snapshot.value != null){
         setState(() {
           following = data.snapshot.value[widget.vendor.key]?? false;
         });        
@@ -579,7 +579,24 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
       if (await canLaunch(url)) {
         await launch(url);
       } else {
-        throw 'Could not launch $url';
+        showPlatformDialog(
+          builder: (BuildContext context) {
+            // return object of type Dialog
+            return PlatformAlertDialog(
+              title: Text("Sorry!"),
+              content: Text("Looks like we are having trouble opening this webpage. Please try again later."),
+              actions: <Widget>[
+                // usually buttons at the bottom of the dialog
+                PlatformDialogAction(
+                  child: PlatformText("Okay"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          }, context: context,
+        );
       }
     }else{
       showPlatformDialog(
@@ -622,8 +639,8 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
         mapURLs["Google Maps"] =  gURL;
       }
     }
-    var wURL = Uri.encodeFull('https://waze.com/ul?q='+widget.address);
-    if (await canLaunch(wURL)) {
+    var wURL = Uri.encodeFull('waze://ul?q='+widget.address);
+    if (await canLaunch('waze://')) {
       mapURLs["Waze"] =  wURL;
     }
     List<Widget> mapApps = [];
@@ -657,13 +674,13 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
     }else if (Platform.isAndroid){
       mapApps.add(
         ListTile(
-          title: new Text("Navigate with:", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),)
+          title: Text("Navigate with:", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),)
         ),
       );
       mapURLs.forEach((appName, url) {
         mapApps.add(
           ListTile(
-            title: new Text(appName),
+            title: Text(appName),
             onTap: () async {
               await launch(url);
             },          

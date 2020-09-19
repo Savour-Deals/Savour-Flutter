@@ -14,12 +14,13 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION"
         tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
 
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="Savour Deals"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_circle">
+        android:icon="@mipmap/ic_launcher_foreground"
+        android:roundIcon="@mipmap/ic_launcher_round">
 
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDR4rpR7RYBVCu0ggnfUapqJjGRX4ngh90"/>

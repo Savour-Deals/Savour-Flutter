@@ -239,8 +239,8 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
         mapURLs["Google Maps"] =  gURL;
       }
     }
-    var wURL = Uri.encodeFull('https://waze.com/ul?q='+ address);
-    if (await canLaunch(wURL)) {
+    var wURL = Uri.encodeFull('waze://ul?q='+address);
+    if (await canLaunch('waze://')) {
       mapURLs["Waze"] =  wURL;
     }
     List<Widget> mapApps = [];
@@ -271,30 +271,26 @@ class _DealPageWidgetState extends State<DealPageWidget> with SingleTickerProvid
       );
     }else if (Platform.isAndroid){
       mapApps.add(
-        Card(
-          child: Text("Navigate with:", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),)
+        ListTile(
+            title: Text("Navigate with:", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),)
         ),
       );
       mapURLs.forEach((appName, url) {
         mapApps.add(
-          GestureDetector(
+          ListTile(
+            title: Text(appName),
             onTap: () async {
               await launch(url);
-            }, 
-            child: Card(
-              child: new Text(appName),         
-            ),
+            },
           ),
         );
       });
       mapApps.add(
-        GestureDetector(
+        ListTile(
+          title: Text("Cancel", style: TextStyle(color: Colors.red),),
           onTap: () async {
             Navigator.of(context).pop();
           },
-          child: Card(
-            child: Text("Cancel", style: TextStyle(color: Colors.red),),
-          ),
         )
       );
       showModalBottomSheet(
