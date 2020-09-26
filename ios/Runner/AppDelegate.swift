@@ -13,18 +13,4 @@ import GoogleMaps
       }
       return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
-
-  override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-      // Pass device token to auth
-      Auth.auth().setAPNSToken(deviceToken, type: .sandbox)
-  }
-  override func application(_ application: UIApplication,
-      didReceiveRemoteNotification notification: [AnyHashable : Any],
-      fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-    if Auth.auth().canHandleNotification(notification) {
-      completionHandler(.noData)
-      return
-    }
-    // This notification is not auth related, developer should handle it.
-  }
 }

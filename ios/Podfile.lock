@@ -113,9 +113,10 @@ PODS:
     - GeoFire
   - fluttertoast (0.0.2):
     - Flutter
+    - Toast
   - GeoFire (4.0.1):
     - Firebase/Database (~> 6.0)
-  - "geolocator (6.0.0+3)":
+  - "geolocator (6.0.0+4)":
     - Flutter
   - google_maps_flutter (0.0.1):
     - Flutter
@@ -164,21 +165,18 @@ PODS:
     - nanopb/encode (= 1.30905.0)
   - nanopb/decode (1.30905.0)
   - nanopb/encode (1.30905.0)
-  - OneSignal (2.15.2)
-  - onesignal_flutter (2.6.1):
-    - Flutter
-    - OneSignal (= 2.15.2)
   - path_provider (0.0.1):
     - Flutter
   - PromisesObjC (1.2.10)
   - Protobuf (3.13.0)
-  - rate_my_app (0.7.0):
+  - rate_my_app (0.7.1):
     - Flutter
   - share (0.0.1):
     - Flutter
   - shared_preferences (0.0.1):
     - Flutter
   - SwiftProtobuf (1.12.0)
+  - Toast (4.0.0)
   - url_launcher (0.0.1):
     - Flutter
 
@@ -198,8 +196,6 @@ DEPENDENCIES:
   - google_maps_flutter (from `.symlinks/plugins/google_maps_flutter/ios`)
   - in_app_purchase (from `.symlinks/plugins/in_app_purchase/ios`)
   - location_permissions (from `.symlinks/plugins/location_permissions/ios`)
-  - OneSignal (< 3.0, >= 2.9.3)
-  - onesignal_flutter (from `.symlinks/plugins/onesignal_flutter/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - rate_my_app (from `.symlinks/plugins/rate_my_app/ios`)
   - share (from `.symlinks/plugins/share/ios`)
@@ -231,10 +227,10 @@ SPEC REPOS:
     - leveldb-library
     - MTBBarcodeScanner
     - nanopb
-    - OneSignal
     - PromisesObjC
     - Protobuf
     - SwiftProtobuf
+    - Toast
 
 EXTERNAL SOURCES:
   app_settings:
@@ -267,8 +263,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/in_app_purchase/ios"
   location_permissions:
     :path: ".symlinks/plugins/location_permissions/ios"
-  onesignal_flutter:
-    :path: ".symlinks/plugins/onesignal_flutter/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
   rate_my_app:
@@ -305,9 +299,9 @@ SPEC CHECKSUMS:
   FirebaseMessaging: 29543feb343b09546ab3aa04d008ee8595b43c44
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   flutter_geofire: afdb697674098a0de9971583aaadd196337ca7bc
-  fluttertoast: b644586ef3b16f67fae9a1f8754cef6b2d6b634b
+  fluttertoast: 6122fa75143e992b1d3470f61000f591a798cc58
   GeoFire: 67b5276c561434b4e4c7ea567c2c4d64e711339c
-  geolocator: ba89529b110425143bd41707cc6853648df94b6a
+  geolocator: 1ae40084cc6c1586ce5ad12cfc3fd38c64d05f2f
   google_maps_flutter: c7f9c73576de1fbe152a227bfd6e6c4ae8088619
   GoogleAppMeasurement: 67458367830514fb20fd9e233496f1eef9d90185
   GoogleDataTransport: 672fb0ce96fe7f7f31d43672fca62ad2c9c86f7b
@@ -319,17 +313,16 @@ SPEC CHECKSUMS:
   location_permissions: 7e0f9aa0f60deb8ff93ddf0e2a164c7e8197bc94
   MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
   nanopb: c43f40fadfe79e8b8db116583945847910cbabc9
-  OneSignal: 9531e385388565f4d31797ddadbe0fcc786430ec
-  onesignal_flutter: b4412973eac419ccce07363e43e0d6057c583a96
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   PromisesObjC: b14b1c6b68e306650688599de8a45e49fae81151
   Protobuf: 3dac39b34a08151c6d949560efe3f86134a3f748
-  rate_my_app: a41f92c7b827e72b4b1afeca1075bf99c4d75587
+  rate_my_app: 3b64dd0876bd286001595ee2e69193e757c4d77c
   share: 0b2c3e82132f5888bccca3351c504d0003b3b410
   shared_preferences: af6bfa751691cdc24be3045c43ec037377ada40d
   SwiftProtobuf: 4ef85479c18ca85b5482b343df9c319c62bda699
+  Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
   url_launcher: 6fef411d543ceb26efce54b05a0a40bfd74cbbef
 
-PODFILE CHECKSUM: 21dfe4a8e4eab1729ca89e04bf69ac56d5e13217
+PODFILE CHECKSUM: 48d3ddf4f56e43ab3015865df02729b095b92561
 
 COCOAPODS: 1.9.3

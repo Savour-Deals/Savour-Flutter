@@ -56,8 +56,6 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>FirebaseAppDelegateProxyEnabled</key>
-	<string>NO</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>waze</string>
