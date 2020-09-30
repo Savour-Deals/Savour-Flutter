@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:location_permissions/location_permissions.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
+import 'package:savour_deals_flutter/globals/themes/theme.dart';
 
 class OnboardingPage extends StatefulWidget {
 
@@ -110,7 +112,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   void _requestNotificationPermission(){
     if(Platform.isIOS){
-      OneSignal().promptUserForPushNotificationPermission();
+      final fmc = FirebaseMessaging();
+      fmc.requestNotificationPermissions(
+          const IosNotificationSettings(
+              sound: true, badge: true, alert: true, provisional: false));
+      fmc.onIosSettingsRegistered
+          .listen((IosNotificationSettings settings) {
+        print("Settings registered: $settings");
+      });
     }
   }
 
@@ -119,9 +128,25 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 }
 
-class PermissionsPage extends StatelessWidget {
+class PermissionsPage extends StatefulWidget {
   const PermissionsPage({Key key}) : super(key: key);
-  
+
+  @override
+  _PermissionsPageState createState() => _PermissionsPageState();
+}
+
+class _PermissionsPageState extends State<PermissionsPage> {
+  bool _textMessageAccepted = false;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  DatabaseReference _userRef;
+
+  @override
+  void initState() {
+    super.initState();
+    _userRef = FirebaseDatabase().reference().child("Users").child(_auth.currentUser.uid);
+  }
+
   @override
   Widget build(BuildContext context) {
     var notiWidgetList = _notificationPermissionsWidget();
@@ -155,10 +180,10 @@ class PermissionsPage extends StatelessWidget {
                   ),
                   Container(padding: EdgeInsets.all(10)),
                   PlatformButton(
-                    ios: (_) => CupertinoButtonData(
+                    cupertino: (_,__) => CupertinoButtonData(
                       pressedOpacity: 0.7,
                     ),
-                    android: (_) => MaterialRaisedButtonData(
+                    material: (_,__) => MaterialRaisedButtonData(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -168,6 +193,55 @@ class PermissionsPage extends StatelessWidget {
                     onPressed: () {
                       LocationPermissions().requestPermissions(permissionLevel: LocationPermissionLevel.locationAlways);
                     },
+                  ),
+                  Container(padding: EdgeInsets.all(10)),
+                  AutoSizeText('Would you like to receive text message promotions from Savour Deals?',
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    style: TextStyle(fontSize: 25, color:Colors.white),
+                  ),
+                  Container(padding: EdgeInsets.all(10)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      PlatformButton(
+                        cupertino: (_,__) => CupertinoButtonData(
+                          pressedOpacity: 0.7,
+                        ),
+                        material: (_,__) => MaterialRaisedButtonData(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        color: _textMessageAccepted? SavourColorsMaterial.savourGreen : Colors.grey,
+                        child: Text("yes", style: whiteText),
+                        onPressed: () {
+                          _userRef.child("text_acceptance").set(true);
+                          setState(() {
+                            _textMessageAccepted = true;
+                          });
+                        },
+                      ),
+                      Container(padding: EdgeInsets.all(10)),
+                      PlatformButton(
+                        cupertino: (_,__) => CupertinoButtonData(
+                          pressedOpacity: 0.7,
+                        ),
+                        material: (_,__) => MaterialRaisedButtonData(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        color: !_textMessageAccepted? SavourColorsMaterial.savourGreen : Colors.grey,
+                        child: Text("no", style: whiteText),
+                        onPressed: () {
+                          _userRef.child("text_acceptance").set(false);
+                          setState(() {
+                            _textMessageAccepted = false;
+                          });
+                        },
+                      ),
+                    ],
                   ),
                   for (int i = 0; i < notiWidgetList.length; i++)
                     notiWidgetList[i],
@@ -192,10 +266,10 @@ class PermissionsPage extends StatelessWidget {
         ),
         Container(padding: EdgeInsets.all(10)),
         PlatformButton(
-          ios: (_) => CupertinoButtonData(
+          cupertino: (_,__) => CupertinoButtonData(
             pressedOpacity: 0.7,
           ),
-          android: (_) => MaterialRaisedButtonData(
+          material: (_,__) => MaterialRaisedButtonData(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -203,7 +277,13 @@ class PermissionsPage extends StatelessWidget {
           color: SavourColorsMaterial.savourGreen,
           child: Text("Notification Permissions", style: whiteText),
           onPressed: () {
-            OneSignal().promptUserForPushNotificationPermission();
+            FirebaseMessaging().requestNotificationPermissions(
+                const IosNotificationSettings(
+                    sound: true, badge: true, alert: true, provisional: false));
+            FirebaseMessaging().onIosSettingsRegistered
+                .listen((IosNotificationSettings settings) {
+              print("Settings registered: $settings");
+            });
           },
         )
       ];

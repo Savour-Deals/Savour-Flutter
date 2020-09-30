@@ -12,15 +12,15 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/blocs/redemption/redemption_bloc.dart';
+import 'package:savour_deals_flutter/containers/custom_title.dart';
 import 'package:savour_deals_flutter/containers/dealCardWidget.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/stores/deals_model.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
+import 'package:savour_deals_flutter/globals/themes/theme.dart';
 import 'package:savour_deals_flutter/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -38,13 +38,13 @@ class VendorPageWidget extends StatefulWidget {
 
 class _VendorPageWidgetState extends State<VendorPageWidget> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  FirebaseUser user;
+  User user;
   DatabaseReference _userRef;
 
   FirebaseAnalytics analytics = FirebaseAnalytics();
 
   //Location variables
-  final _locationService = Geolocator();
+  LocationPermission serviceStatus;
   Position currentLocation;
 
   //Declare contextual variables
@@ -69,10 +69,9 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
       itemName: widget.vendor.name,
       itemCategory: 'vendor',
     );
-    var serviceStatus;
     try {
-      serviceStatus = await _locationService.checkGeolocationPermissionStatus();
-      user = await _auth.currentUser();
+      serviceStatus = await checkPermission();
+      user = await _auth.currentUser;
     } on PlatformException catch (e) {
       print(e.message);
     }
@@ -83,7 +82,7 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
 
     //Check if the user following this vendor
     _userRef.child("following").onValue.listen((data){
-      if (data.snapshot != null){
+      if (data.snapshot != null && data.snapshot.value != null){
         setState(() {
           following = data.snapshot.value[widget.vendor.key]?? false;
         });        
@@ -91,15 +90,13 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
     });
 
     // get location updates
-    if (serviceStatus == GeolocationStatus.granted) {//we should have permission but maybe they turned it off since they got here
-      _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.best)).listen((Position result) async {
-        if (this.mounted){
-          setState(() {
-            currentLocation = result;
-          });
-        }
-      });
-    }
+    getPositionStream().listen((Position result) async {
+      if (this.mounted){
+        setState(() {
+          currentLocation = result;
+        });
+      }
+    });
 
     // Get all deals from this vendor
     _dealsRef.orderByChild("vendor_id").equalTo(widget.vendor.key).onValue.listen((dealEvent) {
@@ -122,14 +119,14 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
     theme = Theme.of(context);
     return PlatformScaffold(
       appBar: PlatformAppBar(
-        title: Image.asset("images/Savour_White.png"),
-        ios: (_) => CupertinoNavigationBarData(
+        title: SavourTitle(),
+        cupertino: (_,__) => CupertinoNavigationBarData(
           backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
           leading: CupertinoNavigationBarBackButton(color: Colors.white,),
           heroTag: "vendorPage",
           transitionBetweenRoutes: false,
         ),
-        android: (_) => MaterialAppBarData(
+        material: (_,__) => MaterialAppBarData(
           leading: BackButton(color: Colors.white,),
           centerTitle: true,
         ),
@@ -226,11 +223,13 @@ class _VendorPageWidgetState extends State<VendorPageWidget> {
         ),
         SizedBox(
           height: carouselWidth/2.5,
-          child: (carouselDeals.length <= 0)? Container():ListView.builder(
+          child: (carouselDeals.length <= 0)? Container():ListView.separated(
             physics: AlwaysScrollableScrollPhysics(),
             scrollDirection: Axis.horizontal,
+            separatorBuilder: (BuildContext context, int index) => SizedBox(width: 10.0,),
             // store this controller in a State to save the carousel scroll position
             controller: PageController(),
+            padding: EdgeInsets.only(left: 10.0),
             itemBuilder: (BuildContext context, int item) {
               return GestureDetector(
                 onTap: () {
@@ -427,28 +426,25 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
   bool _following = false;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  FirebaseUser user;
+  User user;
   DatabaseReference _userRef;
   DatabaseReference _vendorRef;
 
   @override
   void initState() {
     super.initState();
-    _initialize();
-  }
-
-  void _initialize() async {
-    user = await _auth.currentUser();
+    user = _auth.currentUser;
     _userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
     _vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.vendor.key);
     _userRef.child("following").onValue.listen((data){
       if (data.snapshot != null){
         setState(() {
           _following = data.snapshot.value[widget.vendor.key]?? false;
-        });        
+        });
       }
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -542,7 +538,7 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
                     _userRef.child("loyalty").child(widget.vendor.key).child("redemptions").remove();
                     _userRef.child("following").child(widget.vendor.key).remove();
                     _vendorRef.child("followers").child(user.uid).remove();
-                    OneSignal.shared.deleteTag(widget.vendor.key);
+                    // OneSignal.shared.deleteTag(widget.vendor.key);
                   },
                 ),
                 PlatformDialogAction(
@@ -560,20 +556,10 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
         _userRef.child("loyalty").child(widget.vendor.key).child("redemptions").remove();
         _userRef.child("following").child(widget.vendor.key).remove();
         _vendorRef.child("followers").child(user.uid).remove();
-        OneSignal.shared.deleteTag(widget.vendor.key);
       }
     }else{
       //user is not following, follow this vendor
       _userRef.child("following").child(widget.vendor.key).set(true);
-      // OneSignal.shared.sendTag(widget.vendor.key, true);
-      OneSignal.shared.getPermissionSubscriptionState().then((status){
-        if (status.subscriptionStatus.subscribed){
-          _vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
-        }else{
-          // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
-          _vendorRef.child("followers").child(user.uid).set(user.uid);
-        }
-      });      
     }
   }
 
@@ -582,7 +568,24 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
       if (await canLaunch(url)) {
         await launch(url);
       } else {
-        throw 'Could not launch $url';
+        showPlatformDialog(
+          builder: (BuildContext context) {
+            // return object of type Dialog
+            return PlatformAlertDialog(
+              title: Text("Sorry!"),
+              content: Text("Looks like we are having trouble opening this webpage. Please try again later."),
+              actions: <Widget>[
+                // usually buttons at the bottom of the dialog
+                PlatformDialogAction(
+                  child: PlatformText("Okay"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          }, context: context,
+        );
       }
     }else{
       showPlatformDialog(
@@ -625,8 +628,8 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
         mapURLs["Google Maps"] =  gURL;
       }
     }
-    var wURL = Uri.encodeFull('https://waze.com/ul?q='+widget.address);
-    if (await canLaunch(wURL)) {
+    var wURL = Uri.encodeFull('waze://ul?q='+widget.address);
+    if (await canLaunch('waze://')) {
       mapURLs["Waze"] =  wURL;
     }
     List<Widget> mapApps = [];
@@ -660,13 +663,13 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
     }else if (Platform.isAndroid){
       mapApps.add(
         ListTile(
-          title: new Text("Navigate with:", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),)
+          title: Text("Navigate with:", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),)
         ),
       );
       mapURLs.forEach((appName, url) {
         mapApps.add(
           ListTile(
-            title: new Text(appName),
+            title: Text(appName),
             onTap: () async {
               await launch(url);
             },          
@@ -707,7 +710,7 @@ class LoyaltyWidget extends StatefulWidget {
 class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProviderStateMixin {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  FirebaseUser user;
+  User user;
   DatabaseReference _userRef;
   DatabaseReference _vendorRef;
 
@@ -719,15 +722,11 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _initialize();
     pointsGoal = widget.vendor.loyalty.count;
     if (pointsGoal == 0){
       pointsGoal = 1; //avoid a divide by zero!
     }
-  }
-
-  void _initialize() async {
-    user = await _auth.currentUser();
+    user = _auth.currentUser;
     _userRef = FirebaseDatabase().reference().child("Users").child(user.uid);
     _vendorRef = FirebaseDatabase().reference().child("Vendors").child(widget.vendor.key);
     _userRef.child("loyalty").child(widget.vendor.key).child("redemptions").onValue.listen((data){
@@ -739,7 +738,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
           if (pointPercent > 1.0){
             pointPercent = 1.0; //clip at 100% filled progress bar
           }
-        });        
+        });
       }else{
         setState(() {
           userPoints = 0;
@@ -748,6 +747,10 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
         });
       }
     });
+  }
+
+  void _initialize() async {
+
   }
 
   @override
@@ -853,20 +856,11 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
     if ((redemptionTime + 10800) < now){//three hours
       //We are ready to checkin! Prompt user with next steps
       try {
-        String barcode = await BarcodeScanner.scan();
-        if (barcode == widget.vendor.loyalty.code){
+        ScanResult barcode = await BarcodeScanner.scan();
+        if (barcode.rawContent == widget.vendor.loyalty.code){
           //Code was correct!
           //subscribe to notifications
           _userRef.child("following").child(widget.vendor.key).set(true);
-          // OneSignal.shared.sendTag(widget.vendor.key, true);
-          OneSignal.shared.getPermissionSubscriptionState().then((status){
-            if (status.subscriptionStatus.subscribed){
-              _vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
-            }else{
-              // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
-              _vendorRef.child("followers").child(user.uid).set(user.uid);
-            }
-          });
           setState(() {
             userPoints = userPoints + widget.vendor.loyalty.todaysPoints();
             pointPercent = userPoints.toDouble()/pointsGoal.toDouble();
@@ -879,7 +873,7 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
           _displayMessage("Incorrect code!", "The QR code is incorrect. Contact us if you think this is a mistake.", "Okay");
         }
       } on PlatformException catch (e) {
-        if (e.code == BarcodeScanner.CameraAccessDenied) {
+        if (e.code == BarcodeScanner.cameraAccessDenied) {
           _showSettingsDialog();
         }
       } on FormatException{

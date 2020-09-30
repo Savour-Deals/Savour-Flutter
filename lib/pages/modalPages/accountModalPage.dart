@@ -3,13 +3,14 @@ import 'dart:io';
 
 import 'package:app_settings/app_settings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:location_permissions/location_permissions.dart';
 import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
+import 'package:savour_deals_flutter/globals/themes/theme.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:share/share.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -25,7 +26,9 @@ class AccountPageWidget extends StatefulWidget {
 
 class _AccountPageWidgetState extends State<AccountPageWidget> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  FirebaseUser user;
+  final _firebaseMessaging = FirebaseMessaging();
+
+  User user;
   SharedPreferences prefs;
 
   //Declare contextual variables
@@ -38,21 +41,13 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
   @override
   void initState() { 
     super.initState();
-    initialize();
-  }
-
-  void initialize() async {
-    _auth.currentUser().then((_userData) {
-      setState(() {
-        user = _userData;
-        FirebaseDatabase().reference().child("Users").child(user.uid).child("total_savings").onValue.listen((datasnapshot) {
-          if (this.mounted){
-            setState(() {
-              totalSavings = datasnapshot.snapshot.value ?? 0; 
-            });
-          }
+    user = _auth.currentUser;
+    FirebaseDatabase().reference().child("Users").child(user.uid).child("total_savings").onValue.listen((datasnapshot) {
+      if (this.mounted){
+        setState(() {
+          totalSavings = datasnapshot.snapshot.value ?? 0;
         });
-      });
+      }
     });
   }
 
@@ -166,47 +161,40 @@ class _AccountPageWidgetState extends State<AccountPageWidget> {
     if(notificationSettings.isNotificationsEnabled){
       _notificationPermissionHandler(false);
     }else{
-      if(Platform.isIOS){
-        OneSignal.shared.getPermissionSubscriptionState().then((subscriptionState){
-          switch (subscriptionState.permissionStatus.status) {
-            case OSNotificationPermission.authorized:
-              //we have iOS permissions, resubscribe with onesignal
-              _notificationPermissionHandler(true);
-              break;
-            case OSNotificationPermission.denied:
-              // User denied previously, prompt them to go to settings
-              // Accept/deny handled in tab.dart::didChangeAppLifecycleState
-              _showSettingsDialog();
-              break;
-            default:
-            // User was never prompted. WTH man!
-              OneSignal.shared.promptUserForPushNotificationPermission().then((accepted){
-                print("Accepted permission: $accepted");
-                _notificationPermissionHandler(accepted);
-              });
-          }
-        });
-      }else{
-        print("Accepted permission: Not needed for android");
-        _notificationPermissionHandler(true);
-      }
+      LocationPermissions().checkPermissionStatus().then((permissionStatus) async {
+        switch (permissionStatus) {
+          case PermissionStatus.granted:
+          //we have iOS permissions, resubscribe with onesignal
+            _notificationPermissionHandler(true);
+            break;
+          case PermissionStatus.denied:
+          // User denied previously, prompt them to go to settings
+          // Accept/deny handled in tab.dart::didChangeAppLifecycleState
+            _showSettingsDialog();
+            break;
+          default:
+          // User was never prompted. WTH man!
+            _firebaseMessaging.requestNotificationPermissions(
+                const IosNotificationSettings(
+                    sound: true, badge: true, alert: true, provisional: true));
+            _firebaseMessaging.onIosSettingsRegistered
+                .listen((IosNotificationSettings settings) {
+              print("Settings registered: $settings");
+            });
+            _notificationPermissionHandler(await LocationPermissions().checkPermissionStatus() == PermissionStatus.granted);
+        }
+      });
     }
   }
 
   Future _notificationPermissionHandler(bool accepted) async {
-    if (accepted){
-      print("Notifications turned on!");
-      var user = await FirebaseAuth.instance.currentUser();
-      notificationSettings.setNotificationsSetting(true);
-      OneSignal.shared.setSubscription(true);
-      if (user.email != null){
-        OneSignal.shared.setEmail(email: user.email);
+      if (accepted) {
+        _firebaseMessaging.subscribeToTopic("MOBILE");
+      } else {
+        _firebaseMessaging.unsubscribeFromTopic("MOBILE");
       }
-    }else{
-      print("Notifications turned off!");
-      OneSignal.shared.setSubscription(false);
-      notificationSettings.setNotificationsSetting(false);
-    }
+      print(accepted? "Notifications turned on!" : "Notifications turned off!");
+      notificationSettings.setNotificationsSetting(accepted);
   }
 
   void _showSettingsDialog() {

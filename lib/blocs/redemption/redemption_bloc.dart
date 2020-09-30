@@ -14,10 +14,7 @@ export 'redemption_state.dart';
 class RedemptionBloc extends Bloc<RedemptionEvent, RedemptionState> {
   final DealRepository _dealsRepo = DealRepository();
 
-  RedemptionBloc();
-
-  @override
-  RedemptionState get initialState => RedemptionUninitialized();
+  RedemptionBloc() : super(RedemptionUninitialized());
 
   @override
   Stream<RedemptionState> mapEventToState(RedemptionEvent event) async* {

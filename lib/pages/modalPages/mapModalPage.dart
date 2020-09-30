@@ -8,6 +8,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:savour_deals_flutter/containers/custom_title.dart';
 import 'package:savour_deals_flutter/containers/vendorCardWidget.dart';
 import 'package:savour_deals_flutter/pages/infoPages/vendorPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
@@ -26,8 +27,7 @@ class MapPageWidget extends StatefulWidget {
 }
 
 class _MapPageWidgetState extends State<MapPageWidget> {
-  FirebaseUser user;
-  final _locationService = Geolocator();
+  User user;
   Completer<GoogleMapController> _controller = Completer();
   PageController _pageController;
   CameraPosition _userPosition;
@@ -38,8 +38,7 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   bool _moving = false;
 
   //Declare contextual variables
-  AppState appState;
-  ThemeData theme;
+  ThemeData _theme;
 
   @override
   void initState()  {
@@ -50,7 +49,13 @@ class _MapPageWidgetState extends State<MapPageWidget> {
     this.sortedVendors.sort((a, b) {
       return compareDistance(a,b);
     });
+
     initPlatform();
+  }
+
+  @override
+  void didChangeDependencies() {
+    _theme = Theme.of(context);
   }
 
   int compareDistance(Vendor a, Vendor b){
@@ -58,17 +63,16 @@ class _MapPageWidgetState extends State<MapPageWidget> {
   }
 
   initPlatform() async {
-    user = await FirebaseAuth.instance.currentUser();
+    user = FirebaseAuth.instance.currentUser;
 
-    GeolocationStatus serviceStatus;
+    LocationPermission serviceStatus;
     try {
-      serviceStatus = await _locationService.checkGeolocationPermissionStatus();
+      serviceStatus = await checkPermission();
       if (serviceStatus != null) {
-        if (serviceStatus == GeolocationStatus.granted) {
-          _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
+        if (serviceStatus == LocationPermission.always || serviceStatus == LocationPermission.whileInUse) {
+          getPositionStream(desiredAccuracy: LocationAccuracy.medium, distanceFilter: 400).listen((Position result) async {
             this._userPosition = new CameraPosition(target: LatLng(result.latitude,result.longitude), zoom: 12);
             this._position = result;
-
           });
         }
       }
@@ -112,61 +116,67 @@ class _MapPageWidgetState extends State<MapPageWidget> {
       initialPage = 1;
     }
     _pageController = PageController(viewportFraction: viewportFrac, initialPage: initialPage);
-    appState = Provider.of<AppState>(context);
-    theme = Theme.of(context);
-    return PlatformScaffold(
-      appBar: PlatformAppBar(
-        title: Image.asset("images/Savour_White.png"),
-        ios: (_) => CupertinoNavigationBarData(
-          actionsForegroundColor: Colors.white,
-          backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
-          heroTag: "favTab",
-          transitionBetweenRoutes: false,
-        ),
-      ),
-      body: Stack(
-        children: <Widget>[
-          GoogleMap(
-            padding: EdgeInsets.only(bottom: cardHeight),
-            mapType: MapType.normal,
-            initialCameraPosition:_userPosition,
-            onMapCreated: _onMapCreated,
-            myLocationEnabled: true,
-            markers: Set<Marker>.of(_markers.values),
+    return Material(
+      child: PlatformScaffold(
+        appBar: PlatformAppBar(
+          title: SavourTitle(),
+          cupertino: (_,__) => CupertinoNavigationBarData(
+            backgroundColor: ColorWithFakeLuminance(_theme.appBarTheme.color, withLightLuminance: true),
+            heroTag: "favTab",
+            transitionBetweenRoutes: false,
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: cardHeight,
-              padding: EdgeInsets.only(bottom: 20.0),
-              child: PageView.builder(
-                key: PageStorageKey('vendorGroup1'), //save deal group's position when scrolling
-                controller: _pageController,
-                physics: AlwaysScrollableScrollPhysics(),
-                onPageChanged: (int item) {
-                  this._goToLocation(this.sortedVendors[item].lat, this.sortedVendors[item].long, this.sortedVendors[item].key);
-                },
-                itemBuilder: (BuildContext context, int item) {
-                  return GestureDetector(
-                    onTap: () {
-                      print(this.sortedVendors[item].key + " clicked");
-                      Navigator.push(
-                        context,
-                        platformPageRoute(
-                          context: context,
-                          settings: RouteSettings(name: "VendorPage"),
-                          builder: (context) => VendorPageWidget(this.sortedVendors[item], this._position)
-                        ),
-                      );
-                    },
-                    child: VendorCard(this.sortedVendors[item], this._position),
-                  );
-                },
-                itemCount: this.sortedVendors.length,  
+          leading: IconButton(
+            icon: Icon(Icons.clear, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          material: (_,__) => MaterialAppBarData(
+            centerTitle: true,
+          ),
+        ),
+        body: Stack(
+          children: <Widget>[
+            GoogleMap(
+              padding: EdgeInsets.only(bottom: cardHeight),
+              mapType: MapType.normal,
+              initialCameraPosition:_userPosition,
+              onMapCreated: _onMapCreated,
+              myLocationEnabled: true,
+              markers: Set<Marker>.of(_markers.values),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                height: cardHeight,
+                padding: EdgeInsets.only(bottom: 20.0),
+                child: PageView.builder(
+                  key: PageStorageKey('vendorGroup1'), //save deal group's position when scrolling
+                  controller: _pageController,
+                  physics: AlwaysScrollableScrollPhysics(),
+                  onPageChanged: (int item) {
+                    this._goToLocation(this.sortedVendors[item].lat, this.sortedVendors[item].long, this.sortedVendors[item].key);
+                  },
+                  itemBuilder: (BuildContext context, int item) {
+                    return GestureDetector(
+                      onTap: () {
+                        print(this.sortedVendors[item].key + " clicked");
+                        Navigator.push(
+                          context,
+                          platformPageRoute(
+                            context: context,
+                            settings: RouteSettings(name: "VendorPage"),
+                            builder: (context) => VendorPageWidget(this.sortedVendors[item], this._position)
+                          ),
+                        );
+                      },
+                      child: VendorCard(this.sortedVendors[item], this._position),
+                    );
+                  },
+                  itemCount: this.sortedVendors.length,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -14,10 +14,7 @@ export 'vendor_state.dart';
 class VendorBloc extends Bloc<VendorEvent, VendorState> {
   final VendorRepository _vendorsRepo = VendorRepository();
 
-  VendorBloc();
-
-  @override
-  VendorState get initialState => VendorUninitialized(null);
+  VendorBloc() : super(VendorUninitialized(null));
 
   @override
   Stream<VendorState> mapEventToState(VendorEvent event) async* {

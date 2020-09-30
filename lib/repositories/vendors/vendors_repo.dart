@@ -16,7 +16,7 @@ class VendorRepository {
 
   void updateLocation(Position location) => globals.vendorApiProvider.updateLocation(location);
 
-  Stream<Vendors> getVendorStream() => globals.vendorApiProvider.vendorStream;
+  // Stream<Vendors> getVendorStream() => globals.vendorApiProvider.vendorStream;
 
   VendorsApiProvider get vendorsProvider => globals.vendorApiProvider;
 }

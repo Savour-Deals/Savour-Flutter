@@ -19,10 +19,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
   final VendorRepository _vendorRepo = VendorRepository();
   final RedemptionRepository _redemptionRepo = RedemptionRepository();
 
-  WalletBloc();
-
-  @override
-  WalletState get initialState => WalletUninitialized(null);
+  WalletBloc() : super(WalletUninitialized(null));
 
   @override
   Stream<WalletState> mapEventToState(WalletEvent event) async* {

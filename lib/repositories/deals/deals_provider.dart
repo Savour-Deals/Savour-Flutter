@@ -34,9 +34,7 @@ class DealsApiProvider {
   }
 
   Future<void> init() async {
-    final user = await FirebaseAuth.instance.currentUser();
-    _userId = user.uid;
-    FirebaseDatabase().reference().child("Users").child(_userId).child("favorites").onValue.listen((datasnapshot) {
+    FirebaseDatabase().reference().child("Users").child(FirebaseAuth.instance.currentUser.uid).child("favorites").onValue.listen((datasnapshot) {
       if (datasnapshot.snapshot.value != null) {
         favorites.addAll(Map<String, String>.from(datasnapshot.snapshot.value).keys);
         _deals.getAllDeals().forEach((deal) { 
@@ -56,7 +54,7 @@ class DealsApiProvider {
     return _vendorMap.containsKey(vendor.key);
   }
 
-  void noVendorsFound(){
+  void doneLoading(){
     _deals.doneLoading();
     _dealController.add(_deals);
   }
@@ -70,7 +68,7 @@ class DealsApiProvider {
           Deal newDeal = new Deal.fromMap(key, data, vendor, _userId);
           newDeal.favorited = favorites.contains(newDeal.key);
           _deals.addDeal(newDeal);
-          if(!_deals.isLoading && newDeal.isLive()){
+          if(!_deals.isLoading && newDeal.isLive){
             _deals.doneLoading();
           }
         });

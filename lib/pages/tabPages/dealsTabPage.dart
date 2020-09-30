@@ -9,46 +9,56 @@ class DealsPageWidget extends StatefulWidget {
 
 class _DealsPageState extends State<DealsPageWidget> {
   //Location variables
-  final _locationService = Geolocator();
   Position currentLocation;
-  // Position currentLocation;
 
   //Declare contextual variables
-  AppState appState;
-  NotificationData notificationData;
-  ThemeData theme;
+  NotificationData _notificationData;
+  ThemeData _theme;
 
-  FirebaseUser user;
+  User user;
 
   SharedPreferences prefs;
-  BuildContext showcasecontext;
+  BuildContext _context;
   GlobalKey _one = GlobalKey();
   GlobalKey _two = GlobalKey();
   GlobalKey _three = GlobalKey();
 
-  DealBloc _dealsBloc;
+  DealsBloc _dealsBloc;
 
   @override
   void initState() {
     super.initState();
-    _dealsBloc = BlocProvider.of<DealBloc>(context);
+    _dealsBloc = BlocProvider.of<DealsBloc>(context);
     initPlatform();
   }
 
+  @override
+  void didChangeDependencies(){
+    super.didChangeDependencies();
+    _notificationData = Provider.of<NotificationData>(context);
+    _theme = Theme.of(context);
+  }
+
+  @override
+  void dispose(){
+    super.dispose();
+    _context = null;
+  }
+
   void presentShowcase(){
-    if (showcasecontext != null){
-      ShowCaseWidget.of(showcasecontext).startShowCase([_one, _two, _three]);
+    if (_context != null){
+      ShowCaseWidget.of(_context).startShowCase([_one, _two, _three]);
     }
   }
 
   void initPlatform() async {
     //Intializing geoFire
     // geo.initialize("Vendors_Location");
-    user = await FirebaseAuth.instance.currentUser();
+    user = FirebaseAuth.instance.currentUser;
     try {
-      var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
-      if (serviceStatus == GeolocationStatus.granted) {
-        currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium); //this may be null! Thats ok!
+      var serviceStatus = await checkPermission();
+      if (serviceStatus == LocationPermission.always || serviceStatus == LocationPermission.whileInUse) {
+        currentLocation = await getLastKnownPosition(); //this may be null! Thats ok!
       }
     } on PlatformException catch (e) {
       print(e.message);
@@ -66,27 +76,32 @@ class _DealsPageState extends State<DealsPageWidget> {
       presentShowcase();
     }
 
-    _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
-      currentLocation = result;
+    getPositionStream(desiredAccuracy: LocationAccuracy.medium, distanceFilter: 400).listen((Position result) async {
       if (currentLocation == null){
-        _dealsBloc.add(FetchDeals(location: currentLocation));
+        _dealsBloc.add(FetchDeals(location: result));
       }else{
-        _dealsBloc.add(UpdateDealsLocation(location: currentLocation));
+        _dealsBloc.add(UpdateDealsLocation(location: result));
       }
+      currentLocation = result;
     });//.cancel();
   }
 
-  void displayNotiDeal() async {
-    if (notificationData.isNotiDealPresent){
-      print("DealID: ${notificationData.consumeNotiDealID}");
+  void displayNotiDeal(context) {
+    var nd = Provider.of<NotificationData>(context, listen: false);
+    if (nd.isNotiDealPresent){
+      var dealId = nd.consumeNotiDealID;
+      print("DealID: $dealId");
       Navigator.push(
         context,
         platformPageRoute(
           context: context,
           settings: RouteSettings(name: "DealPage"),
-          builder: (context) => DealPageWidget(
-            dealId: notificationData.consumeNotiDealID,
-            location: currentLocation,
+          builder: (context) => BlocProvider<RedemptionBloc>(
+            create: (context) => RedemptionBloc(),
+            child: DealPageWidget(
+              dealId: dealId,
+              location: currentLocation,
+            ),
           ),
         ),
       );
@@ -97,17 +112,14 @@ class _DealsPageState extends State<DealsPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    appState = Provider.of<AppState>(context);
-    notificationData = Provider.of<NotificationData>(context);
-    if (notificationData.isNotiDealPresent) displayNotiDeal(); //check to make sure we already are pending a notification deal
-    notificationData.addListener(() => displayNotiDeal());//if not, listen for changes!
-    theme = Theme.of(context);
-    return BlocBuilder<DealBloc, DealState>(
+    if (_notificationData.isNotiDealPresent) displayNotiDeal(context); //check to make sure we already are pending a notification deal
+    _notificationData.addListener(() => displayNotiDeal(context));//if not, listen for changes!
+    return BlocBuilder<DealsBloc, DealsState>(
       builder: (context, state) {
         return ShowCaseWidget(
           builder: Builder(
             builder: (context) {
-              showcasecontext = context;
+              _context = context;
               return PlatformScaffold(
                 appBar: PlatformAppBar(
                   leading: Showcase(
@@ -134,12 +146,12 @@ class _DealsPageState extends State<DealsPageWidget> {
                       },
                     ),
                   ),
-                  title: Image.asset("images/Savour_White.png"),
+                  title: SavourTitle(),
                   trailingActions: <Widget>[
                     Showcase(
                       key: _two,
                       title: 'My Wallet',
-                      description: 'View your favorite deals and past redemptions!',
+                      description: 'View your favorite deals and account settings!',
                       shapeBorder: CircleBorder(),
                       showArrow: false,
                       child: FlatButton(
@@ -167,10 +179,13 @@ class _DealsPageState extends State<DealsPageWidget> {
                       ), 
                     ),
                   ],
-                  ios: (_) => CupertinoNavigationBarData(
-                    backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
+                  cupertino: (_,__) => CupertinoNavigationBarData(
+                    backgroundColor: ColorWithFakeLuminance(_theme.appBarTheme.color, withLightLuminance: true),
                     heroTag: "dealTab",
                     transitionBetweenRoutes: false,
+                  ),
+                  material: (_,__) => MaterialAppBarData(
+                    centerTitle: true,
                   ),
                 ),
                 body: Material(child: bodyWidget(state)),
@@ -182,8 +197,8 @@ class _DealsPageState extends State<DealsPageWidget> {
     );
   }
 
-  Widget _searchPage(DealState state){
-    if (state is DealLoaded) {
+  Widget _searchPage(DealsState state){
+    if (state is DealsLoaded) {
       return StreamBuilder<Deals>(
         stream: state.dealStream,
         initialData: globals.dealsApiProvider.deals,
@@ -196,12 +211,12 @@ class _DealsPageState extends State<DealsPageWidget> {
     return SearchPageWidget(deals: Deals(), location: state.location); 
   }
   
-  Widget bodyWidget(DealState state){
-    if (state is DealUninitialized) {
+  Widget bodyWidget(DealsState state){
+    if (state is DealsUninitialized) {
       return Loading(text: "Loading Deals...");
-    } else if (state is DealError) {
+    } else if (state is DealsError) {
       return TextPage(text: "An error occured.");
-    } else if (state is DealLoaded) {
+    } else if (state is DealsLoaded) {
       return StreamBuilder<List<dynamic>>(
         stream: CombineLatestStream.combine2(
           state.dealStream,
@@ -257,11 +272,11 @@ class _DealsPageState extends State<DealsPageWidget> {
       );
     } else {
       //did not match a state
-      return TextPage(text: "An error occured.");
+      return TextPage(text: "An err occured.");
     }
   }
 
-Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carouselDeals, String carouselText, DealState state) {
+Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carouselDeals, String carouselText, DealsState state) {
   var viewportFrac = 0.7;
   if(MediaQuery.of(context).size.shortestSide > 600){//this is getting into tablet range
     viewportFrac = 0.35; //make a couple fit on the page
@@ -323,7 +338,7 @@ Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carous
   );
 }
 
-  Widget getDealsWidget(Deals deals, DealState state){
+  Widget getDealsWidget(Deals deals, DealsState state){
     if (deals!= null && deals.count > 0){
       return ListView.builder(
         physics: const AlwaysScrollableScrollPhysics (),
@@ -333,19 +348,19 @@ Widget _buildCarousel(BuildContext context, int carouselIndex, List<Deal> carous
           var filterText = "";
           switch (position) {
             case 0:
-              filterDeals = deals.getDealsByFilter(0);
+              filterDeals = deals.getStandardDealsByFilter(0);
               filterText = deals.filters[0] + " Deals";
               break;
             case 1: 
-              filterDeals = deals.getDealsByValue();
+              filterDeals = deals.getStandardDealsByValue();
               filterText = "Deals By Value";
               break;
             case 2:
-              filterDeals = deals.getDealsByDistance();
+              filterDeals = deals.getStandardDealsByDistance();
               filterText = "Deals By Distance";
               break;
             default:
-              filterDeals = deals.getDealsByFilter(position-2);
+              filterDeals = deals.getStandardDealsByFilter(position-2);
               filterText = deals.filters[position-2] + " Deals";
           }
           return (filterDeals.length > 0)? _buildCarousel(context, position, filterDeals, filterText, state): Container();

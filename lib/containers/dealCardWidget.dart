@@ -2,9 +2,9 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:savour_deals_flutter/containers/likeButtonWidget.dart';
-import 'package:savour_deals_flutter/icons/savour_icons_icons.dart';
+import 'package:savour_deals_flutter/globals/themes/theme.dart';
+import 'package:savour_deals_flutter/globals/icons/savour_icons_icons.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 
 enum DealCardType {  
@@ -76,11 +76,20 @@ class DealCardFull extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: EdgeInsets.all(10.0*scalar),
-      elevation: 5,
-      shape: RoundedRectangleBorder(
+      decoration: BoxDecoration(
+        border: deal.isGold? Border.all(
+          color: deal.isGold? SavourColorsMaterial.savourGold : Colors.grey, 
+        ) : null,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(15.0*scalar),
+        boxShadow: <BoxShadow>[
+          new BoxShadow(
+            color: deal.isGold? SavourColorsMaterial.savourGold : Theme.of(context).shadowColor,
+            blurRadius: 8.0,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +123,7 @@ class DealCardFull extends StatelessWidget {
                   height: 200*scalar,
                   child: Align(
                     alignment: Alignment(-.95,-.9),
-                    child: deal.isPreferred()? Icon(Icons.star, color: Color(0xFFD7B740)): null,
+                    child: deal.isPreferred? Icon(Icons.star, color: Color(0xFFD7B740)): null,
                   ),
                 ),
               ]
@@ -184,11 +193,18 @@ class DealCardSmall extends StatelessWidget {
     return SizedBox(
       width: whSize,
       height: whSize,
-      child: Card(
-        // margin: EdgeInsets.all(10.0),
-        elevation: 5,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+      child: Container(
+        decoration: BoxDecoration(
+          border: deal.isGold? Border.all(
+            color: deal.isGold? SavourColorsMaterial.savourGold : Colors.grey, 
+          ) : null,
+          borderRadius: BorderRadius.circular(15),          
+          boxShadow: <BoxShadow>[
+            new BoxShadow(
+              color: deal.isGold? SavourColorsMaterial.savourGold : Theme.of(context).shadowColor,
+              blurRadius: 8.0,
+            ),
+          ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(15),
@@ -278,7 +294,7 @@ class ActiveDaysWidget extends StatelessWidget {
                 textAlign: TextAlign.left,
                 style: TextStyle(
                   //Color it red when deal is not active
-                  color: deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red,
+                  color: deal.isActive? SavourColorsMaterial.savourGreen: Colors.red,
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                 ),
@@ -288,11 +304,11 @@ class ActiveDaysWidget extends StatelessWidget {
               deal.activeDays[day] ? 
               Icon(SavourIcons.circle,
               //Color it red when deal is not active
-                color: deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red, 
+                color: deal.isActive? SavourColorsMaterial.savourGreen: Colors.red, 
                 size: 12.0,
               ):
               Icon(SavourIcons.circle_thin,
-                color: deal.isActive()? SavourColorsMaterial.savourGreen: Colors.red,
+                color: deal.isActive? SavourColorsMaterial.savourGreen: Colors.red,
                 size: 12.0,
               ),
             ],
@@ -324,7 +340,8 @@ class CountdownWidget extends StatelessWidget {
           alignment: Alignment.bottomRight,
           child: Container(
             padding: EdgeInsets.all(10.0),
-            child: AutoSizeText("Deal already redeemed!",
+            child: AutoSizeText(
+              "Deal already redeemed!",
               maxLines: 2,
               style: TextStyle(color: Colors.white),
             ),

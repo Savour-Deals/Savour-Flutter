@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 
 class AppState with ChangeNotifier {
   bool _darkModeEnabled = false;  
-  SharedPreferences prefs;
 
   AppState() {
     initAppState();
@@ -11,12 +11,14 @@ class AppState with ChangeNotifier {
 
   Future initAppState() async {
     //see if this has been set before, if not, set to light mode
-    prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     setDarkMode(prefs.getBool('isDark') ?? false);
+    InAppPurchaseConnection.enablePendingPurchases();
   }
 
-  void setDarkMode(bool newVal) {
+  Future<void> setDarkMode(bool newVal) async {
     _darkModeEnabled = newVal;
+    final prefs = await SharedPreferences.getInstance();
     prefs.setBool('isDark', _darkModeEnabled);
     notifyListeners();
   }
@@ -45,7 +47,6 @@ class NotificationData with ChangeNotifier {
 
 class NotificationSettings with ChangeNotifier {
   bool _notificationsEnabled = false;
-  SharedPreferences prefs;
   
   NotificationSettings(){
     initNotificationSettings();
@@ -53,12 +54,13 @@ class NotificationSettings with ChangeNotifier {
 
   Future initNotificationSettings() async {
     //see if this has been set before, if not, set to light mode
-    prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     setNotificationsSetting(prefs.getBool('isNotificationsEnabled') ?? false);
   }
 
-  void setNotificationsSetting(bool newVal) {
+  Future<void> setNotificationsSetting(bool newVal) async {
     _notificationsEnabled = newVal;
+    final prefs = await SharedPreferences.getInstance();
     prefs.setBool('isNotificationsEnabled', _notificationsEnabled);
     notifyListeners();
   }

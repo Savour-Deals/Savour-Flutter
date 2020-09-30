@@ -2,6 +2,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
 import 'package:savour_deals_flutter/utils.dart';
+//import 'package:savour_deals_flutter/utils.dart' as globals;
 
 int _oneWeekInMS = 60*60*24*7*1000;
 
@@ -20,30 +21,22 @@ class Deal {
   String code;
   List<bool> activeDays = []; // mon - sun => 0 - 6
   int value;
-  bool active;
-  bool live;
+  bool isGold;
   List<String> filters = [];
   
   
   Deal(this.key, this.description, this.photo, this.vendor, this.start, this.end, this.favorited, this.activeDays, this.code, this.redeemed, this.redeemedTime, this.type, this.value, this.filters, this.vendorName);
 
   // Live is whether or not the deal is between the start and end date
-  void refreshLive(){
+  bool get isLive {
     var now = new DateTime.now();
     var startOfToday = new DateTime(now.year, now.month, now.day);
     //begin showing deal at midnight, the day of and end showing it when it expires
-    live = startOfToday.millisecondsSinceEpoch >= start && now.millisecondsSinceEpoch <= end;
-  }
-
-  bool isLive(){
-    if (live == null){
-      refreshLive();
-    }
-    return live;
+    return  startOfToday.millisecondsSinceEpoch >= start && now.millisecondsSinceEpoch <= end;
   }
 
   // Active is if the deal is redeemable at the current time of the day
-  void refreshActive(){
+  bool get isActive {
     final now = DateTime.now();
     final startDateTime = DateTime.fromMillisecondsSinceEpoch(start);
     final endDateTime = DateTime.fromMillisecondsSinceEpoch(end);
@@ -62,29 +55,23 @@ class Deal {
     }
     if (activeDays[startTime.weekday-1]){//Active today
       if (now.compareTo(startTime) >= 0 && now.compareTo(endTime) <= 0){
-        active = true;
+        return true;
       }else if (startTime.compareTo(endTime) == 0){
-          active = true;//"active all day!"
+          return true;//"active all day!"
       }else{
-        active = false;
+        return false;
       }
     }else{//Not Active today
-      active = false;
+      return false;
     }
   }
 
-  bool isActive(){
-    if (active == null){
-      refreshActive();
-    }
-    return active;
-  }
 
-  bool isPreferred(){
+  bool get isPreferred {
     return this.filters.contains("preferred");
   }
 
-  String infoString(){
+  String infoString() {
     final now = DateTime.now();
     final startDateTime = DateTime.fromMillisecondsSinceEpoch(start);
     final endDateTime = DateTime.fromMillisecondsSinceEpoch(end);
@@ -162,9 +149,11 @@ class Deal {
     end = snapshot.value["end_time"]*1000;
     code = snapshot.value["code"] ?? "";
     type = snapshot.value["filter"] ?? "";
+    isGold = false;//globals.random.nextBool();//snapshot.value["isGold"] ?? false;
     value = snapshot.value["value"] ?? 0;
     vendorName = snapshot.value["vendor_name"]?? "Blank";
-    for (var filter in snapshot.value["filters"]){
+    var dataFilters = snapshot.value["filters"] ?? [];
+    for (var filter in dataFilters){
       filters.add(filter);
     }
 
@@ -206,6 +195,7 @@ class Deal {
     end = data["end_time"]*1000;
     code = data["code"]; 
     type = data["filter"];
+    isGold = false;//globals.random.nextBool();//data["isGold"] ?? false;
     value = data["value"] ?? 0;
     vendorName = data["vendor_name"]?? "Blank";
     var dataFilters = data["filters"]?? [];

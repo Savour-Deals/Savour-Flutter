@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Savour Deals</string>
 	<key>CFBundleExecutable</key>
@@ -13,11 +13,11 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Savour Deals</string>
+	<string>Savour</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>$(FLUTTER_BUILD_NAME)</string>
+	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -49,16 +49,13 @@
 			<string>google firebase</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
+				<string>com.googleusercontent.apps.165647122349-mk0mjtmkclnsk6cgn53i4qef69kboek5</string>
 				<string>com.googleusercontent.apps.864438367973-81u3jtl4j3v2hnf7ti374chefanas3p9</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>FacebookAppID</key>
-	<string>127494581197194</string>
-	<key>FacebookDisplayName</key>
-	<string>Savour</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>waze</string>
@@ -75,19 +72,17 @@
 	<key>NSCameraUsageDescription</key>
 	<string>We need to use your camera for scanning QR codes.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Savour needs your location to find all the restaurants near you!</string>
+	<string>Savour needs your location to find the best deals nearby!</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Savour needs your location to find all the restaurants near you!</string>
+	<string>Savour needs your location to find the best deals nearby!</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Savour needs your location to find all the restaurants near you!</string>
+	<string>Savour needs your location to find the best deals nearby!</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
 		<string>location</string>
 		<string>remote-notification</string>
 	</array>
-	<key>FirebaseAppDelegateProxyEnabled</key>
-	<string>NO</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -99,6 +94,7 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>

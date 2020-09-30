@@ -33,13 +33,12 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   List<Deal> _filteredDeals = [];
   List<Vendor> _vendors = [];
   List<Vendor> _filteredVendors = [];
-  FirebaseUser user;
+  User user;
 
   final _controller = TextEditingController();
   FocusNode _focusNode = FocusNode();
   
   //Location variables
-  final _locationService = Geolocator();
   Position currentLocation;
 
   bool isDealSearch(){
@@ -61,9 +60,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
   void initPlatform() async {
     try {
-      var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
-      if (serviceStatus == GeolocationStatus.granted) {
-        _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.high)).listen((Position result) async {
+      var serviceStatus = await checkPermission();
+      if (serviceStatus == LocationPermission.always || serviceStatus == LocationPermission.whileInUse) {
+        getPositionStream().listen((Position result) async {
           if (this.mounted){
             setState(() {
               currentLocation = result;

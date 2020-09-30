@@ -12,8 +12,7 @@ enum PageType {
 }
 
 class _VendorsPageState extends State<VendorsPageWidget> {
-  //Location variables
-  final _locationService = Geolocator();
+
 
   //Declare contextual variables
   AppState appState;
@@ -31,9 +30,9 @@ class _VendorsPageState extends State<VendorsPageWidget> {
     Position currentLocation;
     _vendorsBloc = BlocProvider.of<VendorBloc>(context);
     try {
-      var serviceStatus = await _locationService.checkGeolocationPermissionStatus();
-      if (serviceStatus == GeolocationStatus.granted) {
-        currentLocation = await _locationService.getLastKnownPosition(desiredAccuracy: LocationAccuracy.medium); //this may be null! Thats ok!
+      var serviceStatus = await checkPermission();
+      if (serviceStatus == LocationPermission.always || serviceStatus == LocationPermission.whileInUse) {
+        currentLocation = await getLastKnownPosition(); //this may be null! Thats ok!
       }
     } on PlatformException catch (e) {
       print(e.message);
@@ -44,7 +43,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
       _vendorsBloc.add(FetchVendors(location: currentLocation));
     }
 
-    _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
+    getPositionStream(desiredAccuracy: LocationAccuracy.medium, distanceFilter: 400).listen((Position result) async {
       if (currentLocation == null){
         _vendorsBloc.add(FetchVendors(location: currentLocation));
       }else{
@@ -62,7 +61,7 @@ class _VendorsPageState extends State<VendorsPageWidget> {
       builder: (context, state) {
         return PlatformScaffold(
           appBar: PlatformAppBar(
-            title: Image.asset("images/Savour_White.png"),
+            title: SavourTitle(),
             leading: FlatButton(
               child: Icon(Icons.search,
                 color: Colors.white,
@@ -77,10 +76,13 @@ class _VendorsPageState extends State<VendorsPageWidget> {
                 Navigator.push(context,route);
               },
             ),
-            ios: (_) => CupertinoNavigationBarData(
+            cupertino: (_,__) => CupertinoNavigationBarData(
               backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
               heroTag: "vendorTab",
               transitionBetweenRoutes: false,
+            ),
+            material: (_,__) => MaterialAppBarData(
+              centerTitle: true,
             ),
             trailingActions: <Widget>[
               FlatButton(
