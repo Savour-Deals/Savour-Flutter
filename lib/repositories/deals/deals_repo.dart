@@ -3,7 +3,6 @@ import 'dart:collection';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/stores/vendors_model.dart';
 import 'package:savour_deals_flutter/utils.dart' as globals;
@@ -77,15 +76,6 @@ class DealRepository {
 
     //notification subscriptions
     userRef.child("following").child(deal.vendor.key).set(true);
-    // OneSignal.shared.sendTag(widget.deal.vendor.key, true);
-    OneSignal.shared.getPermissionSubscriptionState().then((status){
-      if (status.subscriptionStatus.subscribed){
-        vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
-      }else{
-        // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
-        vendorRef.child("followers").child(user.uid).set(user.uid);
-      }
-    });
 
     deal.redeemed = true;
     deal.redeemedTime = redemptionTime*1000;

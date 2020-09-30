@@ -12,18 +12,16 @@ class _DealsPageState extends State<DealsPageWidget> {
   Position currentLocation;
 
   //Declare contextual variables
-  AppState appState;
-  NotificationData notificationData;
-  ThemeData theme;
+  NotificationData _notificationData;
+  ThemeData _theme;
 
   User user;
 
   SharedPreferences prefs;
-  BuildContext showcasecontext;
+  BuildContext _context;
   GlobalKey _one = GlobalKey();
   GlobalKey _two = GlobalKey();
   GlobalKey _three = GlobalKey();
-
 
   DealsBloc _dealsBloc;
 
@@ -34,9 +32,22 @@ class _DealsPageState extends State<DealsPageWidget> {
     initPlatform();
   }
 
+  @override
+  void didChangeDependencies(){
+    super.didChangeDependencies();
+    _notificationData = Provider.of<NotificationData>(context);
+    _theme = Theme.of(context);
+  }
+
+  @override
+  void dispose(){
+    super.dispose();
+    _context = null;
+  }
+
   void presentShowcase(){
-    if (showcasecontext != null){
-      ShowCaseWidget.of(showcasecontext).startShowCase([_one, _two, _three]);
+    if (_context != null){
+      ShowCaseWidget.of(_context).startShowCase([_one, _two, _three]);
     }
   }
 
@@ -75,17 +86,22 @@ class _DealsPageState extends State<DealsPageWidget> {
     });//.cancel();
   }
 
-  void displayNotiDeal() async {
-    if (notificationData.isNotiDealPresent){
-      print("DealID: ${notificationData.consumeNotiDealID}");
+  void displayNotiDeal(context) {
+    var nd = Provider.of<NotificationData>(context, listen: false);
+    if (nd.isNotiDealPresent){
+      var dealId = nd.consumeNotiDealID;
+      print("DealID: $dealId");
       Navigator.push(
         context,
         platformPageRoute(
           context: context,
           settings: RouteSettings(name: "DealPage"),
-          builder: (context) => DealPageWidget(
-            dealId: notificationData.consumeNotiDealID,
-            location: currentLocation,
+          builder: (context) => BlocProvider<RedemptionBloc>(
+            create: (context) => RedemptionBloc(),
+            child: DealPageWidget(
+              dealId: dealId,
+              location: currentLocation,
+            ),
           ),
         ),
       );
@@ -96,17 +112,14 @@ class _DealsPageState extends State<DealsPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    appState = Provider.of<AppState>(context);
-    notificationData = Provider.of<NotificationData>(context);
-    if (notificationData.isNotiDealPresent) displayNotiDeal(); //check to make sure we already are pending a notification deal
-    notificationData.addListener(() => displayNotiDeal());//if not, listen for changes!
-    theme = Theme.of(context);
+    if (_notificationData.isNotiDealPresent) displayNotiDeal(context); //check to make sure we already are pending a notification deal
+    _notificationData.addListener(() => displayNotiDeal(context));//if not, listen for changes!
     return BlocBuilder<DealsBloc, DealsState>(
       builder: (context, state) {
         return ShowCaseWidget(
           builder: Builder(
             builder: (context) {
-              showcasecontext = context;
+              _context = context;
               return PlatformScaffold(
                 appBar: PlatformAppBar(
                   leading: Showcase(
@@ -167,7 +180,7 @@ class _DealsPageState extends State<DealsPageWidget> {
                     ),
                   ],
                   cupertino: (_,__) => CupertinoNavigationBarData(
-                    backgroundColor: ColorWithFakeLuminance(theme.appBarTheme.color, withLightLuminance: true),
+                    backgroundColor: ColorWithFakeLuminance(_theme.appBarTheme.color, withLightLuminance: true),
                     heroTag: "dealTab",
                     transitionBetweenRoutes: false,
                   ),

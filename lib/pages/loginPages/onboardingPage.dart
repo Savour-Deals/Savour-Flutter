@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:location_permissions/location_permissions.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
+import 'package:savour_deals_flutter/globals/themes/theme.dart';
 
 class OnboardingPage extends StatefulWidget {
 
@@ -112,7 +112,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   void _requestNotificationPermission(){
     if(Platform.isIOS){
-      OneSignal().promptUserForPushNotificationPermission();
+      final fmc = FirebaseMessaging();
+      fmc.requestNotificationPermissions(
+          const IosNotificationSettings(
+              sound: true, badge: true, alert: true, provisional: false));
+      fmc.onIosSettingsRegistered
+          .listen((IosNotificationSettings settings) {
+        print("Settings registered: $settings");
+      });
     }
   }
 
@@ -270,7 +277,13 @@ class _PermissionsPageState extends State<PermissionsPage> {
           color: SavourColorsMaterial.savourGreen,
           child: Text("Notification Permissions", style: whiteText),
           onPressed: () {
-            OneSignal().promptUserForPushNotificationPermission();
+            FirebaseMessaging().requestNotificationPermissions(
+                const IosNotificationSettings(
+                    sound: true, badge: true, alert: true, provisional: false));
+            FirebaseMessaging().onIosSettingsRegistered
+                .listen((IosNotificationSettings settings) {
+              print("Settings registered: $settings");
+            });
           },
         )
       ];

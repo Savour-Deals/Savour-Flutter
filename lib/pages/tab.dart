@@ -2,15 +2,14 @@ import 'dart:async';
 import 'dart:io';
 
 //TODO: When data handling is restructured, setup local notifications
-
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:location_permissions/location_permissions.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rate_my_app/rate_my_app.dart';
 import 'package:savour_deals_flutter/blocs/deals/deals_bloc.dart';
@@ -18,10 +17,9 @@ import 'package:savour_deals_flutter/blocs/vendor_page/vendor_bloc.dart';
 import 'package:savour_deals_flutter/containers/custom_title.dart';
 import 'package:savour_deals_flutter/pages/loginPages/onboardingPage.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
+import 'package:savour_deals_flutter/globals/themes/theme.dart';
 import 'package:savour_deals_flutter/pages/tabPages/tablib.dart';
 import 'package:savour_deals_flutter/utils.dart';
-
 
 class SavourTabPage extends StatefulWidget {
   SavourTabPage({Key key, this.uid}) : super(key: key);
@@ -40,11 +38,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
   int vendorsNearby = 0;
   bool onboardFinished = false;
 
-  FirebaseAnalytics analytics = FirebaseAnalytics();
-
-
-  // int lastNearbyNotificationTime;
-  // FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  final FirebaseAnalytics _analytics = FirebaseAnalytics();
 
   //Declare contextual variables
   AppState appState;
@@ -98,7 +92,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     
     //check if user has used this app before and they have not been prompted for location
     if (locationStatus == PermissionStatus.unknown || (Platform.isAndroid && locationStatus == PermissionStatus.denied)){
-      await analytics.logTutorialBegin();
+      await _analytics.logTutorialBegin();
       await Navigator.push(context,
         platformPageRoute(
           settings: RouteSettings(name: "OnboardingPage"),
@@ -113,80 +107,18 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
       var newState = await LocationPermissions().checkPermissionStatus();
       setState(() {
         locationStatus = newState;
+        Provider.of<NotificationSettings>(context, listen: false)
+            .setNotificationsSetting(locationStatus == PermissionStatus.granted);
         onboardFinished = true;//onboarding complete, we can move on and build tabs
       });
-      await analytics.logTutorialComplete();
+      await FirebaseInAppMessaging().setMessagesSuppressed(false);
+      await _analytics.logTutorialComplete();
       sleep(const Duration(milliseconds:500));//used so that dismiss doesnt happen and look weird when prompts pop up
     }else{
       setState(() {
         onboardFinished = true;//onboarding has already been done, we can move on and build tabs
       });
     }
-
-    //setup remote notifications
-    var settings = {
-      OSiOSSettings.autoPrompt: true,
-      OSiOSSettings.promptBeforeOpeningPushUrl: true
-    };
-
-    OneSignal.shared.setNotificationOpenedHandler((OSNotificationOpenedResult result) {
-      _notificationHandler(result);
-    });
-
-    OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
-
-    await OneSignal.shared.init("f1c64902-ab03-4674-95e9-440f7c8f33d0", iOSSettings: settings);
-
-    OneSignal.shared.setInFocusDisplayType(OSNotificationDisplayType.notification);
-
-    //Request Permissions here too incase for some reason we still have not asked
-    if (locationStatus == PermissionStatus.unknown) {
-      LocationPermissions().requestPermissions(permissionLevel: LocationPermissionLevel.locationAlways).then((permissionStatus){
-        setState(() {
-          locationStatus = permissionStatus;
-        });
-      });
-    }
-
-    if(Platform.isIOS){
-      OneSignal.shared.getPermissionSubscriptionState().then((state) async {
-        var accepted = false;
-        if(!state.permissionStatus.hasPrompted){
-          accepted = await OneSignal().promptUserForPushNotificationPermission();
-        }else{
-          accepted = state.permissionStatus.status == OSNotificationPermission.authorized;
-        }
-        print("Accepted permission: $accepted");
-        _notificationPermissionHandler(accepted);
-
-      });
-    }else{
-      print("Accepted permission: Not needed for android");
-      _notificationPermissionHandler(true);
-    }
-
-    // //Setup local notifications
-    // prefs = await SharedPreferences.getInstance();
-    // lastNearbyNotificationTime = prefs.getInt('lastNearbyNotificationTime') ?? 0;
-    // flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
-    // // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
-    // var initializationSettingsAndroid = new AndroidInitializationSettings('icon_logo');
-    // var initializationSettingsIOS = new IOSInitializationSettings(
-    //     requestAlertPermission: false, //this should be handles by onesignal above
-    //     requestBadgePermission: false, //we dont need this
-    //     defaultPresentBadge: false,
-    // );
-    // var initializationSettings = new InitializationSettings(
-    //     initializationSettingsAndroid, 
-    //     initializationSettingsIOS
-    // );
-    // flutterLocalNotificationsPlugin.initialize(
-    //   initializationSettings,
-    //   onSelectNotification: onSelectNotification
-    // ); 
-
-    // //setup geofire
-    // geo.initialize("Vendors_Location");
   }
 
   @override
@@ -194,15 +126,11 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     if(state == AppLifecycleState.resumed){
       try {
         var newState = await LocationPermissions().checkPermissionStatus();
-        var notificationStatus = await OneSignal.shared.getPermissionSubscriptionState();
-        var notificationsEnabled = notificationStatus.permissionStatus.status == OSNotificationPermission.authorized;
-        debugPrint("Accepted: $notificationsEnabled");
-        if(this.mounted){
-          setState(() {
-            locationStatus = newState;
-            _notificationPermissionHandler(notificationsEnabled);
-          });
-        }
+        // setState(() {
+          locationStatus = newState;
+          Provider.of<NotificationSettings>(context, listen: false)
+              .setNotificationsSetting(locationStatus == PermissionStatus.granted);
+        // });
         print("Resumed");
       } on PlatformException catch (e) {
         print(e.message);
@@ -235,7 +163,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
         body: Center(
           child: PlatformCircularProgressIndicator(),
         ),
-      ); 
+      );
     } else if (locationStatus == PermissionStatus.granted && onboardFinished == true){
       // _locationService.getPositionStream(LocationOptions(accuracy: LocationAccuracy.medium, distanceFilter: 400)).listen((Position result) async {
       //   geo.queryAtLocation(result.latitude, result.longitude, 0.25);
@@ -398,36 +326,6 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
     }
   }
 
-  Future _notificationPermissionHandler(bool accepted) async {
-    if (accepted){
-//      var user = await FirebaseAuth.instance.currentUser();
-      Provider.of<NotificationSettings>(context, listen: false).setNotificationsSetting(true);
-      OneSignal.shared.setSubscription(true);
-    }else{
-      Provider.of<NotificationSettings>(context, listen: false).setNotificationsSetting(false);
-      OneSignal.shared.setSubscription(false);
-    }
-  }
-
-  void _notificationHandler(OSNotificationOpenedResult result){
-    if(!mounted) return;
-    if(result.notification.payload.additionalData.isNotEmpty){
-        if(result.notification.payload.additionalData.containsKey("deal")){
-          var dealID = result.notification.payload.additionalData['deal'];
-          this.setState(() {
-            // print("Opened notification: \n${result.notification.jsonRepresentation().replaceAll("\\n", "\n")}");
-            print("Opened notification with deal ID: $dealID");
-            Provider.of<NotificationData>(context).setNotiDealID(dealID);
-          });
-        }else{
-          this.setState(() {
-            var data = result.notification.payload.additionalData;
-            print("Opened notification with additional data: $data");
-          });
-        }
-      }//else Opened notification with no additional data
-  }
-
   void _sendCurrentTabToAnalytics(int index) {
     var name;
     switch (index) {
@@ -443,7 +341,7 @@ class _SavourTabPageState extends State<SavourTabPage> with WidgetsBindingObserv
       default:
         name = 'UnknownTabPage';
     }
-    analytics.setCurrentScreen(
+    _analytics.setCurrentScreen(
       screenName: 'TabsPage/$name',
     );
   }

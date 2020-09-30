@@ -62,15 +62,17 @@ class VendorsApiProvider {
       _geoController.add(data);
     });
     _geo.onKeyExited.listen((data){
-      _vendors.removeVendor(_vendorMap.remove(data["key"]).vendor);
-      _vendorController.add(_vendors);
+      if (_vendorMap.containsKey(data["key"])){
+        _vendors.removeVendor(_vendorMap.remove(data["key"]).vendor);
+        _vendorController.add(_vendors);
+      }
     });
   }
 
   void queryByLocation(Position location) {
     // if(_vendors.location == null){
       _vendors.setLocation(location);
-      _geo.queryAtLocation(location.latitude, location.longitude, 800.0);//kick off geoquery
+      _geo.queryAtLocation(location.latitude, location.longitude, 80.0);//kick off geoquery
     // }
   }
 
@@ -93,7 +95,7 @@ class VendorsApiProvider {
 
   void updateLocation(Position location) {
     _vendors.setLocation(location);
-    _geo.updateLocation(location.latitude, location.longitude, 800.0);//kick off geoquery
+    _geo.updateLocation(location.latitude, location.longitude, 80.0);//kick off geoquery
             _vendorController.add(_vendors);
   }
 

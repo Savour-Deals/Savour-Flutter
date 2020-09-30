@@ -2,9 +2,9 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:savour_deals_flutter/containers/likeButtonWidget.dart';
-import 'package:savour_deals_flutter/icons/savour_icons_icons.dart';
+import 'package:savour_deals_flutter/globals/themes/theme.dart';
+import 'package:savour_deals_flutter/globals/icons/savour_icons_icons.dart';
 import 'package:savour_deals_flutter/stores/deal_model.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 
 enum DealCardType {  

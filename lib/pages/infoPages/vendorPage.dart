@@ -12,7 +12,6 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:savour_deals_flutter/blocs/redemption/redemption_bloc.dart';
 import 'package:savour_deals_flutter/containers/custom_title.dart';
@@ -21,7 +20,7 @@ import 'package:savour_deals_flutter/stores/deal_model.dart';
 import 'package:savour_deals_flutter/stores/deals_model.dart';
 import 'package:savour_deals_flutter/stores/settings.dart';
 import 'package:savour_deals_flutter/stores/vendor_model.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
+import 'package:savour_deals_flutter/globals/themes/theme.dart';
 import 'package:savour_deals_flutter/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -539,7 +538,7 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
                     _userRef.child("loyalty").child(widget.vendor.key).child("redemptions").remove();
                     _userRef.child("following").child(widget.vendor.key).remove();
                     _vendorRef.child("followers").child(user.uid).remove();
-                    OneSignal.shared.deleteTag(widget.vendor.key);
+                    // OneSignal.shared.deleteTag(widget.vendor.key);
                   },
                 ),
                 PlatformDialogAction(
@@ -557,20 +556,10 @@ class _VendorButtonRowState extends State<VendorButtonRow> {
         _userRef.child("loyalty").child(widget.vendor.key).child("redemptions").remove();
         _userRef.child("following").child(widget.vendor.key).remove();
         _vendorRef.child("followers").child(user.uid).remove();
-        OneSignal.shared.deleteTag(widget.vendor.key);
       }
     }else{
       //user is not following, follow this vendor
       _userRef.child("following").child(widget.vendor.key).set(true);
-      // OneSignal.shared.sendTag(widget.vendor.key, true);
-      OneSignal.shared.getPermissionSubscriptionState().then((status){
-        if (status.subscriptionStatus.subscribed){
-          _vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
-        }else{
-          // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
-          _vendorRef.child("followers").child(user.uid).set(user.uid);
-        }
-      });      
     }
   }
 
@@ -872,15 +861,6 @@ class _LoyaltyWidgetState extends State<LoyaltyWidget> with SingleTickerProvider
           //Code was correct!
           //subscribe to notifications
           _userRef.child("following").child(widget.vendor.key).set(true);
-          // OneSignal.shared.sendTag(widget.vendor.key, true);
-          OneSignal.shared.getPermissionSubscriptionState().then((status){
-            if (status.subscriptionStatus.subscribed){
-              _vendorRef.child("followers").child(user.uid).set(status.subscriptionStatus.userId);
-            }else{
-              // if userID is not available (IE the have notifications set off, still log the user as subscribed in firebase)
-              _vendorRef.child("followers").child(user.uid).set(user.uid);
-            }
-          });
           setState(() {
             userPoints = userPoints + widget.vendor.loyalty.todaysPoints();
             pointPercent = userPoints.toDouble()/pointsGoal.toDouble();

@@ -7,8 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:savour_deals_flutter/containers/tou.dart';
-import 'package:savour_deals_flutter/themes/decoration.dart';
-import 'package:savour_deals_flutter/themes/theme.dart';
+import 'package:savour_deals_flutter/globals/themes/decoration.dart';
+import 'package:savour_deals_flutter/globals/themes/theme.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -211,7 +211,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
       if (!authException.message.contains("cancelled")){
         print(authException.code);
         print(authException.message);
-        displayError("Phone number verification failed", 'Something happened. Please try again later.', 'Okay');
+        displayError("Phone number verification failed", "Something happened. Please try again later.", 'Okay');
       }
     };
 

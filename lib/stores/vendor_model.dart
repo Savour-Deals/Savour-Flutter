@@ -52,7 +52,7 @@ class Vendor {
     description =  snapshot.value["description"]?? "";
     menu = snapshot.value["menu"]?? "";
     isPreferred = snapshot.value["preferred"] ?? false;
-    var loyaltyData = snapshot.value["loyalty"];
+    var loyaltyData = snapshot.value["loyalty"] ?? {};
     if (loyaltyData["loyalty_code"] != null){
       loyalty.code = loyaltyData["loyalty_code"] ?? "";
       loyalty.count = loyaltyData["loyalty_count"] ?? -1;
@@ -90,7 +90,7 @@ class Vendor {
     description =  data["description"];
     menu = data["menu"];
     isPreferred = data["preferred"] ?? false;
-    var loyaltyData = data.value["loyalty"];
+    var loyaltyData = data.value["loyalty"] ?? {};
     if (loyaltyData != null){
       loyalty.code = loyaltyData["loyalty_code"] ?? "";
       loyalty.count = loyaltyData["loyalty_count"] ?? -1;
